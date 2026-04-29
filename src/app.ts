@@ -1,5 +1,5 @@
 import { createApp } from 'vue'
-import { Button, Checkbox } from '@nutui/nutui-taro'
+import { Button, Checkbox, Collapse, CollapseItem, Popup, Category } from '@nutui/nutui-taro'
 
 import './app.scss'
 
@@ -8,6 +8,6 @@ const App = createApp({
   },
 })
 
-App.use(Button).use(Checkbox)
+App.use(Button).use(Checkbox).use(Collapse).use(CollapseItem).use(Popup).use(Category)
 
 export default App

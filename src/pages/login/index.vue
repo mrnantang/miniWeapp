@@ -61,7 +61,7 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import Taro from '@tarojs/taro'
 
 const account = ref('dev')
@@ -73,7 +73,7 @@ const canLogin = computed(() => account.value.trim() && password.value.trim())
 
 const roleConfig = {
   dev: { root: 'subpackages/dev/home/index', name: '开发端' },
-  sales: { root: 'subpackages/sales/home/index', name: '销售端' },
+  sales: { root: 'subpackages/dev/home/index', name: '销售端' },
   ops: { root: 'subpackages/ops/dashboard/index', name: '运营端' },
   boss: { root: 'subpackages/boss/overview/index', name: '老板端' },
 }
@@ -85,6 +85,16 @@ const accountMap = {
   boss: { account: 'boss', password: '123456' },
 }
 
+onMounted(() => {
+  const savedAccount = Taro.getStorageSync('login_account')
+  const savedPassword = Taro.getStorageSync('login_password')
+  if (savedAccount && savedPassword) {
+    account.value = savedAccount
+    password.value = savedPassword
+    rememberPwd.value = true
+  }
+})
+
 const handleLogin = () => {
   if (!canLogin.value) return
 
@@ -93,6 +103,13 @@ const handleLogin = () => {
   )
 
   if (matched) {
+    if (rememberPwd.value) {
+      Taro.setStorageSync('login_account', account.value.trim())
+      Taro.setStorageSync('login_password', password.value)
+    } else {
+      Taro.removeStorageSync('login_account')
+      Taro.removeStorageSync('login_password')
+    }
     Taro.setStorageSync('role', matched[0])
     Taro.reLaunch({ url: '/' + roleConfig[matched[0]].root })
   } else {

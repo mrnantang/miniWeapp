@@ -1,6 +1,6 @@
 <template>
   <view class="page">
-    <view class="content">开发端-任务</view>
+    <view class="content">开发端-线索</view>
     <tab-bar />
   </view>
 </template>

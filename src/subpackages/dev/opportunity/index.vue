@@ -1,6 +1,6 @@
 <template>
   <view class="page">
-    <view class="content">销售端-首页</view>
+    <view class="content">开发端-商机</view>
     <tab-bar />
   </view>
 </template>

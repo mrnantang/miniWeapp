@@ -5,11 +5,7 @@ export default {
   subPackages: [
     {
       root: 'subpackages/dev',
-      pages: ['home/index', 'task/index', 'mine/index']
-    },
-    {
-      root: 'subpackages/sales',
-      pages: ['home/index', 'mine/index']
+      pages: ['home/index', 'leads/index', 'opportunity/index', 'customer/index', 'mine/index']
     },
     {
       root: 'subpackages/ops',
@@ -23,7 +19,8 @@ export default {
   preloadRule: {
     'pages/login/index': {
       network: 'all',
-      packages: ['subpackages/dev', 'subpackages/sales', 'subpackages/ops', 'subpackages/boss']
+      // packages: ['subpackages/dev', 'subpackages/ops', 'subpackages/boss']
+      packages: ['subpackages/dev']
     }
   },
   window: {
