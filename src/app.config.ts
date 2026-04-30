@@ -5,7 +5,7 @@ export default {
   subPackages: [
     {
       root: 'subpackages/dev',
-      pages: ['home/index', 'leads/index', 'opportunity/index', 'customer/index', 'mine/index']
+      pages: ['home/index', 'leads/index', 'leads/add-lead/index', 'opportunity/index', 'customer/index', 'mine/index']
     },
     {
       root: 'subpackages/ops',

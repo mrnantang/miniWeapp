@@ -18,7 +18,11 @@
             <text class="search-input-text" :class="{ 'search-input-text--placeholder': !searchKeyword }">{{ searchKeyword || '请输入企业名称/手机号' }}</text>
             <image class="search-icon" src="../../../assets/dev/icon-search.png" mode="aspectFit" />
           </view>
-          <view v-if="role !== 'sales'" class="filter-btn" @tap="showFilter = true">
+           <!-- <view v-if="role === 'sales'" class="location-btn" @tap="showNearbyPopup = true"> -->
+          <view  class="location-btn" @tap="showNearbyPopup = true">
+            <image src="../../../assets/dev/icon-location-search.png" mode="aspectFit" />
+          </view>
+          <view class="filter-btn" @tap="showFilter = true">
             <image src="../../../assets/dev/icon-filter.png" mode="aspectFit" />
           </view>
         </view>
@@ -376,6 +380,74 @@
         </view>
       </view>
     </nut-popup>
+
+    <nut-popup v-model:visible="showNearbyPopup" position="bottom" :style="{ borderRadius: '24rpx 24rpx 0 0', height: '1022rpx' }" :z-index="2000" safe-area-inset-bottom>
+      <view class="nearby-popup">
+        <view class="nearby-header">
+          <text class="nearby-header-title">搜索附近客户</text>
+        </view>
+
+        <view class="nearby-body">
+          <view class="nearby-sidebar">
+            <view class="nearby-sidebar-item nearby-sidebar-item--active">
+              <text class="nearby-sidebar-text nearby-sidebar-text--active">附近客户</text>
+            </view>
+          </view>
+
+          <scroll-view class="nearby-content" scroll-y :enhanced="true" :show-scrollbar="false">
+            <text class="nearby-cat-title">当前定位</text>
+            <view class="nearby-loc-row">
+              <text class="nearby-loc-text">广东省/深圳市/南山区</text>
+              <image class="nearby-loc-icon" src="../../../assets/dev/icon-location-popup.png" mode="aspectFit" />
+            </view>
+
+            <view class="nearby-divider" />
+
+            <text class="nearby-cat-title">距离范围</text>
+            <view class="nearby-range-grid">
+              <view
+                v-for="r in distanceRanges"
+                :key="r"
+                class="nearby-range-tag"
+                :class="{ 'nearby-range-tag--active': selectedDistance === r }"
+                @tap="selectedDistance = r"
+              >
+                <text class="nearby-range-text" :class="{ 'nearby-range-text--active': selectedDistance === r }">{{ r }}</text>
+              </view>
+            </view>
+
+            <view class="nearby-divider" />
+
+            <text class="nearby-cat-title">自定义距离范围</text>
+            <view class="nearby-custom-row">
+              <view class="nearby-custom-box">
+                <text class="nearby-custom-val">0</text>
+                <text class="nearby-custom-unit">km</text>
+              </view>
+              <view class="nearby-custom-sep" />
+              <view class="nearby-custom-box">
+                <input
+                  class="nearby-custom-input"
+                  v-model="customDistance"
+                  placeholder="请输入"
+                  placeholder-style="color:#BBBEC2;font-size:26rpx"
+                />
+                <text class="nearby-custom-unit">km</text>
+              </view>
+            </view>
+          </scroll-view>
+        </view>
+
+        <view class="nearby-footer">
+          <view class="nearby-footer-btn nearby-footer-clear" @tap="selectedDistance = ''; customDistance = ''">
+            <text class="nearby-footer-clear-text">清空选择</text>
+          </view>
+          <view class="nearby-footer-btn nearby-footer-submit" @tap="onNearbyConfirm">
+            <text class="nearby-footer-submit-text">确认</text>
+          </view>
+        </view>
+      </view>
+    </nut-popup>
   </view>
 </template>
 
@@ -490,6 +562,15 @@ const searchKeyword = ref('')
 const searchState = ref('empty')
 const searchResults = ref([])
 
+const showNearbyPopup = ref(false)
+const selectedDistance = ref('')
+const customDistance = ref('')
+const distanceRanges = ['10km以内', '30km以内', '50km以内', '100km以内']
+
+const onNearbyConfirm = () => {
+  showNearbyPopup.value = false
+}
+
 const mockSearchData = [
   { id: 1, name: '金山重工股份有限公司', manager: '张松', phone: '15899209987', createTime: '2024/01/23 10:12' },
   { id: 2, name: '金山重工有限公司', manager: '张松', phone: '15899209987', createTime: '2024/01/23 10:12' },
@@ -591,7 +672,7 @@ const onPickerChange = (e) => {
 .banner-avatar {
   position: absolute;
   right: 0;
-  top: 240rpx;
+  top: 80rpx;
   width: 400rpx;
   height: 400rpx;
 }
@@ -667,6 +748,17 @@ const onPickerChange = (e) => {
 .filter-icon {
   width: 34rpx;
   height: 34rpx;
+}
+.location-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 68rpx;
+  height: 68rpx;
+  background: #EDFAF5;
+  border: 2rpx solid #CEF0E2;
+  border-radius: 12rpx;
+  flex-shrink: 0;
 }
 
 .section {
@@ -1236,5 +1328,178 @@ const onPickerChange = (e) => {
 .sp-card-value {
   font-size: 28rpx;
   color: #1A1D24;
+}
+
+.nearby-popup {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+.nearby-header {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 24rpx 40rpx;
+}
+.nearby-header-btn {
+  font-size: 28rpx;
+  color: #9292A5;
+}
+.nearby-header-title {
+  flex: 1;
+  text-align: center;
+  font-size: 32rpx;
+  font-weight: 500;
+  color: #1A1D24;
+}
+.nearby-header-confirm {
+  color: #37AE7E;
+}
+.nearby-body {
+  display: flex;
+  flex: 1;
+  overflow: hidden;
+}
+.nearby-sidebar {
+  width: 190rpx;
+  background: #F6F7FB;
+  flex-shrink: 0;
+}
+.nearby-sidebar-item {
+  padding: 20rpx 40rpx;
+  background: #FFFFFF;
+}
+.nearby-sidebar-item--active {
+  background: #FFFFFF;
+}
+.nearby-sidebar-text {
+  font-size: 26rpx;
+  font-weight: 500;
+  color: #37AE7E;
+}
+.nearby-content {
+  flex: 1;
+  background: #FFFFFF;
+  padding: 24rpx;
+}
+.nearby-cat-title {
+  font-size: 28rpx;
+  font-weight: 500;
+  color: #1A1D24;
+  display: block;
+  margin-bottom: 24rpx;
+}
+.nearby-loc-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12rpx;
+  height: 60rpx;
+  background: #EDFAF5;
+  border-radius: 6rpx;
+  padding: 0 20rpx;
+  margin-bottom: 24rpx;
+}
+.nearby-loc-text {
+  font-size: 26rpx;
+  color: #37AE7E;
+}
+.nearby-loc-icon {
+  width: 42rpx;
+  height: 42rpx;
+  flex-shrink: 0;
+}
+.nearby-divider {
+  height: 1rpx;
+  background: #F4F4F4;
+  margin-bottom: 24rpx;
+}
+.nearby-range-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 24rpx;
+  margin-bottom: 24rpx;
+}
+.nearby-range-tag {
+  padding: 12rpx 20rpx;
+  background: #F6F7FB;
+  border-radius: 6rpx;
+}
+.nearby-range-tag--active {
+  background: #EDFAF5;
+}
+.nearby-range-text {
+  font-size: 26rpx;
+  color: #62687D;
+}
+.nearby-range-text--active {
+  color: #37AE7E;
+}
+.nearby-custom-row {
+  display: flex;
+  align-items: center;
+  gap: 12rpx;
+}
+.nearby-custom-box {
+  flex: 1;
+  height: 60rpx;
+  background: #F6F7FB;
+  border-radius: 6rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 16rpx;
+}
+.nearby-custom-val {
+  font-size: 26rpx;
+  color: #1A1D24;
+}
+.nearby-custom-input {
+  flex: 1;
+  font-size: 26rpx;
+  height: 44rpx;
+  line-height: 44rpx;
+  text-align: center;
+}
+.nearby-custom-unit {
+  font-size: 26rpx;
+  color: #62687D;
+  flex-shrink: 0;
+}
+.nearby-custom-sep {
+  width: 16rpx;
+  height: 2rpx;
+  background: #D9D9D9;
+  flex-shrink: 0;
+}
+.nearby-footer {
+  display: flex;
+  gap: 28rpx;
+  padding: 20rpx 40rpx 0;
+}
+.nearby-footer-btn {
+  flex: 1;
+  height: 76rpx;
+  border-radius: 8rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.nearby-footer-clear {
+  background: #EFFDF7;
+  border: 2rpx solid #5CC79C;
+}
+.nearby-footer-clear-text {
+  font-size: 32rpx;
+  font-weight: 500;
+  color: #5CC79C;
+}
+.nearby-footer-submit {
+  background: linear-gradient(270deg, rgba(102,220,166,1) 0%, rgba(88,188,150,1) 100%);
+}
+.nearby-footer-submit-text {
+  font-size: 32rpx;
+  font-weight: 500;
+  color: #FFFFFF;
 }
 </style>
