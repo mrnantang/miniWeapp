@@ -4,13 +4,13 @@
       <view class="leads-search-row">
         <view class="leads-search-box">
           <input class="leads-search-input" placeholder="请输入搜索" placeholder-style="color:#9292A5;font-size:30rpx" />
-          <image class="leads-search-icon" src="../../../assets/dev/icon-search.png" mode="aspectFit" />
+          <image class="leads-search-icon" :src="iconSearch" mode="aspectFit" />
         </view>
         <view class="leads-btn" @tap="showFilter = true">
-          <image src="../../../assets/dev/icon-filter.png" mode="aspectFit" />
+          <image :src="iconFilter" mode="aspectFit" />
         </view>
         <view class="leads-btn" @tap="goAddLead">
-          <image src="../../../assets/dev/icon-add.png" mode="aspectFit" />
+          <image :src="iconAdd" mode="aspectFit" />
         </view>
       </view>
 
@@ -37,7 +37,7 @@
         </view>
         <view class="lc-info">
           <view class="lc-info-item">
-            <image class="lc-icon" src="../../../assets/dev/icon-phone.png" mode="aspectFit" />
+            <image class="lc-icon" :src="iconPhone" mode="aspectFit" />
             <text class="lc-info-text lc-info-text--active">15899280987</text>
           </view>
           <view class="lc-info-item">
@@ -47,7 +47,7 @@
         </view>
         <view class="lc-tags">
           <view class="lc-info-item">
-            <image class="lc-icon" src="../../../assets/dev/icon-industry.png" mode="aspectFit" />
+            <image class="lc-icon" :src="iconIndustry" mode="aspectFit" />
             <text class="lc-info-text">{{ card.industry }}</text>
           </view>
           <view class="lc-info-item">
@@ -72,9 +72,14 @@
 import { ref } from 'vue'
 import TabBar from '../tabs/index.vue'
 import FilterPopup from './components/FilterPopup.vue'
-import gradeIcon from '../../../assets/dev/icon-grade.png'
-import locationIcon from '../../../assets/dev/icon-location.png'
-import wechatIcon from '../../../assets/dev/icon-wechat.png'
+import gradeIcon from '@/assets/dev/icon-grade.png'
+import locationIcon from '@/assets/dev/icon-location.png'
+import wechatIcon from '@/assets/dev/icon-wechat.png'
+import iconSearch from '@/assets/dev/icon-search.png'
+import iconFilter from '@/assets/dev/icon-filter.png'
+import iconAdd from '@/assets/dev/icon-add.png'
+import iconPhone from '@/assets/dev/icon-phone.png'
+import iconIndustry from '@/assets/dev/icon-industry.png'
 import Taro from '@tarojs/taro'
 const leadsTabs = ['全部', '待跟进线索', '即将回收线索', '运营公海', '销售公海', '开发公海', '大公海']
 const activeLeadTab = ref('全部')

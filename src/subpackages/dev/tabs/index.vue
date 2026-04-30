@@ -22,13 +22,14 @@
 import { ref, computed, onMounted } from 'vue'
 import Taro from '@tarojs/taro'
 
-import iconHome from '../../../assets/dev/tabs/icon-home.png'
-import iconHomeActive from '../../../assets/dev/tabs/icon-home-acitve.png'
-import iconLead from '../../../assets/dev/tabs/icon-lead.png'
-import iconLeadActive from '../../../assets/dev/tabs/icon-lead-active.png'
-import iconOpportunity from '../../../assets/dev/tabs/icon-opportunity.png'
-import iconCustomer from '../../../assets/dev/tabs/icon-customer.png'
-import iconMine from '../../../assets/dev/tabs/icon-mine.png'
+import iconHome from '@/assets/dev/tabs/icon-home.png'
+import iconHomeActive from '@/assets/dev/tabs/icon-home-acitve.png'
+import iconLead from '@/assets/dev/tabs/icon-lead.png'
+import iconLeadActive from '@/assets/dev/tabs/icon-lead-active.png'
+import iconOpportunity from '@/assets/dev/tabs/icon-opportunity.png'
+import iconCustomer from '@/assets/dev/tabs/icon-customer.png'
+import iconMine from '@/assets/dev/tabs/icon-mine.png'
+import iconMineActive from '@/assets/dev/tabs/icon-mine-active.png'
 
 const role = Taro.getStorageSync('role') || 'dev'
 
@@ -37,7 +38,7 @@ const allTabs = [
   { text: '线索', path: '/subpackages/dev/leads/index', idx: 1, icon: iconLead, activeIcon: iconLeadActive, roles: ['dev'] },
   { text: '商机', path: '/subpackages/dev/opportunity/index', idx: 2, icon: iconOpportunity, activeIcon: iconOpportunity },
   { text: '客户', path: '/subpackages/dev/customer/index', idx: 3, icon: iconCustomer, activeIcon: iconCustomer },
-  { text: '我的', path: '/subpackages/dev/mine/index', idx: 4, icon: iconMine, activeIcon: iconMine },
+  { text: '我的', path: '/subpackages/dev/mine/index', idx: 4, icon: iconMine, activeIcon: iconMineActive },
 ]
 
 const tabs = computed(() => allTabs.filter((t) => !t.roles || t.roles.includes(role)))

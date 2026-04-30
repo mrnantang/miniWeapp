@@ -22,11 +22,18 @@
     "miniprogram": {
       "list": [
         {
-          "name": "线索",
-          "pathName": "subpackages/dev/leads/index",
+          "name": "我的",
+          "pathName": "subpackages/dev/mine/index",
           "query": "",
           "scene": null,
           "launchMode": "default"
+        },
+        {
+          "name": "线索",
+          "pathName": "subpackages/dev/leads/index",
+          "query": "",
+          "launchMode": "default",
+          "scene": null
         },
         {
           "name": "subpackages/dev/home/index",

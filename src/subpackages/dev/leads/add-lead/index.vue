@@ -108,7 +108,7 @@
 <script setup>
 import { ref, reactive, computed } from 'vue'
 import FilterPopup from '../components/FilterPopup.vue'
-import rightArrowIcon from '../../../../assets/dev/rightArror.png'
+import rightArrowIcon from '@/assets/dev/rightArror.png'
 
 const showFilterPopup = ref(false)
 const activeFilterType = ref('channel')

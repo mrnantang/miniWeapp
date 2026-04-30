@@ -1,13 +1,13 @@
 <template>
   <view class="dev-home">
     <view class="banner-wrap">
-      <image class="banner-bg" src="../../../assets/dev/dev-banner.png" mode="aspectFill" />
+      <image class="banner-bg" :src="devBannerImg" mode="aspectFill" />
       <view class="banner-mask" />
       <view class="banner-info">
         <text class="banner-title">{{ role === 'sales' ? '销售工作台' : '开发工作台' }}</text>
         <text class="banner-subtitle">快速高效好伙伴！</text>
       </view>
-      <image class="banner-avatar" src="../../../assets/dev/dev-overlay.png" mode="aspectFit" />
+      <image class="banner-avatar" :src="devOverlayImg" mode="aspectFit" />
     </view>
 
     <view class="panel">
@@ -16,14 +16,14 @@
           <view class="search-box" @tap="showSearchPopup = true">
             <text class="search-label">查重：</text>
             <text class="search-input-text" :class="{ 'search-input-text--placeholder': !searchKeyword }">{{ searchKeyword || '请输入企业名称/手机号' }}</text>
-            <image class="search-icon" src="../../../assets/dev/icon-search.png" mode="aspectFit" />
+            <image class="search-icon" :src="iconSearch" mode="aspectFit" />
           </view>
            <!-- <view v-if="role === 'sales'" class="location-btn" @tap="showNearbyPopup = true"> -->
           <view  class="location-btn" @tap="showNearbyPopup = true">
-            <image src="../../../assets/dev/icon-location-search.png" mode="aspectFit" />
+            <image :src="iconLocationSearch" mode="aspectFit" />
           </view>
           <view class="filter-btn" @tap="showFilter = true">
-            <image src="../../../assets/dev/icon-filter.png" mode="aspectFit" />
+            <image :src="iconFilter" mode="aspectFit" />
           </view>
         </view>
 
@@ -122,7 +122,7 @@
         <view class="section">
           <view class="task-head">
             <view class="task-title-row">
-              <image class="task-header-icon" src="../../../assets/dev/icon-task-header.png" mode="aspectFit" />
+              <image class="task-header-icon" :src="iconTaskHeader" mode="aspectFit" />
               <text class="section-title">待处理任务</text>
             </view>
             <view class="task-count-row">
@@ -154,7 +154,7 @@
             </view>
             <view class="tc-info">
               <view class="tc-info-item">
-                <image class="tc-icon" src="../../../assets/dev/icon-phone.png" mode="aspectFit" />
+                <image class="tc-icon" :src="iconPhone" mode="aspectFit" />
                 <text class="tc-info-text tc-info-text--active">15899280987</text>
               </view>
               <view class="tc-info-item">
@@ -164,7 +164,7 @@
             </view>
             <view class="tc-tags">
               <view class="tc-info-item">
-                <image class="tc-icon" src="../../../assets/dev/icon-industry.png" mode="aspectFit" />
+                <image class="tc-icon" :src="iconIndustry" mode="aspectFit" />
                 <text class="tc-info-text">{{ card.industry }}</text>
               </view>
               <view class="tc-info-item">
@@ -323,7 +323,7 @@
           <view class="sp-header-side" />
           <text class="sp-header-title">客户查重</text>
           <view class="sp-header-side sp-header-close" @tap="showSearchPopup = false">
-            <image class="sp-close-icon" src="../../../assets/dev/icon-close.png" mode="aspectFit" />
+            <image class="sp-close-icon" :src="iconClose" mode="aspectFit" />
           </view>
         </view>
 
@@ -335,17 +335,17 @@
             placeholder-style="color:#BBBEC2;font-size:30rpx"
             @confirm="onSearch"
           />
-          <image class="sp-search-icon" src="../../../assets/dev/icon-search.png" mode="aspectFit" @tap="onSearch" />
+          <image class="sp-search-icon" :src="iconSearch" mode="aspectFit" @tap="onSearch" />
         </view>
 
         <view class="sp-body">
           <view v-if="searchState === 'empty'" class="sp-empty">
-            <image class="sp-empty-img" src="../../../assets/dev/icon-empty-search.png" mode="aspectFit" />
+            <image class="sp-empty-img" :src="iconEmptySearch" mode="aspectFit" />
             <text class="sp-empty-text">暂无数据</text>
           </view>
 
           <view v-if="searchState === 'tooMany'" class="sp-empty">
-            <image class="sp-empty-img" src="../../../assets/dev/icon-too-many.png" mode="aspectFit" />
+            <image class="sp-empty-img" :src="iconTooMany" mode="aspectFit" />
             <view class="sp-empty-text-wrap">
               <text class="sp-empty-text">查询结果数量太多</text>
               <text class="sp-empty-text">请填写更详细德查询数据</text>
@@ -398,7 +398,7 @@
             <text class="nearby-cat-title">当前定位</text>
             <view class="nearby-loc-row">
               <text class="nearby-loc-text">广东省/深圳市/南山区</text>
-              <image class="nearby-loc-icon" src="../../../assets/dev/icon-location-popup.png" mode="aspectFit" />
+              <image class="nearby-loc-icon" :src="iconLocationPopup" mode="aspectFit" />
             </view>
 
             <view class="nearby-divider" />
@@ -455,10 +455,22 @@
 import { ref, computed } from 'vue'
 import Taro from '@tarojs/taro'
 import TabBar from '../tabs/index.vue'
-import wechatIcon from '../../../assets/dev/icon-wechat.png'
-import gradeIcon from '../../../assets/dev/icon-grade.png'
-import locationIcon from '../../../assets/dev/icon-location.png'
-import lineOldIcon from '../../../assets/dev/icon-line-old.png'
+import wechatIcon from '@/assets/dev/icon-wechat.png'
+import gradeIcon from '@/assets/dev/icon-grade.png'
+import locationIcon from '@/assets/dev/icon-location.png'
+import lineOldIcon from '@/assets/dev/icon-line-old.png'
+import devBannerImg from '@/assets/dev/dev-banner.png'
+import devOverlayImg from '@/assets/dev/dev-overlay.png'
+import iconSearch from '@/assets/dev/icon-search.png'
+import iconLocationSearch from '@/assets/dev/icon-location-search.png'
+import iconFilter from '@/assets/dev/icon-filter.png'
+import iconTaskHeader from '@/assets/dev/icon-task-header.png'
+import iconPhone from '@/assets/dev/icon-phone.png'
+import iconIndustry from '@/assets/dev/icon-industry.png'
+import iconClose from '@/assets/dev/icon-close.png'
+import iconEmptySearch from '@/assets/dev/icon-empty-search.png'
+import iconTooMany from '@/assets/dev/icon-too-many.png'
+import iconLocationPopup from '@/assets/dev/icon-location-popup.png'
 
 const role = Taro.getStorageSync('role') || 'dev'
 const activeNames = ref(['follow'])

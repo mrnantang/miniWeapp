@@ -1,14 +1,14 @@
 <template>
   <view class="login-page">
     <view class="banner">
-      <image class="banner-img" src="../../assets/login/login-banner.png" mode="aspectFill" />
+      <image class="banner-img" :src="loginBanner" mode="aspectFill" />
       <view class="banner-overlay" />
     </view>
 
     <view class="form-panel">
       <view class="form-content">
         <view class="input-wrapper">
-          <image class="input-icon" src="../../assets/login/icon-account.svg" mode="aspectFit" />
+          <image class="input-icon" :src="iconAccount" mode="aspectFit" />
           <input
             class="input-field"
             v-model="account"
@@ -18,7 +18,7 @@
         </view>
 
         <view class="input-wrapper">
-          <image class="input-icon" src="../../assets/login/icon-password.svg" mode="aspectFit" />
+          <image class="input-icon" :src="iconPassword" mode="aspectFit" />
           <input
             class="input-field"
             v-model="password"
@@ -63,6 +63,9 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue'
 import Taro from '@tarojs/taro'
+import loginBanner from '@/assets/login/login-banner.png'
+import iconAccount from '@/assets/login/icon-account.svg'
+import iconPassword from '@/assets/login/icon-password.svg'
 
 const account = ref('dev')
 const password = ref('123456')
