@@ -178,10 +178,12 @@ const goAddLead = () => {
 }
 .leads-tabs {
   display: inline-flex;
+  flex-wrap: nowrap;
   gap: 40rpx;
 }
 .leads-tab {
   display: inline-flex;
+  flex-shrink: 0;
   align-items: center;
   padding-bottom: 30rpx;
   border-bottom: 4rpx solid transparent;
