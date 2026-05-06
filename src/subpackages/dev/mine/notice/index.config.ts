@@ -1,4 +1,4 @@
 export default {
   navigationStyle: 'custom',
-  navigationBarTitleText: '商机详情',
+  navigationBarTitleText: '消息通知',
 }

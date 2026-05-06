@@ -52,7 +52,7 @@
 import { ref } from 'vue'
 import Taro from '@tarojs/taro'
 import TabBar from '../tabs/index.vue'
-import rightArrowIcon from '@/assets/dev/rightArror.png'
+import rightArrowIcon from '@/assets/mine/right.png'
 import iconNotify from '@/assets/dev/mine/icon-mine-notify.svg'
 import iconProduct from '@/assets/dev/mine/icon-mine-product.svg'
 import iconOrder from '@/assets/dev/mine/icon-mine-order.svg'
@@ -67,8 +67,8 @@ const userCode = ref('0091')
 const avatarUrl = ref('')
 
 const funcList = ref([
-  { name: '消息通知', icon: iconNotify, tag: '', onTap: () => {} },
-  { name: '产品中心', icon: iconProduct, tag: '', onTap: () => {} },
+  { name: '消息通知', icon: iconNotify, tag: '', onTap: () => Taro.navigateTo({ url: '/subpackages/dev/mine/notice/index' }) },
+  { name: '产品中心', icon: iconProduct, tag: '', onTap: () => Taro.navigateTo({ url: '/subpackages/dev/mine/product/index' }) },
   { name: '我的订单', icon: iconOrder, tag: '', onTap: () => {} },
   { name: '我的报销', icon: iconReimburse, tag: '', onTap: () => {} },
   { name: '费用申请', icon: iconExpense, tag: '', onTap: () => {} },
@@ -115,7 +115,6 @@ const onLogout = () => {
   width: 120rpx;
   height: 120rpx;
   border-radius: 74rpx;
-  border: 2rpx solid #000000;
   padding: 4rpx;
   box-sizing: border-box;
   flex-shrink: 0;

@@ -23,11 +23,18 @@
     "miniprogram": {
       "list": [
         {
-          "name": "商机",
-          "pathName": "subpackages/dev/opportunity/index",
+          "name": "商机详情",
+          "pathName": "subpackages/dev/opportunity/detail/index",
           "query": "",
           "scene": null,
           "launchMode": "default"
+        },
+        {
+          "name": "商机",
+          "pathName": "subpackages/dev/opportunity/index",
+          "query": "",
+          "launchMode": "default",
+          "scene": null
         },
         {
           "name": "我的",
