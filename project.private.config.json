@@ -23,11 +23,25 @@
     "miniprogram": {
       "list": [
         {
-          "name": "商机详情",
-          "pathName": "subpackages/dev/opportunity/detail/index",
+          "name": "我的报销",
+          "pathName": "subpackages/dev/mine/reimburse/index",
           "query": "",
           "scene": null,
           "launchMode": "default"
+        },
+        {
+          "name": "我的订单",
+          "pathName": "subpackages/dev/mine/order/detail/index",
+          "query": "",
+          "launchMode": "default",
+          "scene": null
+        },
+        {
+          "name": "商机详情",
+          "pathName": "subpackages/dev/opportunity/detail/index",
+          "query": "",
+          "launchMode": "default",
+          "scene": null
         },
         {
           "name": "商机",

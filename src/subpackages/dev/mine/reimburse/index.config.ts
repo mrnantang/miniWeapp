@@ -1,4 +1,4 @@
 export default {
   navigationStyle: 'custom',
-  navigationBarTitleText: '',
+  navigationBarTitleText: '我的报销',
 }

@@ -12,6 +12,108 @@
       </view>
     </view>
 
+    <nut-popup v-model:visible="showFilter" position="bottom" :style="{ borderRadius: '24rpx 24rpx 0 0', height: '1022rpx' }" :z-index="2000" safe-area-inset-bottom>
+      <view class="filter-popup">
+        <view class="filter-header">
+          <text class="filter-header-title">全部筛选</text>
+        </view>
+        <view class="filter-body">
+          <view class="filter-sidebar">
+            <view class="filter-sidebar-item" :class="{ 'filter-sidebar-item--active': filterIdx === 0 }" @tap="filterIdx = 0">
+              <text class="filter-sidebar-text" :class="{ 'filter-sidebar-text--active': filterIdx === 0 }">产品分类</text>
+            </view>
+            <view class="filter-sidebar-item" :class="{ 'filter-sidebar-item--active': filterIdx === 1 }" @tap="filterIdx = 1">
+              <text class="filter-sidebar-text" :class="{ 'filter-sidebar-text--active': filterIdx === 1 }">品牌</text>
+            </view>
+            <view class="filter-sidebar-item" :class="{ 'filter-sidebar-item--active': filterIdx === 2 }" @tap="filterIdx = 2">
+              <text class="filter-sidebar-text" :class="{ 'filter-sidebar-text--active': filterIdx === 2 }">状态</text>
+            </view>
+            <view class="filter-sidebar-item" :class="{ 'filter-sidebar-item--active': filterIdx === 3 }" @tap="filterIdx = 3">
+              <text class="filter-sidebar-text" :class="{ 'filter-sidebar-text--active': filterIdx === 3 }">价格范围</text>
+            </view>
+          </view>
+          <scroll-view class="filter-content" scroll-y :enhanced="true" :show-scrollbar="false">
+            <view v-if="filterIdx === 0" class="filter-tags-section">
+              <text class="filter-section-title">一级分类</text>
+              <view class="filter-tag-row">
+                <view class="filter-tag" :class="{ 'filter-tag--active': filterTags['prodCat1'].includes('全部') }" @tap="toggleFilterTag('prodCat1', '全部')">
+                  <text class="filter-tag-text" :class="{ 'filter-tag-text--active': filterTags['prodCat1'].includes('全部') }">全部</text>
+                </view>
+                <view class="filter-tag" :class="{ 'filter-tag--active': filterTags['prodCat1'].includes('手动') }" @tap="toggleFilterTag('prodCat1', '手动')">
+                  <text class="filter-tag-text" :class="{ 'filter-tag-text--active': filterTags['prodCat1'].includes('手动') }">手动</text>
+                </view>
+                <view class="filter-tag" :class="{ 'filter-tag--active': filterTags['prodCat1'].includes('自动') }" @tap="toggleFilterTag('prodCat1', '自动')">
+                  <text class="filter-tag-text" :class="{ 'filter-tag-text--active': filterTags['prodCat1'].includes('自动') }">自动</text>
+                </view>
+              </view>
+              <text class="filter-section-title">二级分类</text>
+              <view class="filter-tag-row">
+                <view class="filter-tag" :class="{ 'filter-tag--active': filterTags['prodCat2'].includes('全部') }" @tap="toggleFilterTag('prodCat2', '全部')">
+                  <text class="filter-tag-text" :class="{ 'filter-tag-text--active': filterTags['prodCat2'].includes('全部') }">全部</text>
+                </view>
+                <view class="filter-tag" :class="{ 'filter-tag--active': filterTags['prodCat2'].includes('E7手动喷粉枪') }" @tap="toggleFilterTag('prodCat2', 'E7手动喷粉枪')">
+                  <text class="filter-tag-text" :class="{ 'filter-tag-text--active': filterTags['prodCat2'].includes('E7手动喷粉枪') }">E7手动喷粉枪</text>
+                </view>
+                <view class="filter-tag" :class="{ 'filter-tag--active': filterTags['prodCat2'].includes('自动') }" @tap="toggleFilterTag('prodCat2', '自动')">
+                  <text class="filter-tag-text" :class="{ 'filter-tag-text--active': filterTags['prodCat2'].includes('自动') }">自动</text>
+                </view>
+              </view>
+            </view>
+            <view v-if="filterIdx === 1" class="filter-tags-section">
+              <text class="filter-section-title">审批</text>
+              <view class="filter-tag-row">
+                <view class="filter-tag" :class="{ 'filter-tag--active': filterTags['brand'].includes('全部') }" @tap="toggleFilterTag('brand', '全部')">
+                  <text class="filter-tag-text" :class="{ 'filter-tag-text--active': filterTags['brand'].includes('全部') }">全部</text>
+                </view>
+                <view class="filter-tag" :class="{ 'filter-tag--active': filterTags['brand'].includes('德贝尔') }" @tap="toggleFilterTag('brand', '德贝尔')">
+                  <text class="filter-tag-text" :class="{ 'filter-tag-text--active': filterTags['brand'].includes('德贝尔') }">德贝尔</text>
+                </view>
+                <view class="filter-tag" :class="{ 'filter-tag--active': filterTags['brand'].includes('瑞的贝尔额') }" @tap="toggleFilterTag('brand', '瑞的贝尔额')">
+                  <text class="filter-tag-text" :class="{ 'filter-tag-text--active': filterTags['brand'].includes('瑞的贝尔额') }">瑞的贝尔额</text>
+                </view>
+              </view>
+            </view>
+            <view v-if="filterIdx === 2" class="filter-tags-section">
+              <text class="filter-section-title">状态</text>
+              <view class="filter-tag-row">
+                <view class="filter-tag" :class="{ 'filter-tag--active': filterTags['status'].includes('全部') }" @tap="toggleFilterTag('status', '全部')">
+                  <text class="filter-tag-text" :class="{ 'filter-tag-text--active': filterTags['status'].includes('全部') }">全部</text>
+                </view>
+                <view class="filter-tag" :class="{ 'filter-tag--active': filterTags['status'].includes('已上架') }" @tap="toggleFilterTag('status', '已上架')">
+                  <text class="filter-tag-text" :class="{ 'filter-tag-text--active': filterTags['status'].includes('已上架') }">已上架</text>
+                </view>
+              </view>
+              <view class="filter-tag-row">
+                <view class="filter-tag" :class="{ 'filter-tag--active': filterTags['status'].includes('已下架') }" @tap="toggleFilterTag('status', '已下架')">
+                  <text class="filter-tag-text" :class="{ 'filter-tag-text--active': filterTags['status'].includes('已下架') }">已下架</text>
+                </view>
+              </view>
+            </view>
+            <view v-if="filterIdx === 3" class="filter-tags-section">
+              <text class="filter-section-title">价格范围</text>
+              <view class="filter-price-row">
+                <view class="filter-price-box">
+                  <input class="filter-price-box-input" v-model="priceRange.min" placeholder="请输入" placeholder-style="color:#BBBEC2;font-size:26rpx" />
+                </view>
+                <view class="filter-price-sep" />
+                <view class="filter-price-box">
+                  <input class="filter-price-box-input" v-model="priceRange.max" placeholder="请输入" placeholder-style="color:#BBBEC2;font-size:26rpx" />
+                </view>
+              </view>
+            </view>
+          </scroll-view>
+        </view>
+        <view class="filter-footer">
+          <view class="filter-footer-btn filter-footer-clear" @tap="clearFilter">
+            <text class="filter-footer-clear-text">清空选择</text>
+          </view>
+          <view class="filter-footer-btn filter-footer-submit" @tap="onFilterConfirm">
+            <text class="filter-footer-submit-text">确认</text>
+          </view>
+        </view>
+      </view>
+    </nut-popup>
+
     <scroll-view class="product-scroll" scroll-y :enhanced="true" :show-scrollbar="false">
       <view class="product-list">
         <view v-for="(item, idx) in productList" :key="idx" class="product-card" @tap="onProductTap(item)">
@@ -30,11 +132,10 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { ref, reactive } from 'vue'
 import Taro from '@tarojs/taro'
+import { Popup } from '@nutui/nutui-taro'
 import NavBar from '@/components/NavBar.vue'
-import iconSearch from '@/assets/dev/icon-search.png'
-import iconFilter from '@/assets/dev/icon-filter.png'
 import iconSearchProduct from '@/assets/dev/icon-search-product.svg'
 import iconFilterProduct from '@/assets/dev/icon-filter-product.svg'
 
@@ -48,8 +149,49 @@ const productList = ref([
   { name: 'E7静电自动喷粉枪/自动喷粉机', desc: '这部分是产品简介，这是文本', priceInt: '2888', priceDec: '00', img: '' },
 ])
 
+const showFilter = ref(false)
+const filterIdx = ref(0)
+
+const filterTags = reactive({
+  prodCat1: ['全部'],
+  prodCat2: ['全部'],
+  brand: ['全部'],
+  status: ['全部'],
+})
+const priceRange = reactive({
+  min: '',
+  max: '',
+})
+
+const toggleFilterTag = (key, tag) => {
+  const arr = filterTags[key]
+  if (tag === '全部') {
+    filterTags[key] = ['全部']
+    return
+  }
+  const idx = arr.indexOf(tag)
+  if (arr.includes('全部')) {
+    filterTags[key] = [tag]
+  } else if (idx >= 0) {
+    arr.splice(idx, 1)
+    if (arr.length === 0) {
+      filterTags[key] = ['全部']
+    }
+  } else {
+    arr.push(tag)
+  }
+}
+
 const onFilter = () => {
-  Taro.showToast({ title: '筛选', icon: 'none' })
+  showFilter.value = true
+}
+
+const clearFilter = () => {
+  showFilter.value = false
+}
+
+const onFilterConfirm = () => {
+  showFilter.value = false
 }
 
 const onProductTap = (item) => {
@@ -101,7 +243,6 @@ const onProductTap = (item) => {
   width: 68rpx;
   height: 68rpx;
   background: #EDFAF5;
-  border: 2rpx solid #CEF0E2;
   border-radius: 12rpx;
   flex-shrink: 0;
 }
@@ -170,5 +311,179 @@ const onProductTap = (item) => {
 
 .product-price-dec {
   font-size: 22rpx;
+}
+
+.filter-popup {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.filter-header {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 24rpx 40rpx;
+  position: relative;
+}
+
+.filter-header-title {
+  flex: 1;
+  text-align: center;
+  font-size: 32rpx;
+  font-weight: 500;
+  color: #1A1D24;
+}
+
+.filter-body {
+  display: flex;
+  flex: 1;
+  overflow: hidden;
+}
+
+.filter-sidebar {
+  width: 260rpx;
+  background: #F6F7FB;
+  flex-shrink: 0;
+}
+
+.filter-sidebar-item {
+  padding: 20rpx 40rpx;
+}
+
+.filter-sidebar-item--active {
+  background: #FFFFFF;
+  border-radius: 6rpx;
+}
+
+.filter-sidebar-text {
+  font-size: 26rpx;
+  font-weight: 500;
+  color: #62687D;
+}
+
+.filter-sidebar-text--active {
+  color: #37AE7E;
+}
+
+.filter-content {
+  flex: 1;
+  background: #FFFFFF;
+  padding: 24rpx;
+}
+
+.filter-tags-section {
+  padding: 0;
+}
+
+.filter-section-title {
+  font-size: 28rpx;
+  font-weight: 500;
+  color: #1A1D24;
+  display: block;
+  margin: 6rpx 0 24rpx 0;
+}
+
+.filter-section-title:first-child {
+  margin-top: 0;
+}
+
+.filter-tag-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 24rpx;
+  margin-bottom: 24rpx;
+}
+
+.filter-tag {
+  width: 208rpx;
+  padding: 12rpx 10rpx;
+  background: #F6F7FB;
+  border-radius: 6rpx;
+  box-sizing: border-box;
+  text-align: center;
+}
+
+.filter-tag--active {
+  background: #EDFAF5;
+}
+
+.filter-tag-text {
+  font-size: 26rpx;
+  color: #62687D;
+}
+
+.filter-tag-text--active {
+  color: #37AE7E;
+}
+
+.filter-price-row {
+  display: flex;
+  align-items: center;
+  gap: 12rpx;
+}
+
+.filter-price-box {
+  flex: 1;
+  height: 60rpx;
+  background: #F6F7FB;
+  border-radius: 6rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.filter-price-box-input {
+  width: 100%;
+  height: 100%;
+  font-size: 26rpx;
+  color: #1A1D24;
+  text-align: center;
+  background: transparent;
+  border: none;
+  outline: none;
+}
+
+.filter-price-sep {
+  width: 8rpx;
+  height: 2rpx;
+  background: #1A1D24;
+  flex-shrink: 0;
+}
+
+.filter-footer {
+  display: flex;
+  gap: 28rpx;
+  padding: 20rpx 40rpx 0;
+}
+
+.filter-footer-btn {
+  flex: 1;
+  height: 76rpx;
+  border-radius: 8rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.filter-footer-clear {
+  background: #EFFDF7;
+  border: 2rpx solid #5CC79C;
+}
+
+.filter-footer-clear-text {
+  font-size: 32rpx;
+  font-weight: 500;
+  color: #5CC79C;
+}
+
+.filter-footer-submit {
+  background: linear-gradient(270deg, rgba(102,220,166,1) 0%, rgba(88,188,150,1) 100%);
+}
+
+.filter-footer-submit-text {
+  font-size: 32rpx;
+  font-weight: 500;
+  color: #FFFFFF;
 }
 </style>

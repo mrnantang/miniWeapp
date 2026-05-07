@@ -1,4 +1,4 @@
 export default {
   navigationStyle: 'custom',
-  navigationBarTitleText: '',
+  navigationBarTitleText: '费用申请',
 }

@@ -165,7 +165,6 @@ const goAddLead = () => {
   width: 68rpx;
   height: 68rpx;
   background: #EDFAF5;
-  border: 2rpx solid #CEF0E2;
   border-radius: 12rpx;
   flex-shrink: 0;
 }

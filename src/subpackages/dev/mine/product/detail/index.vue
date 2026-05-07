@@ -151,6 +151,7 @@ const caseList = ref([
   align-items: center;
   justify-content: center;
   overflow: hidden;
+  margin-top: 22rpx;
 }
 
 .prod-detail-banner-img {

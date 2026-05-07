@@ -69,9 +69,9 @@ const avatarUrl = ref('')
 const funcList = ref([
   { name: '消息通知', icon: iconNotify, tag: '', onTap: () => Taro.navigateTo({ url: '/subpackages/dev/mine/notice/index' }) },
   { name: '产品中心', icon: iconProduct, tag: '', onTap: () => Taro.navigateTo({ url: '/subpackages/dev/mine/product/index' }) },
-  { name: '我的订单', icon: iconOrder, tag: '', onTap: () => {} },
-  { name: '我的报销', icon: iconReimburse, tag: '', onTap: () => {} },
-  { name: '费用申请', icon: iconExpense, tag: '', onTap: () => {} },
+  { name: '我的订单', icon: iconOrder, tag: '', onTap: () => Taro.navigateTo({ url: '/subpackages/dev/mine/order/index' }) },
+  { name: '我的报销', icon: iconReimburse, tag: '', onTap: () => Taro.navigateTo({ url: '/subpackages/dev/mine/reimburse/index' }) },
+  { name: '费用申请', icon: iconExpense, tag: '', onTap: () => Taro.navigateTo({ url: '/subpackages/dev/mine/expense/index' }) },
   { name: '业绩分配', icon: iconPerf, tag: '', onTap: () => {} },
 ])
 
