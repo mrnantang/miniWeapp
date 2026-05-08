@@ -5,7 +5,7 @@ export default {
   subPackages: [
     {
       root: 'subpackages/dev',
-      pages: ['home/index', 'leads/index', 'leads/add-lead/index', 'opportunity/index', 'opportunity/detail/index', 'customer/index', 'mine/index', 'mine/notice/index', 'mine/product/index', 'mine/product/detail/index', 'mine/order/index', 'mine/order/detail/index', 'mine/reimburse/index', 'mine/reimburse/add/index', 'mine/reimburse/detail/index', 'mine/expense/index']
+      pages: ['home/index', 'leads/index', 'leads/add-lead/index', 'opportunity/index', 'opportunity/detail/index', 'customer/index', 'mine/index', 'mine/notice/index', 'mine/product/index', 'mine/product/detail/index', 'mine/order/index', 'mine/order/detail/index', 'mine/reimburse/index', 'mine/reimburse/add/index', 'mine/reimburse/detail/index', 'mine/expense/index', 'mine/expense/detail/index', 'mine/perf/index', 'mine/perf/add/index', 'mine/perf/detail/index']
     },
     {
       root: 'subpackages/ops',

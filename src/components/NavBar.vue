@@ -28,6 +28,7 @@ const goBack = () => {
   justify-content: space-between;
   height: 153rpx;
   padding: 4rpx 40rpx;
+  z-index: 999;
 }
 .nav-bar-back {
   width: 60rpx;

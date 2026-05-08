@@ -29,6 +29,7 @@ import iconLeadActive from '@/assets/dev/tabs/icon-lead-active.png'
 import iconOpportunity from '@/assets/dev/tabs/icon-opportunity.png'
 import iconOpportunityActive from '@/assets/dev/tabs/icon-opportunity-active.png'
 import iconCustomer from '@/assets/dev/tabs/icon-customer.png'
+import iconCustomerActive from '@/assets/dev/tabs/icon-customer-active.png'
 import iconMine from '@/assets/dev/tabs/icon-mine.png'
 import iconMineActive from '@/assets/dev/tabs/icon-mine-active.png'
 
@@ -38,7 +39,7 @@ const allTabs = [
   { text: '首页', path: '/subpackages/dev/home/index', idx: 0, icon: iconHome, activeIcon: iconHomeActive },
   { text: '线索', path: '/subpackages/dev/leads/index', idx: 1, icon: iconLead, activeIcon: iconLeadActive, roles: ['dev'] },
   { text: '商机', path: '/subpackages/dev/opportunity/index', idx: 2, icon: iconOpportunity, activeIcon: iconOpportunityActive },
-  { text: '客户', path: '/subpackages/dev/customer/index', idx: 3, icon: iconCustomer, activeIcon: iconCustomer },
+  { text: '客户', path: '/subpackages/dev/customer/index', idx: 3, icon: iconCustomer, activeIcon: iconCustomerActive},
   { text: '我的', path: '/subpackages/dev/mine/index', idx: 4, icon: iconMine, activeIcon: iconMineActive },
 ]
 

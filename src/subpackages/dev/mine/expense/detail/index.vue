@@ -5,76 +5,51 @@
       <view class="rd-nav-back" @tap="goBack">
         <image class="rd-nav-back-icon" :src="iconBack" mode="aspectFit" />
       </view>
-      <text class="rd-nav-title">报销详情</text>
+      <text class="rd-nav-title">费用详情</text>
       <view class="rd-nav-right" />
     </view>
-<view  style="height: 153rpx;width: 100%;">
+    <view style="height: 176rpx;width: 100%;">
     </view>
     <scroll-view class="rd-scroll" scroll-y :enhanced="true" :show-scrollbar="false">
-      <view class="rd-status-card">
-        <text class="rd-status-no">报销编号</text>
-        <view class="rd-status-badge">BX-992812781</view>
-      </view>
-
-      <view v-for="(card, ci) in detailCards" :key="ci" class="rd-card">
-        <text class="rd-card-title">报销{{ card.label }}</text>
-        <view class="rd-divider" />
-        <view class="rd-field">
-          <text class="rd-label">费用承担部门</text>
-          <text class="rd-value">{{ card.dept }}</text>
+      <view class="rd-info-card">
+        <view class="rd-info-field">
+          <text class="rd-info-label">费用编号</text>
+          <text class="rd-info-value">{{ detail.feeNo }}</text>
         </view>
         <view class="rd-divider" />
-        <view class="rd-field">
-          <text class="rd-label">报销类型</text>
-          <text class="rd-value">{{ card.type }}</text>
+        <view class="rd-info-field">
+          <text class="rd-info-label">费用承担部门</text>
+          <text class="rd-info-value">{{ detail.dept }}</text>
         </view>
         <view class="rd-divider" />
-        <view class="rd-field">
-          <text class="rd-label">关联客户</text>
-          <text class="rd-value">{{ card.customer }}</text>
-        </view>
-        <view v-if="card.showMileage" class="rd-divider" />
-        <view v-if="card.showMileage" class="rd-field">
-          <text class="rd-label">开始公里数</text>
-          <text class="rd-value">{{ card.startMileage }}</text>
-        </view>
-        <view v-if="card.showMileage" class="rd-divider" />
-        <view v-if="card.showMileage" class="rd-field">
-          <text class="rd-label">结束公里数</text>
-          <text class="rd-value">{{ card.endMileage }}</text>
-        </view>
-        <view v-if="card.showMileage" class="rd-divider" />
-        <view v-if="card.showMileage" class="rd-upload-field">
-          <text class="rd-label">开始公里数图片</text>
-          <view class="rd-upload-list">
-            <view class="rd-upload-thumb" />
-          </view>
-        </view>
-        <view v-if="card.showMileage" class="rd-divider" />
-        <view v-if="card.showMileage" class="rd-upload-field">
-          <text class="rd-label">结束公里数图片</text>
-          <view class="rd-upload-list">
-            <view class="rd-upload-thumb" />
-          </view>
+        <view class="rd-info-field">
+          <text class="rd-info-label">关联客户</text>
+          <text class="rd-info-value">{{ detail.customer }}</text>
         </view>
         <view class="rd-divider" />
-        <view class="rd-field">
-          <text class="rd-label">报销金额</text>
-          <text class="rd-value rd-value--price">￥{{ card.amount }}</text>
+        <view class="rd-info-field">
+          <text class="rd-info-label">收款账户</text>
+          <text class="rd-info-value">{{ detail.account }}</text>
         </view>
         <view class="rd-divider" />
-        <view class="rd-upload-field">
-          <text class="rd-label">上传支付凭证</text>
-          <view class="rd-upload-list">
-            <view class="rd-upload-thumb" />
-          </view>
+        <view class="rd-info-field">
+          <text class="rd-info-label">申请金额</text>
+          <text class="rd-info-value">{{ detail.amount }}</text>
         </view>
         <view class="rd-divider" />
-        <view class="rd-upload-field">
-          <text class="rd-label">上传发票</text>
-          <view class="rd-upload-list">
-            <view class="rd-upload-thumb" />
-          </view>
+        <view class="rd-info-field">
+          <text class="rd-info-label">费用项目</text>
+          <text class="rd-info-value">{{ detail.item }}</text>
+        </view>
+        <view class="rd-divider" />
+        <view class="rd-info-field">
+          <text class="rd-info-label">费用说明</text>
+          <text class="rd-info-value">{{ detail.remark }}</text>
+        </view>
+        <view class="rd-divider" />
+        <view class="rd-info-field">
+          <text class="rd-info-label">发起时间</text>
+          <text class="rd-info-value">{{ detail.time }}</text>
         </view>
       </view>
 
@@ -97,60 +72,20 @@
           <view class="rd-timeline-item">
             <view class="rd-timeline-dot-col">
               <view class="rd-timeline-line rd-timeline-line--fill" />
-              <view class="rd-timeline-dot rd-timeline-dot--solid" />
+              <view class="rd-timeline-dot rd-timeline-dot--empty" />
               <view class="rd-timeline-line rd-timeline-line--fill" />
             </view>
-            <view class="rd-timeline-content">
+            <view class="rd-timeline-content rd-timeline-content--dim">
               <text class="rd-timeline-text">一级审批</text>
-              <view class="rd-approval-box">
-                <view class="rd-ap-field">
-                  <text class="rd-ap-label">可审批人</text>
-                  <text class="rd-ap-value">陈子奕 | 张子意</text>
-                </view>
-                <view class="rd-ap-field">
-                  <text class="rd-ap-label">审批原则</text>
-                  <text class="rd-ap-value">全部审批通过即通过</text>
-                </view>
-                <view class="rd-ap-dash" />
-                <view class="rd-ap-field">
-                  <text class="rd-ap-label">审批人</text>
-                  <text class="rd-ap-value">陈子奕</text>
-                </view>
-                <view class="rd-ap-field">
-                  <text class="rd-ap-label">审批状态</text>
-                  <text class="rd-ap-value">审批通过</text>
-                </view>
-                <view class="rd-ap-field">
-                  <text class="rd-ap-label">审批时间</text>
-                  <text class="rd-ap-value">2025.01.25 16:01:23</text>
-                </view>
-                <view class="rd-ap-dash" />
-                <view class="rd-ap-field">
-                  <text class="rd-ap-label">审批人</text>
-                  <text class="rd-ap-value">陈子奕</text>
-                </view>
-                <view class="rd-ap-field">
-                  <text class="rd-ap-label">审批状态</text>
-                  <text class="rd-ap-value rd-ap-value--reject">审批驳回</text>
-                </view>
-                <view class="rd-ap-field">
-                  <text class="rd-ap-label">驳回原因</text>
-                  <text class="rd-ap-value">合同信息有误，请核对后重新提交</text>
-                </view>
-                <view class="rd-ap-field">
-                  <text class="rd-ap-label">审批时间</text>
-                  <text class="rd-ap-value">2025.01.25 16:01:23</text>
-                </view>
-              </view>
             </view>
           </view>
           <view class="rd-timeline-item">
             <view class="rd-timeline-dot-col">
               <view class="rd-timeline-line rd-timeline-line--fill" />
-              <view class="rd-timeline-dot rd-timeline-dot--empty" />
+              <view class="rd-timeline-dot rd-timeline-dot--solid" />
               <view class="rd-timeline-line rd-timeline-line--none" />
             </view>
-            <view class="rd-timeline-content rd-timeline-content--dim">
+            <view class="rd-timeline-content">
               <text class="rd-timeline-text">发起审批</text>
             </view>
           </view>
@@ -170,10 +105,16 @@ import { ref } from 'vue'
 import Taro from '@tarojs/taro'
 import iconBack from '@/assets/dev/icon-back.png'
 
-const detailCards = ref([
-  { label: '一', dept: '销售部', type: '招待费', customer: '金石科技', showMileage: false, amount: '12,800.00' },
-  { label: '二', dept: '销售部', type: '交通费', customer: '超凡实业', showMileage: true, startMileage: '12,000', endMileage: '12,350', amount: '9,880.00' },
-])
+const detail = ref({
+  feeNo: '32423432421341',
+  dept: '德贝尔总公司/销售总部/销售一部',
+  customer: '超凡科技有限公司',
+  account: '217388178371823232',
+  amount: '￥1000',
+  item: '招待费',
+  remark: '给客户买礼物，投其所好',
+  time: '2024/01/23 10:12',
+})
 
 const goBack = () => {
   Taro.navigateBack()
@@ -213,7 +154,7 @@ const approvalStatus = ref('pending') // pending | approved | rejected
   justify-content: space-between;
   height: 153rpx;
   padding: 4rpx 40rpx;
-  position:absolute;
+  position: absolute;
   width: 90%;
   z-index: 1;
 }
@@ -248,92 +189,39 @@ const approvalStatus = ref('pending') // pending | approved | rejected
   z-index: 1;
 }
 
-.rd-status-card {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  background: #FFFFFF;
-  border-radius: 16rpx;
-  padding: 32rpx;
-  margin-bottom: 24rpx;
-}
-
-.rd-status-no {
-  font-size: 32rpx;
-  font-weight: 600;
-  color: #1A1D24;
-}
-
-.rd-status-badge {
-  color: var(---1, #1A1D24);
-  text-align: right;
-  font-family: "PingFang SC";
-  font-size: 32rpx;
-  font-style: normal;
-  font-weight: 400;
-  line-height: normal;
-}
-
-.rd-card {
+.rd-info-card {
   display: flex;
   flex-direction: column;
-  gap: 24rpx;
+  gap: 28rpx;
   background: #FFFFFF;
   border-radius: 16rpx;
   padding: 28rpx;
   margin-bottom: 24rpx;
 }
 
-.rd-card-title {
-  font-size: 32rpx;
-  font-weight: 600;
-  color: #1A1D24;
-}
-
-.rd-divider {
-  height: 1rpx;
-  background: #F4F4F4;
-}
-
-.rd-field {
+.rd-info-field {
   display: flex;
   align-items: center;
   justify-content: space-between;
 }
 
-.rd-upload-field {
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-}
-
-.rd-label {
-  font-size: 30rpx;
+.rd-info-label {
+  font-size: 28rpx;
   color: #62687D;
   flex-shrink: 0;
 }
 
-.rd-value {
-  font-size: 30rpx;
+.rd-info-value {
+  font-size: 28rpx;
   color: #1A1D24;
   text-align: right;
+  flex: 1;
+  margin-left: 24rpx;
 }
 
-.rd-value--price {
-  font-weight: 600;
-}
-
-.rd-upload-list {
-  display: flex;
-  gap: 12rpx;
-}
-
-.rd-upload-thumb {
-  width: 128rpx;
-  height: 128rpx;
-  background: #F5F7F9;
-  border: 1rpx solid #E4E9EF;
-  border-radius: 8rpx;
+.rd-divider {
+  height: 1rpx;
+  background: #F4F4F4;
 }
 
 .rd-approval-card {

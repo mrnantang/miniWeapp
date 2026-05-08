@@ -72,7 +72,7 @@ const funcList = ref([
   { name: '我的订单', icon: iconOrder, tag: '', onTap: () => Taro.navigateTo({ url: '/subpackages/dev/mine/order/index' }) },
   { name: '我的报销', icon: iconReimburse, tag: '', onTap: () => Taro.navigateTo({ url: '/subpackages/dev/mine/reimburse/index' }) },
   { name: '费用申请', icon: iconExpense, tag: '', onTap: () => Taro.navigateTo({ url: '/subpackages/dev/mine/expense/index' }) },
-  { name: '业绩分配', icon: iconPerf, tag: '', onTap: () => {} },
+  { name: '业绩分配', icon: iconPerf, tag: '', onTap: () => Taro.navigateTo({ url: '/subpackages/dev/mine/perf/index' }) },
 ])
 
 const onLogout = () => {
