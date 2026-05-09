@@ -9,12 +9,12 @@
         <view class="customer-btn" @tap="showFilter = true">
           <image :src="iconFilter" mode="aspectFit" />
         </view>
-        <view class="customer-btn" @tap="goAddLead">
+        <view class="customer-btn" @tap="goAddCustomer">
           <image :src="iconAdd" mode="aspectFit" />
         </view>
       </view>
 
-      <scroll-view class="customer-tabs-scroll" scroll-x :enhanced="true" :show-scrollbar="false">
+      <scroll-view class="customer-tabs-scroll" scroll-x="true" :enhanced="true" :show-scrollbar="false">
         <view class="customer-tabs">
           <view
             v-for="tab in customerTabs"
@@ -28,7 +28,7 @@
         </view>
       </scroll-view>
 
-      <view v-for="card in customerCards" :key="card.name" class="cc-card">
+      <view v-for="card in customerCards" :key="card.name" class="cc-card" @tap="goDetail(card)">
         <view class="cc-head">
           <text class="cc-name">{{ card.name }}</text>
           <view class="cc-badge" :class="'cc-badge--' + card.badgeStyle">
@@ -81,7 +81,7 @@ import iconAdd from '@/assets/dev/icon-add.png'
 import iconPhone from '@/assets/dev/icon-phone.png'
 import iconIndustry from '@/assets/dev/icon-industry.png'
 import Taro from '@tarojs/taro'
-const customerTabs = ['全部', '待跟进线索', '即将回收线索', '运营公海', '销售公海', '开发公海', '大公海']
+const customerTabs = ['全部', '待跟进客户', '即将回收客户', '运营公海', '销售公海', '开发公海', '大公海']
 const activeCustomerTab = ref('全部')
 
 const customerCards = [
@@ -101,8 +101,8 @@ const filterSidebarItems = [
   { label: '省/市/区', type: 'region' },
   { label: '渠道来源', type: 'channel' },
   { label: '负责人', type: 'org' },
-  { label: '跟进人', type: 'org' },
-  { label: '分配时间', type: 'time' },
+  { label: '协作人', type: 'org' },
+  { label: '客户创建时间', type: 'time' },
 ]
 
 const onFilterPopupConfirm = (result) => {
@@ -110,8 +110,12 @@ const onFilterPopupConfirm = (result) => {
   showFilter.value = false
 }
 
-const goAddLead = () => {
-  Taro.navigateTo({ url: '/subpackages/dev/leads/add-lead/index' })
+const goAddCustomer = () => {
+  Taro.navigateTo({ url: '/subpackages/dev/customer/add-customer/index' })
+}
+
+const goDetail = (card) => {
+  Taro.navigateTo({ url: '/subpackages/dev/customer/detail/index' })
 }
 </script>
 

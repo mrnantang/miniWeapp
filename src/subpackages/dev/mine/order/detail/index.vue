@@ -70,7 +70,7 @@
         <view class="od-section-header">
           <text class="od-section-title">产品明细</text>
         </view>
-        <scroll-view class="od-table-scroll" scroll-x>
+        <scroll-view class="od-table-scroll" scroll-x="true">
           <view class="od-table">
             <view class="od-table-header">
               <view class="od-th od-th--seq">序号</view>

@@ -799,7 +799,7 @@ const onCheckIn = () => {
 .timeline-info {
   display: flex;
   align-items: flex-start;
-  margin-bottom: 8rpx;
+  margin-bottom: 20rpx;
 }
 
 .timeline-info-label {

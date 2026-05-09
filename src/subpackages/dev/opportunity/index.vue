@@ -14,7 +14,7 @@
         </view>
       </view>
 
-      <scroll-view class="opp-tabs-scroll" scroll-x :enhanced="true" :show-scrollbar="false">
+      <scroll-view class="opp-tabs-scroll" scroll-x="true" :enhanced="true" :show-scrollbar="false">
         <view class="opp-tabs">
           <view
             v-for="tab in oppTabs"

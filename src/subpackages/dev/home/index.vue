@@ -131,7 +131,7 @@
             </view>
           </view>
 
-          <scroll-view class="task-tabs-scroll" scroll-x :enhanced="true" :show-scrollbar="false">
+          <scroll-view class="task-tabs-scroll" scroll-x="true" :enhanced="true" :show-scrollbar="false">
             <view class="task-tabs" :class="{ 'task-tabs--sales': role === 'sales' }">
               <view v-if="role !== 'sales'" class="task-tab" :class="{ 'task-tab--active': activeTaskTab === 0 }" @tap="activeTaskTab = 0">
                 <text class="task-tab-text" :class="{ 'task-tab-text--active': activeTaskTab === 0 }">待跟进线索(2)</text>
@@ -317,69 +317,7 @@
       </view>
     </nut-popup>
 
-    <nut-popup v-model:visible="showSearchPopup" position="bottom" :style="{ borderRadius: '24rpx 24rpx 0 0', height: '1074rpx' }" :z-index="2000" safe-area-inset-bottom>
-      <view class="search-popup">
-        <view class="sp-header">
-          <view class="sp-header-side" />
-          <text class="sp-header-title">客户查重</text>
-          <view class="sp-header-side sp-header-close" @tap="showSearchPopup = false">
-            <image class="sp-close-icon" :src="iconClose" mode="aspectFit" />
-          </view>
-        </view>
-
-        <view class="sp-input-row">
-          <input
-            class="sp-input"
-            v-model="searchKeyword"
-            placeholder="请输入需要查重的数据"
-            placeholder-style="color:#BBBEC2;font-size:30rpx"
-            @confirm="onSearch"
-          />
-          <image class="sp-search-icon" :src="iconSearch" mode="aspectFit" @tap="onSearch" />
-        </view>
-
-        <view class="sp-body">
-          <view v-if="searchState === 'empty'" class="sp-empty">
-            <image class="sp-empty-img" :src="iconEmptySearch" mode="aspectFit" />
-            <text class="sp-empty-text">暂无数据</text>
-          </view>
-
-          <view v-if="searchState === 'tooMany'" class="sp-empty">
-            <image class="sp-empty-img" :src="iconTooMany" mode="aspectFit" />
-            <view class="sp-empty-text-wrap">
-              <text class="sp-empty-text">查询结果数量太多</text>
-              <text class="sp-empty-text">请填写更详细德查询数据</text>
-            </view>
-          </view>
-
-          <scroll-view v-if="searchState === 'results'" class="sp-results" scroll-y :enhanced="true" :show-scrollbar="false">
-            <view
-              v-for="item in searchResults"
-              :key="item.id"
-              class="sp-card"
-            >
-              <text class="sp-card-name">
-                <text v-if="item.before" class="sp-card-name--normal">{{ item.before }}</text>
-                <text class="sp-card-name--hl">{{ searchKeyword }}</text>
-                <text v-if="item.after" class="sp-card-name--bold">{{ item.after }}</text>
-              </text>
-              <view class="sp-card-row">
-                <text class="sp-card-label">负责人：</text>
-                <text class="sp-card-value">{{ item.manager }}</text>
-              </view>
-              <view class="sp-card-row">
-                <text class="sp-card-label">联系电话：</text>
-                <text class="sp-card-value">{{ item.phone }}</text>
-              </view>
-              <view class="sp-card-row">
-                <text class="sp-card-label">创建时间：</text>
-                <text class="sp-card-value">{{ item.createTime }}</text>
-              </view>
-            </view>
-          </scroll-view>
-        </view>
-      </view>
-    </nut-popup>
+    <DuplicateCheckPopup v-model="showSearchPopup" />
 
     <nut-popup v-model:visible="showNearbyPopup" position="bottom" :style="{ borderRadius: '24rpx 24rpx 0 0', height: '1022rpx' }" :z-index="2000" safe-area-inset-bottom>
       <view class="nearby-popup">
@@ -455,6 +393,7 @@
 import { ref, computed } from 'vue'
 import Taro from '@tarojs/taro'
 import TabBar from '../tabs/index.vue'
+import DuplicateCheckPopup from '@/subpackages/dev/customer/components/DuplicateCheckPopup.vue'
 import wechatIcon from '@/assets/dev/icon-wechat.png'
 import gradeIcon from '@/assets/dev/icon-grade.png'
 import locationIcon from '@/assets/dev/icon-location.png'
@@ -467,9 +406,6 @@ import iconFilter from '@/assets/dev/icon-filter.png'
 import iconTaskHeader from '@/assets/dev/icon-task-header.png'
 import iconPhone from '@/assets/dev/icon-phone.png'
 import iconIndustry from '@/assets/dev/icon-industry.png'
-import iconClose from '@/assets/dev/icon-close.png'
-import iconEmptySearch from '@/assets/dev/icon-empty-search.png'
-import iconTooMany from '@/assets/dev/icon-too-many.png'
 import iconLocationPopup from '@/assets/dev/icon-location-popup.png'
 
 const role = Taro.getStorageSync('role') || 'dev'
@@ -570,9 +506,6 @@ const onDateConfirm = () => {
 }
 
 const showSearchPopup = ref(false)
-const searchKeyword = ref('')
-const searchState = ref('empty')
-const searchResults = ref([])
 
 const showNearbyPopup = ref(false)
 const selectedDistance = ref('')
@@ -581,41 +514,6 @@ const distanceRanges = ['10km以内', '30km以内', '50km以内', '100km以内']
 
 const onNearbyConfirm = () => {
   showNearbyPopup.value = false
-}
-
-const mockSearchData = [
-  { id: 1, name: '金山重工股份有限公司', manager: '张松', phone: '15899209987', createTime: '2024/01/23 10:12' },
-  { id: 2, name: '金山重工有限公司', manager: '张松', phone: '15899209987', createTime: '2024/01/23 10:12' },
-  { id: 3, name: '金山集团', manager: '张松', phone: '15899209987', createTime: '2024/01/23 10:12' },
-]
-
-const onSearch = () => {
-  const kw = searchKeyword.value.trim()
-  if (!kw) {
-    searchState.value = 'empty'
-    searchResults.value = []
-    return
-  }
-  if (kw.length < 4) {
-    searchState.value = 'tooMany'
-    searchResults.value = []
-    return
-  }
-  const filtered = mockSearchData.filter((item) => item.name.includes(kw))
-  if (filtered.length === 0) {
-    searchState.value = 'empty'
-    searchResults.value = []
-    return
-  }
-  searchResults.value = filtered.map((item) => {
-    const idx = item.name.indexOf(kw)
-    return {
-      ...item,
-      before: idx > 0 ? item.name.slice(0, idx) : '',
-      after: item.name.slice(idx + kw.length),
-    }
-  })
-  searchState.value = 'results'
 }
 
 const now = new Date()
@@ -1217,129 +1115,6 @@ const onPickerChange = (e) => {
   font-size: 32rpx;
   font-weight: 500;
   color: #FFFFFF;
-}
-
-.search-popup {
-  display: flex;
-  flex-direction: column;
-  height: 100%;
-}
-.sp-header {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  padding: 24rpx 40rpx;
-}
-.sp-header-side {
-  width: 44rpx;
-  height: 44rpx;
-}
-.sp-header-close {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-.sp-close-icon {
-  width: 28rpx;
-  height: 28rpx;
-}
-.sp-header-title {
-  flex: 1;
-  text-align: center;
-  font-size: 34rpx;
-  font-weight: 500;
-  color: #333333;
-}
-.sp-input-row {
-  display: flex;
-  align-items: center;
-  margin: 0 40rpx;
-  height: 72rpx;
-  background: #FBFBFB;
-  border: 1rpx solid #ECEBEB;
-  border-radius: 8rpx;
-  padding: 0 20rpx;
-}
-.sp-input {
-  flex: 1;
-  font-size: 30rpx;
-  height: 44rpx;
-  line-height: 44rpx;
-}
-.sp-search-icon {
-  width: 36rpx;
-  height: 36rpx;
-  flex-shrink: 0;
-}
-.sp-body {
-  flex: 1;
-  margin: 24rpx 40rpx 0;
-  overflow: hidden;
-}
-.sp-empty {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  padding-top: 120rpx;
-  gap: 40rpx;
-}
-.sp-empty-img {
-  width: 140rpx;
-  height: 130rpx;
-}
-.sp-empty-text-wrap {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 8rpx;
-}
-.sp-empty-text {
-  font-size: 32rpx;
-  color: #9CA5B1;
-  text-align: center;
-  line-height: 44rpx;
-}
-.sp-results {
-  height: 100%;
-}
-.sp-card {
-  background: #FBFBFB;
-  border: 1rpx solid #ECEBEB;
-  border-radius: 8rpx;
-  padding: 28rpx;
-  display: flex;
-  flex-direction: column;
-  gap: 24rpx;
-  margin-bottom: 16rpx;
-}
-.sp-card-name {
-  font-size: 28rpx;
-  line-height: 1.4;
-}
-.sp-card-name--normal {
-  color: #1A1D24;
-  font-weight: 400;
-}
-.sp-card-name--hl {
-  color: #37AE7E;
-  font-weight: 600;
-}
-.sp-card-name--bold {
-  color: #1A1D24;
-  font-weight: 600;
-}
-.sp-card-row {
-  display: flex;
-  align-items: center;
-}
-.sp-card-label {
-  font-size: 28rpx;
-  color: #62687D;
-}
-.sp-card-value {
-  font-size: 28rpx;
-  color: #1A1D24;
 }
 
 .nearby-popup {

@@ -14,7 +14,7 @@
         </view>
       </view>
 
-      <scroll-view class="leads-tabs-scroll" scroll-x :enhanced="true" :show-scrollbar="false">
+      <scroll-view class="leads-tabs-scroll" scroll-x="true" :enhanced="true" :show-scrollbar="false">
         <view class="leads-tabs">
           <view
             v-for="tab in leadsTabs"

@@ -23,11 +23,32 @@
     "miniprogram": {
       "list": [
         {
-          "name": "我的报销",
-          "pathName": "subpackages/dev/mine/reimburse/index",
+          "name": "客户详情",
+          "pathName": "subpackages/dev/customer/detail/index",
           "query": "",
           "scene": null,
           "launchMode": "default"
+        },
+        {
+          "name": "新增客户",
+          "pathName": "subpackages/dev/customer/add-customer/index",
+          "query": "",
+          "launchMode": "default",
+          "scene": null
+        },
+        {
+          "name": "客户",
+          "pathName": "subpackages/dev/customer/index",
+          "query": "",
+          "launchMode": "default",
+          "scene": null
+        },
+        {
+          "name": "我的报销",
+          "pathName": "subpackages/dev/mine/reimburse/index",
+          "query": "",
+          "launchMode": "default",
+          "scene": null
         },
         {
           "name": "我的订单",
