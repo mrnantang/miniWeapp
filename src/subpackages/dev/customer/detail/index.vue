@@ -235,7 +235,7 @@
           </view>
         </view>
         <view v-if="infoTab === 'contract'" class="cd-quote-list">
-          <view v-for="card in contractCards" :key="card.no" class="cd-quote-card">
+          <view v-for="card in contractCards" :key="card.no" class="cd-quote-card" @tap="goContractDetail(card)">
             <view class="cd-quote-card-head">
               <text class="cd-quote-card-name">{{ card.name }}</text>
               <view class="cd-quote-badge" :class="'cd-quote-badge--' + card.badgeStyle">
@@ -286,7 +286,83 @@
             </view>
           </view>
         </view>
+        <view v-if="infoTab === 'product'" class="cd-quote-list">
+          <view v-for="card in logisticsCards" :key="card.orderNo" class="cd-quote-card" @tap="goLogistics(card.orderNo)">
+            <view class="cd-lg-head">
+              <text class="cd-lg-name">{{ card.name }}</text>
+              <view class="cd-lg-badge">{{ card.status }}</view>
+            </view>
+            <view class="cd-lg-info">
+              <view class="cd-lg-info-col">
+                <text class="cd-lg-info-label">订单号</text>
+                <text class="cd-lg-info-value">{{ card.orderNo }}</text>
+              </view>
+              <view class="cd-lg-info-col">
+                <text class="cd-lg-info-label">关联合同</text>
+                <text class="cd-lg-info-value">{{ card.contract }}</text>
+              </view>
+               <view class="cd-lg-info-col">
+                <text class="cd-lg-info-label">物流单号</text>
+                <text class="cd-lg-info-value">{{ card.logisticsNo }}</text>
+              </view>
+              <view class="cd-lg-info-col">
+                <text class="cd-lg-info-label">物流公司</text>
+                <text class="cd-lg-info-value">{{ card.logisticsCompany }}</text>
+              </view>
+            </view>
+
+          </view>
+        </view>
+        <view v-if="infoTab === 'record'" class="cd-quote-list">
+          <view v-for="card in perfCards" :key="card.name" class="cd-quote-card" @tap="goPerfDetail(card)">
+            <view class="cd-lg-head">
+              <text class="cd-lg-name">{{ card.name }}</text>
+              <view class="cd-lg-badge">{{ card.status }}</view>
+            </view>
+            <view class="cd-lg-info">
+              <view class="cd-lg-info-col">
+                <text class="cd-lg-info-label">关联商机</text>
+                <text class="cd-lg-info-value">{{ card.opportunity }}</text>
+              </view>
+              <view class="cd-lg-info-col">
+                <text class="cd-lg-info-label">关联合同</text>
+                <text class="cd-lg-info-value">{{ card.contract }}</text>
+              </view>
+               <view class="cd-lg-info-col">
+                <text class="cd-lg-info-label">合同总金额</text>
+                <text class="cd-lg-info-value">{{ card.totalAmount }}</text>
+              </view>
+              <view class="cd-lg-info-col">
+                <text class="cd-lg-info-label">本次回款金额</text>
+                <text class="cd-lg-info-value">{{ card.paidAmount }}</text>
+              </view>
+            </view>
+
+          </view>
+        </view>
       </view>
+
+      <nut-popup v-model:visible="showLogisticsPopup" position="bottom" :style="{ borderRadius: '24rpx 24rpx 0 0', height: '1128rpx' }" :z-index="2000">
+        <view class="lg-popup">
+          <view class="lg-header">
+            <view class="lg-header-side" />
+            <text class="lg-header-title">查看物流</text>
+            <view class="lg-header-side lg-header-close" @tap="showLogisticsPopup = false">
+              <image class="lg-close-icon" :src="iconClose" mode="aspectFit" />
+            </view>
+          </view>
+          <scroll-view class="lg-body" scroll-y :enhanced="true" :show-scrollbar="false">
+            <nut-steps direction="vertical" progress-dot :current="1">
+              <nut-step
+                v-for="(step, idx) in logisticsSteps"
+                :key="idx"
+                :title="step.content"
+                :content="step.time"
+              />
+            </nut-steps>
+          </scroll-view>
+        </view>
+      </nut-popup>
 
       <view class="cd-card">
         <view class="cd-dynamic-head">
@@ -399,6 +475,7 @@ import Taro from '@tarojs/taro'
 import NavBar from '@/components/NavBar.vue'
 import iconEdit from '@/assets/dev/edit.png'
 import iconDelete from '@/assets/dev/delete.png'
+import iconClose from '@/assets/dev/icon-close.png'
 import rightArrow from '@/assets/dev/rightArror.png'
 
 const showTransferPopup = ref(false)
@@ -435,6 +512,16 @@ const expenseCards = [
   { typeLabel: '报销', no: 'BX-91882121', badge: '待审批', badgeStyle: 'yellow', amount: '￥1280.00', typeDetail: '交通费 | 招待费 | 高速过路费', time: '2024/01/23 10:12' },
   { typeLabel: '费用', no: 'FY-91882121', badge: '已退回', badgeStyle: 'red', amount: '￥1280.00', typeDetail: '交通费 | 招待费 | 高速过路费', time: '2024/01/23 10:12' },
   { typeLabel: '报销', no: 'BX-91882121', badge: '已通过', badgeStyle: 'green', amount: '￥1280.00', typeDetail: '交通费 | 招待费 | 高速过路费', time: '2024/01/23 10:12' },
+]
+
+const logisticsCards = [
+  { name: '超凡实业技术有限公司', status: '已签收', orderNo: '2187283781312', contract: '智能设备购销合同', logisticsNo: '218927812781', logisticsCompany: '京东快递' },
+  { name: '超凡实业技术有限公司', status: '已签收', orderNo: '2187283781312', contract: '智能设备购销合同', logisticsNo: '218927812781', logisticsCompany: '京东快递' },
+]
+
+const perfCards = [
+  { name: '金石信息科技有限公司', status: '待确认', opportunity: '金石科技高端机采购书', contract: '智能设备购销合同', totalAmount: '￥200000', paidAmount: '￥100000' },
+  { name: '超凡实业技术有限公司', status: '待确认', opportunity: '超凡科技自动报价单', contract: '超凡科技购销合同', totalAmount: '￥300000', paidAmount: '￥150000' },
 ]
 
 const onTransferToPerson = () => {
@@ -480,11 +567,36 @@ const onAddQuote = () => {
 }
 
 const onAddContract = () => {
-  Taro.showToast({ title: '新建合同', icon: 'none' })
+  Taro.navigateTo({ url: '/subpackages/dev/contract/index' })
 }
 
 const goExpenseDetail = (card) => {
   Taro.navigateTo({ url: '/subpackages/dev/mine/reimburse/detail/index' })
+}
+
+const goContractDetail = (card) => {
+  Taro.navigateTo({ url: '/subpackages/dev/contract/detail/index' })
+}
+
+const showLogisticsPopup = ref(false)
+
+const logisticsSteps = [
+  { content: '[上海市]已签收，签收人是姚明，感谢使用天天快递，期待再次为您服务', time: '2017-12-20 14:08:54' },
+  { content: '[上海市]快件已经到达 上海嘉定转运中心', time: '2017-12-20 14:08:54' },
+  { content: '[上海转运中心]，正发往【上海嘉定转运中心]', time: '2017-12-20 14:08:54' },
+  { content: '[上海市]快件已经到达ZY上海杨浦集散仓A', time: '2017-12-20 14:08:54' },
+  { content: '[上海市]快件已经到达上海-应急代派', time: '2017-12-20 14:08:54' },
+  { content: '包裹正在等待揽收', time: '2017-12-20 14:08:54' },
+  { content: '您的订单已出库', time: '2017-12-20 14:08:54' },
+  { content: '您的订单开始处理', time: '2017-12-20 14:08:54' },
+]
+
+const goLogistics = (orderNo) => {
+  showLogisticsPopup.value = true
+}
+
+const goPerfDetail = (card) => {
+  Taro.navigateTo({ url: '/subpackages/dev/customer/perf-detail/index' })
 }
 
 const infoTab = ref('basic')
@@ -1280,6 +1392,135 @@ const onCheckOut = () => {
 .cd-ex-time-value {
   font-size: 24rpx;
   color: #1A1D24;
+}
+
+.cd-lg-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-bottom: 10rpx;
+}
+
+.cd-lg-name {
+  font-size: 30rpx;
+  font-weight: 500;
+  color: #1A1D24;
+}
+
+.cd-lg-badge {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2rpx 12rpx;
+  height: 40rpx;
+  background: #ECF2F9;
+  border-radius: 6rpx;
+  font-size: 24rpx;
+  color: #8A9FB7;
+}
+
+.cd-lg-info {
+  display: flex;
+  align-items: stretch;
+  gap: 18rpx;
+  background: #FFFFFF;
+  border: 1rpx solid #E6EBF0;
+  border-radius: 8rpx;
+  padding: 16rpx 20rpx;
+  flex-wrap: wrap;
+}
+
+.cd-lg-info-col {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 8rpx;
+}
+
+.cd-lg-info-label {
+  font-size: 26rpx;
+  color: #62687D;
+}
+
+.cd-lg-info-value {
+  font-size: 26rpx;
+  color: #1A1D24;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.lg-popup {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  background: #FFFFFF;
+  border-radius: 24rpx 24rpx 0 0;
+}
+
+.lg-header {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24rpx 40rpx;
+  flex-shrink: 0;
+}
+
+.lg-header-side {
+  width: 44rpx;
+  height: 44rpx;
+}
+
+.lg-header-close {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.lg-close-icon {
+  width: 28rpx;
+  height: 28rpx;
+}
+
+.lg-header-title {
+  flex: 1;
+  font-size: 34rpx;
+  font-weight: 500;
+  color: #333333;
+  text-align: center;
+}
+
+.lg-body {
+  flex: 1;
+  padding: 0 40rpx;
+}
+
+.lg-body .nut-steps {
+  padding: 0;
+}
+
+.lg-body .nut-steps .nut-step {
+  min-height: auto;
+}
+
+.lg-body .nut-steps .nut-step .nut-step-title {
+  font-size: 32rpx;
+  color: #62687D;
+  line-height: 48rpx;
+}
+
+.lg-body .nut-steps .nut-step:first-child .nut-step-title {
+  color: #37AE7E;
+}
+
+.lg-body .nut-steps .nut-step .nut-step-content {
+  font-size: 28rpx;
+  color: #BBBEC2;
+  line-height: 40rpx;
+}
+
+.lg-body .nut-steps .nut-step:first-child .nut-step-content {
+  color: #62687D;
 }
 
 .cd-dynamic-head {

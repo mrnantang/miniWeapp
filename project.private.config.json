@@ -23,11 +23,18 @@
     "miniprogram": {
       "list": [
         {
-          "name": "客户详情",
-          "pathName": "subpackages/dev/customer/detail/index",
+          "name": "新建合同",
+          "pathName": "subpackages/dev/contract/index",
           "query": "",
           "scene": null,
           "launchMode": "default"
+        },
+        {
+          "name": "客户详情",
+          "pathName": "subpackages/dev/customer/detail/index",
+          "query": "",
+          "launchMode": "default",
+          "scene": null
         },
         {
           "name": "新增客户",
