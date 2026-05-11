@@ -67,7 +67,7 @@ import loginBanner from '@/assets/login/login-banner.png'
 import iconAccount from '@/assets/login/icon-account.svg'
 import iconPassword from '@/assets/login/icon-password.svg'
 
-const account = ref('dev')
+const account = ref('ops')
 const password = ref('123456')
 const rememberPwd = ref(false)
 const showError = ref(false)
@@ -77,7 +77,7 @@ const canLogin = computed(() => account.value.trim() && password.value.trim())
 const roleConfig = {
   dev: { root: 'subpackages/dev/home/index', name: '开发端' },
   sales: { root: 'subpackages/dev/home/index', name: '销售端' },
-  ops: { root: 'subpackages/ops/dashboard/index', name: '运营端' },
+  ops: { root: 'subpackages/ops/home/index', name: '运营端' },
   boss: { root: 'subpackages/boss/overview/index', name: '老板端' },
 }
 

@@ -1,32 +1,54 @@
 <template>
-  <cover-view class="tab-bar">
-    <cover-view
+  <view class="tab-bar">
+    <view
       v-for="tab in tabs"
-      :key="tab.path"
+      :key="tab.idx"
       class="tab-item"
-      :class="{ active: current === tab.index }"
       @tap="onTabClick(tab)"
     >
-      <cover-view class="tab-text">{{ tab.text }}</cover-view>
-    </cover-view>
-  </cover-view>
+      <image
+        class="tab-icon"
+        :src="current === tab.idx ? tab.activeIcon : tab.icon"
+        mode="aspectFit"
+      />
+      <text class="tab-text" :class="{ 'tab-text--active': current === tab.idx }">
+        {{ tab.text }}
+      </text>
+    </view>
+  </view>
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { ref, onMounted } from 'vue'
 import Taro from '@tarojs/taro'
 
+import iconHome from '@/assets/dev/tabs/icon-home.png'
+import iconHomeActive from '@/assets/dev/tabs/icon-home-acitve.png'
+import iconLead from '@/assets/dev/tabs/icon-lead.png'
+import iconLeadActive from '@/assets/dev/tabs/icon-lead-active.png'
+import iconContent from '@/assets/dev/tabs/icon-opportunity.png'
+import iconContentActive from '@/assets/dev/tabs/icon-opportunity-active.png'
+import iconMine from '@/assets/dev/tabs/icon-mine.png'
+import iconMineActive from '@/assets/dev/tabs/icon-mine-active.png'
+
 const tabs = [
-  { text: '看板', path: '/subpackages/ops/dashboard/index', index: 0 },
-  { text: '内容', path: '/subpackages/ops/content/index', index: 1 },
-  { text: '我的', path: '/subpackages/ops/mine/index', index: 2 },
+  { text: '首页', path: '/subpackages/ops/home/index', idx: 0, icon: iconHome, activeIcon: iconHomeActive },
+  { text: '线索', path: '/subpackages/ops/leads/index', idx: 1, icon: iconLead, activeIcon: iconLeadActive },
+  { text: '营销', path: '/subpackages/ops/content/index', idx: 2, icon: iconContent, activeIcon: iconContentActive },
+  { text: '我的', path: '/subpackages/ops/mine/index', idx: 3, icon: iconMine, activeIcon: iconMineActive },
 ]
 
 const current = ref(0)
 
+onMounted(() => {
+  const pages = Taro.getCurrentPages()
+  const route = pages.length > 0 ? '/' + pages[pages.length - 1].route : ''
+  const idx = tabs.findIndex((t) => t.path === route)
+  if (idx >= 0) current.value = idx
+})
+
 const onTabClick = (tab) => {
-  if (current.value === tab.index) return
-  current.value = tab.index
+  current.value = tab.idx
   Taro.reLaunch({ url: tab.path })
 }
 </script>
@@ -37,23 +59,32 @@ const onTabClick = (tab) => {
   bottom: 0;
   left: 0;
   right: 0;
-  height: 100rpx;
   display: flex;
+  justify-content: center;
+  align-items: flex-end;
   background: #FFFFFF;
-  border-top: 1rpx solid #E5E6EB;
+  border-top: 1rpx solid #F1F1F4;
+  box-shadow: 0 -10rpx 32rpx rgba(0, 0, 0, 0.04);
   padding-bottom: env(safe-area-inset-bottom);
+  padding-top: 16rpx;
 }
 .tab-item {
   flex: 1;
   display: flex;
+  flex-direction: column;
   align-items: center;
-  justify-content: center;
+  gap: 2rpx;
 }
-.tab-item.active .tab-text {
-  color: #37AE7E;
+.tab-icon {
+  width: 48rpx;
+  height: 48rpx;
 }
 .tab-text {
   font-size: 24rpx;
-  color: #9292A5;
+  color: #C2C2C2;
+}
+.tab-text--active {
+  color: #25293B;
+  font-weight: 600;
 }
 </style>

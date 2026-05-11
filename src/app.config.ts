@@ -9,7 +9,7 @@ export default {
     },
     {
       root: 'subpackages/ops',
-      pages: ['dashboard/index', 'content/index', 'mine/index']
+      pages: ['home/index', 'leads/index', 'content/index', 'mine/index']
     },
     {
       root: 'subpackages/boss',
