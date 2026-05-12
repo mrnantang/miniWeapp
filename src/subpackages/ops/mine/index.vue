@@ -54,7 +54,7 @@ import Taro from '@tarojs/taro'
 import TabBar from '../tabs/index.vue'
 import rightArrowIcon from '@/assets/mine/right.png'
 import iconNotify from '@/assets/dev/mine/icon-mine-notify.svg'
-import iconProduct from '@/assets/dev/mine/icon-mine-product.svg'
+import iconPerf from '@/assets/dev/mine/icon-mine-perf.svg'
 
 const userName = ref('运营管理员')
 const userDept = ref('运营部')
@@ -64,7 +64,8 @@ const avatarUrl = ref('')
 
 const funcList = ref([
   { name: '消息通知', icon: iconNotify, tag: '', onTap: () => Taro.navigateTo({ url: '/subpackages/dev/mine/notice/index' }) },
-  { name: '产品中心', icon: iconProduct, tag: '', onTap: () => Taro.navigateTo({ url: '/subpackages/dev/mine/product/index' }) },
+  { name: '内容素材库', icon: iconNotify, tag: '', onTap: () => Taro.navigateTo({ url: '/subpackages/ops/mine/material/index' }) },
+  { name: '业绩分配', icon: iconPerf, tag: '', onTap: () => Taro.navigateTo({ url: '/subpackages/dev/mine/perf/index' }) },
 ])
 
 const onLogout = () => {

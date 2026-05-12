@@ -23,11 +23,32 @@
     "miniprogram": {
       "list": [
         {
-          "name": "运营首页",
-          "pathName": "subpackages/ops/home/index",
+          "name": "内容素材库",
+          "pathName": "subpackages/ops/mine/material/index",
           "query": "",
           "scene": null,
           "launchMode": "default"
+        },
+        {
+          "name": "营销任务",
+          "pathName": "subpackages/ops/content/add/index",
+          "query": "",
+          "launchMode": "default",
+          "scene": null
+        },
+        {
+          "name": "营销首页",
+          "pathName": "subpackages/ops/content/index",
+          "query": "",
+          "launchMode": "default",
+          "scene": null
+        },
+        {
+          "name": "运营首页",
+          "pathName": "subpackages/ops/home/index",
+          "query": "",
+          "launchMode": "default",
+          "scene": null
         },
         {
           "name": "新建合同",
