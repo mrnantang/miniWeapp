@@ -9,11 +9,11 @@ export default {
     },
     {
       root: 'subpackages/ops',
-      pages: ['home/index', 'leads/index', 'content/index', 'content/add/index', 'content/detail/index', 'mine/index', 'mine/material/index']
+      pages: ['home/index', 'leads/index', 'content/index', 'content/add/index', 'content/detail/index', 'mine/index', 'mine/material/index', 'mine/material/add/index']
     },
     {
       root: 'subpackages/boss',
-      pages: ['overview/index', 'report/index', 'mine/index']
+      pages: ['mine/index', 'ops-home/index', 'sales-home/index', 'dev-home/index']
     }
   ],
   preloadRule: {

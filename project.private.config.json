@@ -23,11 +23,25 @@
     "miniprogram": {
       "list": [
         {
-          "name": "内容素材库",
-          "pathName": "subpackages/ops/mine/material/index",
+          "name": "老板首页",
+          "pathName": "subpackages/boss/ops-home/index",
           "query": "",
           "scene": null,
           "launchMode": "default"
+        },
+        {
+          "name": "新增内容素材",
+          "pathName": "subpackages/ops/mine/material/add/index",
+          "query": "",
+          "launchMode": "default",
+          "scene": null
+        },
+        {
+          "name": "内容素材库",
+          "pathName": "subpackages/ops/mine/material/index",
+          "query": "",
+          "launchMode": "default",
+          "scene": null
         },
         {
           "name": "营销任务",

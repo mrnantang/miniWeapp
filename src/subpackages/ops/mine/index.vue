@@ -231,14 +231,14 @@ const onLogout = () => {
   align-items: center;
   justify-content: center;
   height: 88rpx;
-  background: #FFFFFF;
-  border: 2rpx solid #F4F4F4;
+  border: 1px solid #FFE8E8;
+  background: #FFF2F2;
   border-radius: 16rpx;
   margin: 40rpx 40rpx 0;
 }
 
 .mine-logout-text {
   font-size: 28rpx;
-  color: #25293B;
+  color: #EB6060;
 }
 </style>

@@ -64,6 +64,15 @@
       </scroll-view>
     </view>
 
+    <view class="material-bottom-bar">
+      <view class="material-bottom-btn">
+        <text class="material-bottom-btn-text">编辑素材文件夹</text>
+      </view>
+      <view class="material-bottom-btn">
+        <text class="material-bottom-btn-text">素材类型管理</text>
+      </view>
+    </view>
+
     <nut-popup v-model:visible="showFilter" position="bottom"
       :style="{ borderRadius: '24rpx 24rpx 0 0', height: '680rpx' }" :z-index="2000" safe-area-inset-bottom>
       <view class="filter-popup">
@@ -102,6 +111,7 @@
 
 <script setup>
 import { ref } from 'vue'
+import Taro from '@tarojs/taro'
 import iconSearch from '@/assets/dev/icon-search.png'
 import iconFilter from '@/assets/dev/icon-filter.png'
 import iconAdd from '@/assets/dev/icon-add.png'
@@ -119,7 +129,9 @@ const keyword = ref('')
 const showFilter = ref(false)
 const filterType = ref('全部')
 
-const goAdd = () => { }
+const goAdd = () => {
+  Taro.navigateTo({ url: '/subpackages/ops/mine/material/add/index' })
+}
 </script>
 
 <style>
@@ -340,6 +352,28 @@ const goAdd = () => { }
 }
 .material-action-btn-text--delete {
   color: #F53F3F;
+}
+
+.material-bottom-bar {
+  display: flex;
+  gap: 28rpx;
+  padding: 16rpx 40rpx calc(16rpx + env(safe-area-inset-bottom));
+  background: #FFFFFF;
+}
+.material-bottom-btn {
+  flex: 1;
+  height: 72rpx;
+  border-radius: 8rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #EFFDF7;
+  border: 2rpx solid #5CC79C;
+}
+.material-bottom-btn-text {
+  font-size: 32rpx;
+  font-weight: 500;
+  color: #5CC79C;
 }
 
 .filter-popup {
