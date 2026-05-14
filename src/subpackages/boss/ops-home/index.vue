@@ -11,12 +11,14 @@
 
     <view class="boss-panel">
       <view class="boss-panel-inner">
-        <view class="boss-section">
-          <view class="boss-section-head" @tap="toggleSection('ops')">
-            <text class="boss-section-title">运营数据</text>
-            <image class="boss-section-arrow" :class="{ 'boss-section-arrow--open': openSections.includes('ops') }" :src="iconArrow" mode="aspectFit" />
-          </view>
-          <view v-if="openSections.includes('ops')">
+        <nut-collapse v-model="activeNames" expand-icon-placement="right">
+          <nut-collapse-item name="ops" :border="false">
+            <template #icon>
+              <image style="width: 36rpx; height: 36rpx;" :src="iconArrow" mode="aspectFit" />
+            </template>
+            <template #title>
+              <text class="boss-section-title">运营数据</text>
+            </template>
             <view class="boss-divider" />
             <view class="boss-metrics-row">
               <view class="boss-metric-card">
@@ -52,17 +54,15 @@
                 </view>
               </view>
             </view>
-          </view>
-        </view>
+          </nut-collapse-item>
 
-        <view class="boss-divider" />
-
-        <view class="boss-section">
-          <view class="boss-section-head" @tap="toggleSection('deal')">
-            <text class="boss-section-title">成交数据</text>
-            <image class="boss-section-arrow" :class="{ 'boss-section-arrow--open': openSections.includes('deal') }" :src="iconArrow" mode="aspectFit" />
-          </view>
-          <view v-if="openSections.includes('deal')">
+          <nut-collapse-item name="deal" :border="false">
+            <template #icon>
+              <image style="width: 36rpx; height: 36rpx;" :src="iconArrow" mode="aspectFit" />
+            </template>
+            <template #title>
+              <text class="boss-section-title">成交数据</text>
+            </template>
             <view class="boss-divider" />
             <view class="boss-metrics-row">
               <view v-for="(c, ci) in dealRow1" :key="ci" class="boss-metric-card">
@@ -101,17 +101,15 @@
                 <view class="boss-metric-card boss-metric-card--empty" />
               </template>
             </view>
-          </view>
-        </view>
+          </nut-collapse-item>
 
-        <view class="boss-divider" />
-
-        <view class="boss-section">
-          <view class="boss-section-head" @tap="toggleSection('lead')">
-            <text class="boss-section-title">线索数据</text>
-            <image class="boss-section-arrow" :class="{ 'boss-section-arrow--open': openSections.includes('lead') }" :src="iconArrow" mode="aspectFit" />
-          </view>
-          <view v-if="openSections.includes('lead')">
+          <nut-collapse-item name="lead" :border="false">
+            <template #icon>
+              <image style="width: 36rpx; height: 36rpx;" :src="iconArrow" mode="aspectFit" />
+            </template>
+            <template #title>
+              <text class="boss-section-title">线索数据</text>
+            </template>
             <view class="boss-divider" />
             <view class="boss-metrics-row">
               <view v-for="(c, ci) in leadRow1" :key="ci" class="boss-metric-card">
@@ -150,17 +148,15 @@
                 <view class="boss-metric-card boss-metric-card--empty" />
               </template>
             </view>
-          </view>
-        </view>
+          </nut-collapse-item>
 
-        <view class="boss-divider" />
-
-        <view class="boss-section">
-          <view class="boss-section-head" @tap="toggleSection('region')">
-            <text class="boss-section-title">区域成交数据 | 前五</text>
-            <image class="boss-section-arrow" :class="{ 'boss-section-arrow--open': openSections.includes('region') }" :src="iconArrow" mode="aspectFit" />
-          </view>
-          <view v-if="openSections.includes('region')">
+          <nut-collapse-item name="region" :border="false">
+            <template #icon>
+              <image style="width: 36rpx; height: 36rpx;" :src="iconArrow" mode="aspectFit" />
+            </template>
+            <template #title>
+              <text class="boss-section-title">区域成交数据 | 前五</text>
+            </template>
             <view class="boss-divider" />
             <view v-for="(row, ri) in regionRows" :key="ri">
               <view v-if="ri > 0" class="boss-row-divider" />
@@ -183,17 +179,15 @@
                 </template>
               </view>
             </view>
-          </view>
-        </view>
+          </nut-collapse-item>
 
-        <view class="boss-divider" />
-
-        <view class="boss-section">
-          <view class="boss-section-head" @tap="toggleSection('personal')">
-            <text class="boss-section-title">运营个人成交数据 | 前五</text>
-            <image class="boss-section-arrow" :class="{ 'boss-section-arrow--open': openSections.includes('personal') }" :src="iconArrow" mode="aspectFit" />
-          </view>
-          <view v-if="openSections.includes('personal')">
+          <nut-collapse-item name="personal" :border="false">
+            <template #icon>
+              <image style="width: 36rpx; height: 36rpx;" :src="iconArrow" mode="aspectFit" />
+            </template>
+            <template #title>
+              <text class="boss-section-title">运营个人成交数据 | 前五</text>
+            </template>
             <view class="boss-divider" />
             <view v-for="(row, ri) in personalRows" :key="ri">
               <view v-if="ri > 0" class="boss-row-divider" />
@@ -216,14 +210,14 @@
                 </template>
               </view>
             </view>
-          </view>
-        </view>
+          </nut-collapse-item>
+        </nut-collapse>
 
-        <view class="boss-section">
-          <view class="boss-section-head">
-            <view class="boss-task-title-row">
-              <image class="boss-task-header-icon" :src="iconTaskHeader" mode="aspectFit" />
-              <text class="boss-section-title">重点客户跟进情况</text>
+        <view class="section">
+          <view class="task-head">
+            <view class="task-title-row">
+              <image class="task-header-icon" :src="iconTaskHeader" mode="aspectFit" />
+              <text class="section-title">重点客户跟进情况</text>
             </view>
           </view>
 
@@ -367,16 +361,7 @@ import locationIcon from '@/assets/dev/icon-location.png'
 import lineOldIcon from '@/assets/dev/icon-line-old.png'
 import iconArrow from '@/assets/dev/upArror.png'
 
-const openSections = ref(['ops'])
-
-const toggleSection = (key) => {
-  const idx = openSections.value.indexOf(key)
-  if (idx >= 0) {
-    openSections.value.splice(idx, 1)
-  } else {
-    openSections.value.push(key)
-  }
-}
+const activeNames = ref(['ops', 'deal', 'lead', 'region', 'personal'])
 
 const dealRow1 = [
   { label: '意向成交总金额', prefix: '￥', value: '5739400.0', change: '12.8%', up: true },
@@ -577,25 +562,10 @@ const onPickerChange = (e) => {
   padding: 40rpx;
 }
 
-.boss-section-head {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 28rpx 0;
-}
 .boss-section-title {
   font-size: 30rpx;
   font-weight: 500;
   color: #1A1D24;
-}
-.boss-section-arrow {
-  width: 36rpx;
-  height: 36rpx;
-  transition: transform 0.2s;
-  flex-shrink: 0;
-}
-.boss-section-arrow--open {
-  transform: rotate(-180deg);
 }
 
 .boss-divider {
@@ -611,13 +581,13 @@ const onPickerChange = (e) => {
 .boss-metrics-row {
   display: flex;
   align-items: flex-start;
-  padding: 16rpx 0;
+  padding: 28rpx 0;
 }
 .boss-metric-card {
   flex: 1;
   display: flex;
   flex-direction: column;
-  gap: 8rpx;
+  gap: 16rpx;
 }
 .boss-metric-card--empty {
   visibility: hidden;
@@ -674,17 +644,6 @@ const onPickerChange = (e) => {
   flex-shrink: 0;
   margin: 0 8rpx;
   align-self: stretch;
-}
-
-.boss-task-title-row {
-  display: flex;
-  align-items: center;
-  gap: 8rpx;
-}
-.boss-task-header-icon {
-  width: 38rpx;
-  height: 38rpx;
-  flex-shrink: 0;
 }
 
 .task-card {

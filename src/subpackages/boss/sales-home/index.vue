@@ -14,6 +14,9 @@
 
         <nut-collapse v-model="activeNames" expand-icon-placement="right">
           <nut-collapse-item name="follow" :border="false">
+            <template #icon>
+              <image style="width: 36rpx; height: 36rpx;" :src="iconArrow" mode="aspectFit" />
+            </template>
             <template #title>
               <view class="section-head">
                 <view class="section-title-row">
@@ -324,6 +327,7 @@ import iconTaskHeader from '@/assets/dev/icon-task-header.png'
 import iconPhone from '@/assets/dev/icon-phone.png'
 import iconIndustry from '@/assets/dev/icon-industry.png'
 import iconLocationPopup from '@/assets/dev/icon-location-popup.png'
+import iconArrow from '@/assets/dev/upArror.png'
 
 const role = ref('sales')
 const activeNames = ref(['follow'])
