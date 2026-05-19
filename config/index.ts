@@ -29,6 +29,7 @@ export default defineConfig<'webpack5'>(async (merge, { command, mode }) => {
     outputRoot: 'dist',
     plugins: ['@tarojs/plugin-html'],
     defineConstants: {
+      TARO_APP_API_BASE: JSON.stringify('http://124.223.105.21:8080/api'),
     },
     copy: {
       patterns: [

@@ -28,5 +28,8 @@ export default {
     //       postProcess: (context) => ({ ...context, outputPath: path.join(staticDir, 'index.html') })
     //     }))
     // }
-  }
+  },
+  defineConstants: {
+    TARO_APP_API_BASE: JSON.stringify('http://124.223.105.21:8080/api'),
+  },
 } satisfies UserConfigExport<'webpack5'>

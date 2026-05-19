@@ -18,8 +18,7 @@
             <text class="search-input-text" :class="{ 'search-input-text--placeholder': !searchKeyword }">{{ searchKeyword || '请输入企业名称/手机号' }}</text>
             <image class="search-icon" :src="iconSearch" mode="aspectFit" />
           </view>
-           <!-- <view v-if="role === 'sales'" class="location-btn" @tap="showNearbyPopup = true"> -->
-          <view  class="location-btn" @tap="showNearbyPopup = true">
+          <view class="location-btn" @tap="showNearbyPopup = true">
             <image :src="iconLocationSearch" mode="aspectFit" />
           </view>
           <view class="filter-btn" @tap="showFilter = true">
@@ -40,81 +39,18 @@
 
             <view class="s-divider" />
 
-            <view class="stats-row">
-              <view class="stat-card">
-                <text class="stat-label">客户总数量</text>
-                <text class="stat-num">2091</text>
-                <view class="stat-change up">
-                  <view class="arrow-up" />
-                  <text class="change-text">12.8%</text>
+            <view v-for="(row, ri) in statsRows" :key="ri">
+              <view class="stats-row">
+                <view v-for="(stat, si) in row" :key="si" class="stat-card" :class="{ 'stat-card--hidden': !stat.label }">
+                  <text class="stat-label">{{ stat.label }}</text>
+                  <text class="stat-num">{{ stat.value }}</text>
+                  <view v-if="stat.label" class="stat-change" :class="stat.changeRate >= 0 ? 'up' : 'down'">
+                    <view :class="stat.changeRate >= 0 ? 'arrow-up' : 'arrow-down'" />
+                    <text class="change-text">{{ Math.abs(stat.changeRate) }}%</text>
+                  </view>
                 </view>
               </view>
-              <view class="v-divider" />
-              <view class="stat-card">
-                <text class="stat-label">电话沟通数量</text>
-                <text class="stat-num">289</text>
-                <view class="stat-change down">
-                  <view class="arrow-down" />
-                  <text class="change-text">4.0%</text>
-                </view>
-              </view>
-              <view class="v-divider" />
-              <view class="stat-card">
-                <text class="stat-label">微信沟通数量</text>
-                <text class="stat-num">344</text>
-                <view class="stat-change up">
-                  <view class="arrow-up" />
-                  <text class="change-text">12.8%</text>
-                </view>
-              </view>
-            </view>
-
-            <view class="s-divider" />
-
-            <view class="stats-row">
-              <view class="stat-card">
-                <text class="stat-label">接待客户数量</text>
-                <text class="stat-num">199</text>
-                <view class="stat-change down">
-                  <view class="arrow-down" />
-                  <text class="change-text">4.0%</text>
-                </view>
-              </view>
-              <view class="v-divider" />
-              <view class="stat-card">
-                <text class="stat-label">重点客户数量</text>
-                <text class="stat-num">212</text>
-                <view class="stat-change down">
-                  <view class="arrow-down" />
-                  <text class="change-text">4.0%</text>
-                </view>
-              </view>
-              <view class="v-divider" />
-              <view class="stat-card">
-                <text class="stat-label">报价客户数量</text>
-                <text class="stat-num">978</text>
-                <view class="stat-change up">
-                  <view class="arrow-up" />
-                  <text class="change-text">12.8%</text>
-                </view>
-              </view>
-            </view>
-
-            <view class="s-divider" />
-
-            <view class="stats-row">
-              <view class="stat-card">
-                <text class="stat-label">签约中客户数量</text>
-                <text class="stat-num">2091</text>
-                <view class="stat-change up">
-                  <view class="arrow-up" />
-                  <text class="change-text">12.8%</text>
-                </view>
-              </view>
-              <view class="v-divider" />
-              <view class="stat-card stat-card--hidden" />
-              <view class="v-divider v-divider--hidden" />
-              <view class="stat-card stat-card--hidden" />
+              <view v-if="ri < statsRows.length - 1" class="s-divider" />
             </view>
           </nut-collapse-item>
         </nut-collapse>
@@ -134,17 +70,23 @@
           <scroll-view class="task-tabs-scroll" scroll-x="true" :enhanced="true" :show-scrollbar="false">
             <view class="task-tabs" :class="{ 'task-tabs--sales': role === 'sales' }">
               <view v-if="role !== 'sales'" class="task-tab" :class="{ 'task-tab--active': activeTaskTab === 0 }" @tap="activeTaskTab = 0">
-                <text class="task-tab-text" :class="{ 'task-tab-text--active': activeTaskTab === 0 }">待跟进线索(2)</text>
+                <text class="task-tab-text" :class="{ 'task-tab-text--active': activeTaskTab === 0 }">待跟进线索({{ leadCount }})</text>
               </view>
-              <view class="task-tab" :class="{ 'task-tab--active': activeTaskTab === (role === 'sales' ? 0 : 1) }" @tap="activeTaskTab = (role === 'sales' ? 0 : 1)">
-                <text class="task-tab-text" :class="{ 'task-tab-text--active': activeTaskTab === (role === 'sales' ? 0 : 1) }">待跟进客户(5)</text>
+              <view class="task-tab" :class="{ 'task-tab--active': activeTaskTab === tabIdxCustomer }" @tap="activeTaskTab = tabIdxCustomer">
+                <text class="task-tab-text" :class="{ 'task-tab-text--active': activeTaskTab === tabIdxCustomer }">待跟进客户({{ customerCount }})</text>
               </view>
-              <view class="task-tab" :class="{ 'task-tab--active': activeTaskTab === (role === 'sales' ? 1 : 2) }" @tap="activeTaskTab = (role === 'sales' ? 1 : 2)">
-                <text class="task-tab-text" :class="{ 'task-tab-text--active': activeTaskTab === (role === 'sales' ? 1 : 2) }">重点客户跟进情况</text>
+              <view class="task-tab" :class="{ 'task-tab--active': activeTaskTab === tabIdxFocus }" @tap="activeTaskTab = tabIdxFocus">
+                <text class="task-tab-text" :class="{ 'task-tab-text--active': activeTaskTab === tabIdxFocus }">重点客户跟进情况</text>
               </view>
             </view>
           </scroll-view>
 
+          <view v-if="taskLoading" class="task-loading">
+            <text class="task-loading-text">加载中...</text>
+          </view>
+          <view v-else-if="currentCards.length === 0" class="task-loading">
+            <text class="task-loading-text">暂无数据</text>
+          </view>
           <view v-for="card in currentCards" :key="card.name" class="task-card">
             <view class="tc-head">
               <text class="tc-name">{{ card.name }}</text>
@@ -155,7 +97,7 @@
             <view class="tc-info">
               <view class="tc-info-item">
                 <image class="tc-icon" :src="iconPhone" mode="aspectFit" />
-                <text class="tc-info-text tc-info-text--active">15899280987</text>
+                <text class="tc-info-text tc-info-text--active">{{ card.phone }}</text>
               </view>
               <view class="tc-info-item">
                 <image class="tc-icon" :src="card.icon2" mode="aspectFit" />
@@ -194,73 +136,34 @@
 
         <view class="filter-body">
           <view class="filter-sidebar">
-            <view
-              class="filter-sidebar-item"
-              :class="{ 'filter-sidebar-item--active': filterIdx === 0 }"
-              @tap="filterIdx = 0"
-            >
+            <view class="filter-sidebar-item" :class="{ 'filter-sidebar-item--active': filterIdx === 0 }" @tap="filterIdx = 0">
               <text class="filter-sidebar-text" :class="{ 'filter-sidebar-text--active': filterIdx === 0 }">公司/部门/员工</text>
             </view>
-            <view
-              class="filter-sidebar-item"
-              :class="{ 'filter-sidebar-item--active': filterIdx === 1 }"
-              @tap="filterIdx = 1"
-            >
+            <view class="filter-sidebar-item" :class="{ 'filter-sidebar-item--active': filterIdx === 1 }" @tap="filterIdx = 1">
               <text class="filter-sidebar-text" :class="{ 'filter-sidebar-text--active': filterIdx === 1 }">时间</text>
             </view>
           </view>
 
           <scroll-view class="filter-content" scroll-y :enhanced="true" :show-scrollbar="false">
             <view v-if="filterIdx === 0" class="org-tags">
-              <text class="org-cat-title">公司</text>
+              <text v-if="companyList.length" class="org-cat-title">公司</text>
               <view class="org-tag-row">
-                <view
-                  v-for="c in companyList"
-                  :key="c"
-                  class="org-tag"
-                  :class="{ 'org-tag--active': selectedTags.includes(c) }"
-                  @tap="toggleTag(c)"
-                >
+                <view v-for="c in companyList" :key="c" class="org-tag" :class="{ 'org-tag--active': selectedTags.includes(c) }" @tap="toggleTag(c)">
                   <text class="org-tag-text" :class="{ 'org-tag-text--active': selectedTags.includes(c) }">{{ c }}</text>
                 </view>
               </view>
 
-              <text class="org-cat-title">部门</text>
+              <text v-if="deptList.length" class="org-cat-title">部门</text>
               <view class="org-tag-row">
-                <view
-                  v-for="d in deptList"
-                  :key="d"
-                  class="org-tag"
-                  :class="{ 'org-tag--active': selectedTags.includes(d) }"
-                  @tap="toggleTag(d)"
-                >
+                <view v-for="d in deptList" :key="d" class="org-tag" :class="{ 'org-tag--active': selectedTags.includes(d) }" @tap="toggleTag(d)">
                   <text class="org-tag-text" :class="{ 'org-tag-text--active': selectedTags.includes(d) }">{{ d }}</text>
                 </view>
               </view>
 
-              <text class="org-cat-title">子部门</text>
+              <text v-if="subDeptList.length" class="org-cat-title">子部门</text>
               <view class="org-tag-row">
-                <view
-                  v-for="s in subDeptList"
-                  :key="s"
-                  class="org-tag"
-                  :class="{ 'org-tag--active': selectedTags.includes(s) }"
-                  @tap="toggleTag(s)"
-                >
+                <view v-for="s in subDeptList" :key="s" class="org-tag" :class="{ 'org-tag--active': selectedTags.includes(s) }" @tap="toggleTag(s)">
                   <text class="org-tag-text" :class="{ 'org-tag-text--active': selectedTags.includes(s) }">{{ s }}</text>
-                </view>
-              </view>
-
-              <text class="org-cat-title">员工</text>
-              <view class="org-tag-row" v-for="(row, ri) in employeeRows" :key="ri">
-                <view
-                  v-for="e in row"
-                  :key="e"
-                  class="org-tag"
-                  :class="{ 'org-tag--active': selectedTags.includes(e) }"
-                  @tap="toggleTag(e)"
-                >
-                  <text class="org-tag-text" :class="{ 'org-tag-text--active': selectedTags.includes(e) }">{{ e }}</text>
                 </view>
               </view>
             </view>
@@ -298,12 +201,7 @@
           <text class="filter-header-title">{{ datePopupTitle }}</text>
           <text class="filter-header-btn filter-header-confirm" @tap="onDateConfirm">确认</text>
         </view>
-        <picker-view
-          class="date-picker-body"
-          :value="pickerValue"
-          indicator-style="height: 68rpx;"
-          @change="onPickerChange"
-        >
+        <picker-view class="date-picker-body" :value="pickerValue" indicator-style="height: 68rpx;" @change="onPickerChange">
           <picker-view-column>
             <view v-for="y in years" :key="y" class="picker-item">{{ y }}</view>
           </picker-view-column>
@@ -324,38 +222,26 @@
         <view class="nearby-header">
           <text class="nearby-header-title">搜索附近客户</text>
         </view>
-
         <view class="nearby-body">
           <view class="nearby-sidebar">
             <view class="nearby-sidebar-item nearby-sidebar-item--active">
               <text class="nearby-sidebar-text nearby-sidebar-text--active">附近客户</text>
             </view>
           </view>
-
           <scroll-view class="nearby-content" scroll-y :enhanced="true" :show-scrollbar="false">
             <text class="nearby-cat-title">当前定位</text>
             <view class="nearby-loc-row">
               <text class="nearby-loc-text">广东省/深圳市/南山区</text>
               <image class="nearby-loc-icon" :src="iconLocationPopup" mode="aspectFit" />
             </view>
-
             <view class="nearby-divider" />
-
             <text class="nearby-cat-title">距离范围</text>
             <view class="nearby-range-grid">
-              <view
-                v-for="r in distanceRanges"
-                :key="r"
-                class="nearby-range-tag"
-                :class="{ 'nearby-range-tag--active': selectedDistance === r }"
-                @tap="selectedDistance = r"
-              >
+              <view v-for="r in distanceRanges" :key="r" class="nearby-range-tag" :class="{ 'nearby-range-tag--active': selectedDistance === r }" @tap="selectedDistance = r">
                 <text class="nearby-range-text" :class="{ 'nearby-range-text--active': selectedDistance === r }">{{ r }}</text>
               </view>
             </view>
-
             <view class="nearby-divider" />
-
             <text class="nearby-cat-title">自定义距离范围</text>
             <view class="nearby-custom-row">
               <view class="nearby-custom-box">
@@ -364,18 +250,12 @@
               </view>
               <view class="nearby-custom-sep" />
               <view class="nearby-custom-box">
-                <input
-                  class="nearby-custom-input"
-                  v-model="customDistance"
-                  placeholder="请输入"
-                  placeholder-style="color:#BBBEC2;font-size:26rpx"
-                />
+                <input class="nearby-custom-input" v-model="customDistance" placeholder="请输入" placeholder-style="color:#BBBEC2;font-size:26rpx" />
                 <text class="nearby-custom-unit">km</text>
               </view>
             </view>
           </scroll-view>
         </view>
-
         <view class="nearby-footer">
           <view class="nearby-footer-btn nearby-footer-clear" @tap="selectedDistance = ''; customDistance = ''">
             <text class="nearby-footer-clear-text">清空选择</text>
@@ -390,10 +270,14 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue'
-import Taro from '@tarojs/taro'
+import { ref, computed, onMounted } from 'vue'
 import TabBar from '../tabs/index.vue'
 import DuplicateCheckPopup from '@/subpackages/dev/customer/components/DuplicateCheckPopup.vue'
+import { getOperationsOverview } from '@/api/reporting'
+import { getLeadList } from '@/api/lead'
+import { getCustomerList } from '@/api/customer'
+import { getCompanyDepartmentTree } from '@/api/system'
+import { detectRole } from '@/utils/role'
 import wechatIcon from '@/assets/dev/icon-wechat.png'
 import gradeIcon from '@/assets/dev/icon-grade.png'
 import locationIcon from '@/assets/dev/icon-location.png'
@@ -408,65 +292,168 @@ import iconPhone from '@/assets/dev/icon-phone.png'
 import iconIndustry from '@/assets/dev/icon-industry.png'
 import iconLocationPopup from '@/assets/dev/icon-location-popup.png'
 
-const role = Taro.getStorageSync('role') || 'dev'
+const role = detectRole()
+
 const activeNames = ref(['follow'])
 const activeTaskTab = ref(0)
+const taskLoading = ref(false)
 
-const isLeadTab = computed(() => role === 'dev' && activeTaskTab.value === 0)
-const isFocusTab = computed(() => {
-  if (role === 'sales') return activeTaskTab.value === 1
-  return activeTaskTab.value === 2
+const metrics = ref([])
+const leads = ref([])
+const customers = ref([])
+
+const STAT_KEY_MAP = {
+  total_customers: 0,
+  phone_communications: 1,
+  wechat_communications: 2,
+  received_customers: 3,
+  key_customers: 4,
+  quoted_customers: 5,
+  contracting_customers: 6,
+}
+
+const STAT_LABELS = ['客户总数量', '电话沟通数量', '微信沟通数量', '接待客户数量', '重点客户数量', '报价客户数量', '签约中客户数量']
+
+const statsMap = computed(() => {
+  const map = {}
+  for (const m of metrics.value) {
+    map[m.key] = m
+  }
+  return map
 })
+
+const statsRows = computed(() => {
+  const rows = []
+  for (let i = 0; i < 7; i += 3) {
+    const row = []
+    for (let j = 0; j < 3; j++) {
+      const idx = i + j
+      if (idx >= 7) {
+        row.push({ label: '', value: '', changeRate: 0 })
+      } else {
+        const m = statsMap.value[Object.keys(STAT_KEY_MAP)[idx]]
+        row.push({
+          label: STAT_LABELS[idx],
+          value: m ? m.value : '-',
+          changeRate: m ? (m.changeRate || 0) : 0,
+        })
+      }
+    }
+    rows.push(row)
+  }
+  return rows
+})
+
+const tabIdxCustomer = computed(() => role === 'sales' ? 0 : 1)
+const tabIdxFocus = computed(() => role === 'sales' ? 1 : 2)
+
+const isLeadTab = computed(() => role !== 'sales' && activeTaskTab.value === 0)
+const isFocusTab = computed(() => activeTaskTab.value === tabIdxFocus.value)
+
+function mapBadge(status) {
+  if (!status) return { badge: '待定', badgeStyle: 'cyan' }
+  const s = String(status)
+  if (s.includes('待')) return { badge: s, badgeStyle: 'yellow' }
+  if (s.includes('已')) return { badge: s, badgeStyle: 'cyan' }
+  return { badge: s, badgeStyle: 'blue' }
+}
+
+const leadCards = computed(() => leads.value.map(item => {
+  const { badge, badgeStyle } = mapBadge(item.followStatusLabel)
+  return {
+    name: item.customerName || item.contactName || '-',
+    badge,
+    badgeStyle,
+    icon2: wechatIcon,
+    label2: item.followerUserName || '-',
+    industry: item.customerIndustry || '-',
+    icon4: locationIcon,
+    label4: `${item.provinceName || ''}/${item.cityName || ''}/${item.districtName || ''}`,
+    phone: item.phone || '-',
+    note: '',
+  }
+}))
+
+const customerCards = computed(() => customers.value.map(item => {
+  const { badge, badgeStyle } = mapBadge(item.followStatusLabel)
+  return {
+    name: item.name || '-',
+    badge,
+    badgeStyle,
+    icon2: gradeIcon,
+    label2: item.levelLabel || '-',
+    industry: item.industryLabel || '-',
+    icon4: lineOldIcon,
+    label4: item.projectType || '-',
+    phone: item.phone || '-',
+    note: '',
+  }
+}))
+
+const focusCards = computed(() => customers.value.map(item => {
+  const { badge, badgeStyle } = mapBadge(item.followStatusLabel)
+  return {
+    name: item.name || '-',
+    badge,
+    badgeStyle,
+    icon2: gradeIcon,
+    label2: item.levelLabel || '-',
+    industry: item.industryLabel || '-',
+    icon4: lineOldIcon,
+    label4: item.projectType || '-',
+    phone: item.phone || '-',
+    note: item.latestFollowRecord || '暂无跟进记录',
+  }
+}))
 
 const currentCards = computed(() => {
-  if (isLeadTab.value) return leadCards
-  if (isFocusTab.value) return focusCards
-  return customerCards
+  if (isLeadTab.value) return leadCards.value
+  if (isFocusTab.value) return focusCards.value
+  return customerCards.value
 })
+
+const leadCount = computed(() => leads.value.length)
+const customerCount = computed(() => customers.value.length)
 const taskCount = computed(() => {
-  if (role === 'sales') return activeTaskTab.value === 0 ? 5 : 3
-  return activeTaskTab.value === 0 ? 2 : activeTaskTab.value === 1 ? 5 : 3
+  if (isLeadTab.value) return leadCount.value
+  if (isFocusTab.value) return focusCards.value.length
+  return customerCount.value
 })
-
-const leadCards = [
-  { name: '超凡实业技术有限公司', badge: '待定', badgeStyle: 'cyan', icon2: wechatIcon, label2: 'rnbujhu2818', industry: '电气行业', icon4: locationIcon, label4: '广东省/深圳市/南山区', note: '' },
-  { name: '超凡实业技术有限公司', badge: '待定', badgeStyle: 'cyan', icon2: wechatIcon, label2: 'rnbujhu2818', industry: '电气行业', icon4: locationIcon, label4: '广东省/深圳市/南山区', note: '' },
-  { name: '超凡实业技术有限公司', badge: '待定', badgeStyle: 'cyan', icon2: wechatIcon, label2: 'rnbujhu2818', industry: '电气行业', icon4: locationIcon, label4: '广东省/深圳市/南山区', note: '' },
-]
-
-const customerCards = [
-  { name: '超凡实业技术有限公司', badge: '待跟进', badgeStyle: 'yellow', icon2: gradeIcon, label2: 'A级客户', industry: '电气行业', icon4: lineOldIcon, label4: '旧线', note: '' },
-  { name: '超凡实业技术有限公司', badge: '待跟进', badgeStyle: 'yellow', icon2: gradeIcon, label2: 'A级客户', industry: '电气行业', icon4: lineOldIcon, label4: '旧线', note: '' },
-  { name: '超凡实业技术有限公司', badge: '待跟进', badgeStyle: 'yellow', icon2: gradeIcon, label2: 'A级客户', industry: '电气行业', icon4: lineOldIcon, label4: '旧线', note: '' },
-]
-
-const focusCards = [
-  { name: '超凡实业技术有限公司', badge: '待跟进', badgeStyle: 'yellow', icon2: gradeIcon, label2: 'A级客户', industry: '电气行业', icon4: lineOldIcon, label4: '旧线', note: '客户有意向，但未表明哪款产品' },
-  { name: '金石科技', badge: '已拜访', badgeStyle: 'cyan', icon2: wechatIcon, label2: 'rnbujhu2818', industry: 'A级客户', icon4: locationIcon, label4: '广东省/深圳市/南山区', note: '客户有意向，但未表明哪款产品' },
-  { name: '金剑制造实业控股', badge: '已报价', badgeStyle: 'blue', icon2: wechatIcon, label2: 'rnbujhu2818', industry: 'A级客户', icon4: locationIcon, label4: '广东省/深圳市/南山区', note: '客户有意向，但未表明哪款产品' },
-]
 
 const showFilter = ref(false)
 const filterIdx = ref(0)
+const companyList = ref([])
+const deptList = ref([])
+const subDeptList = ref([])
+
+function parseTreeToLists(nodes) {
+  const companies = []
+  const depts = []
+  const subDepts = []
+  for (const node of nodes) {
+    if (node.level === 0) {
+      companies.push(node.name)
+      if (node.children) {
+        for (const child of node.children) {
+          depts.push(child.name)
+          if (child.children) {
+            for (const grandchild of child.children) {
+              subDepts.push(grandchild.name)
+            }
+          }
+        }
+      }
+    }
+  }
+  return { companies, depts, subDepts }
+}
 
 const showDatePopup = ref(false)
 const datePickerTarget = ref('start')
 const startTime = ref('')
 const endTime = ref('')
-
 const datePopupTitle = computed(() => datePickerTarget.value === 'start' ? '选择开始时间' : '选择结束时间')
-
 const selectedTags = ref([])
-
-const companyList = ['德贝尔总公司', '江苏扬州办事处', '江苏苏州办事处', '江苏徐州办事处']
-const deptList = ['销售总部', '开发总部', '财务总部', '外贸总部']
-const subDeptList = ['销售一部', '销售二部']
-const employeeRows = [
-  ['张传送', '李治廷'],
-  ['仇茂茂', '李聪'],
-  ['屈伊', '陈子奕'],
-  ['仇茂茂', '李聪'],
-]
 
 const toggleTag = (tag) => {
   const idx = selectedTags.value.indexOf(tag)
@@ -506,11 +493,11 @@ const onDateConfirm = () => {
 }
 
 const showSearchPopup = ref(false)
-
 const showNearbyPopup = ref(false)
 const selectedDistance = ref('')
 const customDistance = ref('')
 const distanceRanges = ['10km以内', '30km以内', '50km以内', '100km以内']
+const searchKeyword = ref('')
 
 const onNearbyConfirm = () => {
   showNearbyPopup.value = false
@@ -520,21 +507,44 @@ const now = new Date()
 const currentYear = now.getFullYear()
 const years = Array.from({ length: 5 }, (_, i) => currentYear - 2 + i)
 const months = Array.from({ length: 12 }, (_, i) => i + 1)
-
 const daysInMonth = (y, m) => new Date(y, m, 0).getDate()
 const days = computed(() => {
   const y = years[pickerValue.value[0]]
   const m = months[pickerValue.value[1]]
   return Array.from({ length: daysInMonth(y, m) }, (_, i) => i + 1)
 })
-
 const pickerValue = ref([2, now.getMonth(), now.getDate() - 1])
-
 const onPickerChange = (e) => {
   pickerValue.value = e.detail.value
 }
-</script>
 
+onMounted(async () => {
+  try {
+    const [metricsRes, leadRes, customerRes] = await Promise.all([
+      getOperationsOverview(),
+      getLeadList({ tab: 'pending_followup' }),
+      getCustomerList({ tab: 'my_owned' }),
+    ])
+    metrics.value = metricsRes.metrics || []
+    leads.value = leadRes.items || []
+    customers.value = customerRes.items || []
+  } catch {
+    // 接口失败时使用空数据
+  }
+
+  try {
+    const treeRes = await getCompanyDepartmentTree('lead.create')
+    if (treeRes.items) {
+      const { companies, depts, subDepts } = parseTreeToLists(treeRes.items)
+      companyList.value = companies
+      deptList.value = depts
+      subDeptList.value = subDepts
+    }
+  } catch {
+    // 筛选数据加载失败使用空列表
+  }
+})
+</script>
 <style>
 .dev-home {
   min-height: 100vh;

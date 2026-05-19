@@ -1,0 +1,21 @@
+{
+  "permissions": {
+    "allow": [
+      "Read(//c/Users/前端开发/.claude/**)",
+      "Read(//c/Users/前端开发/**)",
+      "Read(//c/Users/前端开发/AppData/Roaming/Claude/**)",
+      "Bash(npx *)",
+      "Bash(sed -i 's/const rolePathMap: Record<string, string> =/const rolePathMap =/' src/pages/login/index.vue)",
+      "Bash(sed -i 's/function detectRole\\(permissions: string\\\\[\\\\]\\): string {/function detectRole\\(permissions\\) {/' src/pages/login/index.vue)",
+      "Bash(sed -i 's/function getRoleHomePath\\(role: string\\): string {/function getRoleHomePath\\(role\\) {/' src/pages/login/index.vue)",
+      "Bash(sed -i 's/catch \\(e: unknown\\) {/catch \\(e\\) {/' src/pages/login/index.vue)",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\" http://124.223.105.21:8080/auth/login -X POST -H \"Content-Type: application/json\" -d '{\"account\":\"test\",\"password\":\"test\"}')",
+      "Bash(curl -s http://124.223.105.21:8080/auth/login -X POST -H \"Content-Type: application/json\" -d '{\"account\":\"test\",\"password\":\"test\"}')",
+      "Bash(curl -s -w \"\\\\n%{http_code}\" http://124.223.105.21:8080/api/auth/login -X POST -H \"Content-Type: application/json\" -d '{\"account\":\"test\",\"password\":\"test\"}')",
+      "Bash(curl -s -w \"\\\\n%{http_code}\" http://124.223.105.21:8080/dber-backend/auth/login -X POST -H \"Content-Type: application/json\" -d '{\"account\":\"test\",\"password\":\"test\"}')",
+      "Bash(curl -s -w \"\\\\n%{http_code}\" http://124.223.105.21:8080/ -X GET)",
+      "Bash(sed -i '/const rolePathMap = {/,/^$/{ *)",
+      "Bash(sed -n '80,110p' src/pages/login/index.vue)"
+    ]
+  }
+}

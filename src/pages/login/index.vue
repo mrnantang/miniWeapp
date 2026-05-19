@@ -38,6 +38,7 @@
           class="login-btn"
           block
           type="primary"
+          :loading="loading"
           :disabled="!canLogin"
           @click="handleLogin"
         >
@@ -49,8 +50,8 @@
     <view v-if="showError" class="error-overlay" @tap="showError = false">
       <view class="error-dialog" @tap.stop>
         <view class="error-content">
-          <text class="error-title">账号/密码错误</text>
-          <text class="error-subtitle">请输入正确的账号/密码</text>
+          <text class="error-title">登录失败</text>
+          <text class="error-subtitle">{{ errorMsg }}</text>
         </view>
         <view class="error-btn" @tap="showError = false">
           <text class="error-btn-text">我已知晓</text>
@@ -63,60 +64,56 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue'
 import Taro from '@tarojs/taro'
+import { login } from '@/api/auth'
+import { setToken, setUserInfo, setPermissions, getRememberedAccount, setRememberedAccount, removeRememberedAccount } from '@/utils/storage'
+import { detectRole, getRoleHomePath } from '@/utils/role'
 import loginBanner from '@/assets/login/login-banner.png'
 import iconAccount from '@/assets/login/icon-account.svg'
 import iconPassword from '@/assets/login/icon-password.svg'
 
-const account = ref('boss')
+const account = ref('admin')
 const password = ref('123456')
 const rememberPwd = ref(false)
+const loading = ref(false)
 const showError = ref(false)
+const errorMsg = ref('账号或密码错误，请重新输入')
 
-const canLogin = computed(() => account.value.trim() && password.value.trim())
-
-const roleConfig = {
-  dev: { root: 'subpackages/dev/home/index', name: '开发端' },
-  sales: { root: 'subpackages/dev/home/index', name: '销售端' },
-  ops: { root: 'subpackages/ops/home/index', name: '运营端' },
-  boss: { root: 'subpackages/boss/ops-home/index', name: '老板端' },
-}
-
-const accountMap = {
-  dev: { account: 'dev', password: '123456' },
-  sales: { account: 'sales', password: '123456' },
-  ops: { account: 'ops', password: '123456' },
-  boss: { account: 'boss', password: '123456' },
-}
+const canLogin = computed(() => account.value.trim() && password.value.trim() && !loading.value)
 
 onMounted(() => {
-  const savedAccount = Taro.getStorageSync('login_account')
-  const savedPassword = Taro.getStorageSync('login_password')
-  if (savedAccount && savedPassword) {
-    account.value = savedAccount
-    password.value = savedPassword
+  const remembered = getRememberedAccount()
+  if (remembered) {
+    account.value = remembered.account
+    password.value = remembered.password
     rememberPwd.value = true
   }
 })
 
-const handleLogin = () => {
+const handleLogin = async () => {
   if (!canLogin.value) return
 
-  const matched = Object.entries(accountMap).find(([, v]) =>
-    v.account === account.value.trim() && v.password === password.value
-  )
+  loading.value = true
+  try {
+    const res = await login(account.value.trim(), password.value)
 
-  if (matched) {
+    setToken(res.token)
+    setUserInfo(res.user)
+    setPermissions(res.permissions)
+
     if (rememberPwd.value) {
-      Taro.setStorageSync('login_account', account.value.trim())
-      Taro.setStorageSync('login_password', password.value)
+      setRememberedAccount(account.value.trim(), password.value)
     } else {
-      Taro.removeStorageSync('login_account')
-      Taro.removeStorageSync('login_password')
+      removeRememberedAccount()
     }
-    Taro.setStorageSync('role', matched[0])
-    Taro.reLaunch({ url: '/' + roleConfig[matched[0]].root })
-  } else {
+
+    const role = detectRole(res.permissions)
+    // Taro.reLaunch({ url: '/' + getRoleHomePath(role) })
+    Taro.reLaunch({ url: '/subpackages/dev/home/index'})
+  } catch (e) {
+    errorMsg.value = (e instanceof Error) ? e.message : '账号或密码错误，请重新输入'
     showError.value = true
+  } finally {
+    loading.value = false
   }
 }
 </script>

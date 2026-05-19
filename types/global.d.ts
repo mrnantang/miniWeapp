@@ -26,6 +26,9 @@ declare namespace NodeJS {
   }
 }
 
+/** 由 defineConstants 注入的 API 基础地址 */
+declare const TARO_APP_API_BASE: string
+
 declare module '@tarojs/components' {
   export * from '@tarojs/components/types/index.vue3'
 }
