@@ -2,9 +2,24 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
-## 沟通规则
+# 项目开发规范
 
-- 所有回答必须使用中文
+## 语言要求（强制执行）
+- **所有对话、解释、问题、建议必须使用中文**
+- 代码注释使用中文
+- 提交信息（commit message）使用中文
+- 变量名、函数名使用英文驼峰命名（这是代码规范，不是对话）
+
+## 代码风格规范
+### JavaScript/TypeScript 标准
+- **必须使用 ES6+ 语法**
+- 使用 `const` 和 `let`，禁止 `var`
+- 使用箭头函数 `() => {}`
+- 使用模板字符串 `` `${variable}` ``
+- 使用解构赋值 `const { name, age } = obj`
+- 使用展开运算符 `{ ...obj }`
+- 使用 `async/await` 而非回调或 Promise 链
+- 使用 `import/export` 而非 `require/module.exports`
 
 ## 项目概述
 
@@ -14,10 +29,10 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ```bash
 # 开发（微信小程序，watch 模式）
-npm run dev:weapp
+pnpm run dev:weapp
 
 # 生产构建（微信小程序）
-npm run build:weapp
+pnpm run build:weapp
 
 # 其他平台构建
 npm run build:h5        # H5

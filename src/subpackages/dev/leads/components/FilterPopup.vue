@@ -6,7 +6,7 @@
           <text class="filter-header-title">{{ title || '全部筛选' }}</text>
         </view>
         <view class="filter-body">
-          <scroll-view v-if="!simple" class="filter-sidebar" scroll-y :enhanced="true" :show-scrollbar="false">
+          <scroll-view v-if="!simple" class="filter-sidebar" scroll-y="true" :enhanced="true" :show-scrollbar="false">
             <view
               v-for="(item, idx) in sidebarItems"
               :key="item.label"
@@ -17,33 +17,7 @@
               <text class="filter-sidebar-text" :class="{ 'filter-sidebar-text--active': activeIdx === idx }">{{ item.label }}</text>
             </view>
           </scroll-view>
-          <scroll-view class="filter-content" scroll-y :enhanced="true" :show-scrollbar="false">
-            <view v-if="currentType === 'org'" class="org-tags">
-              <text class="org-cat-title">公司</text>
-              <view class="org-tag-row">
-                <view v-for="c in companyList" :key="c" class="org-tag" :class="{ 'org-tag--active': selected.includes(c) }" @tap="toggle(c)">
-                  <text class="org-tag-text" :class="{ 'org-tag-text--active': selected.includes(c) }">{{ c }}</text>
-                </view>
-              </view>
-              <text class="org-cat-title">部门</text>
-              <view class="org-tag-row">
-                <view v-for="d in deptList" :key="d" class="org-tag" :class="{ 'org-tag--active': selected.includes(d) }" @tap="toggle(d)">
-                  <text class="org-tag-text" :class="{ 'org-tag-text--active': selected.includes(d) }">{{ d }}</text>
-                </view>
-              </view>
-              <text class="org-cat-title">子部门</text>
-              <view class="org-tag-row">
-                <view v-for="s in subDeptList" :key="s" class="org-tag" :class="{ 'org-tag--active': selected.includes(s) }" @tap="toggle(s)">
-                  <text class="org-tag-text" :class="{ 'org-tag-text--active': selected.includes(s) }">{{ s }}</text>
-                </view>
-              </view>
-              <text class="org-cat-title">员工</text>
-              <view class="org-tag-row" v-for="(row, ri) in employeeRows" :key="ri">
-                <view v-for="e in row" :key="e" class="org-tag" :class="{ 'org-tag--active': selected.includes(e) }" @tap="toggle(e)">
-                  <text class="org-tag-text" :class="{ 'org-tag-text--active': selected.includes(e) }">{{ e }}</text>
-                </view>
-              </view>
-            </view>
+          <scroll-view class="filter-content" scroll-y="true" :enhanced="true" :show-scrollbar="false">
             <view v-if="currentType === 'industry'" class="org-tags">
               <text class="org-cat-title">客户行业</text>
               <view class="org-tag-row">
@@ -61,14 +35,36 @@
               </view>
             </view>
             <view v-if="currentType === 'region'" class="region-section">
-              <view class="region-tabs">
-                <view v-for="tab in regionTabs" :key="tab" class="region-tab" :class="{ 'region-tab--active': regionTabActive === tab }" @tap="regionTabActive = tab">
-                  <text class="region-tab-text" :class="{ 'region-tab-text--active': regionTabActive === tab }">{{ tab }}</text>
+              <view class="region-breadcrumb">
+                <text class="region-breadcrumb-item" :class="{ 'region-breadcrumb-item--active': drillLevel === 0 }" @tap="drillBackTo(0)">{{ drillProvince ? drillProvince.name : '请选择省份' }}</text>
+                <text v-if="drillLevel >= 1" class="region-breadcrumb-sep">/</text>
+                <text v-if="drillLevel >= 1" class="region-breadcrumb-item" :class="{ 'region-breadcrumb-item--active': drillLevel === 1 }" @tap="drillBackTo(1)">{{ drillCity ? drillCity.name : '请选择城市' }}</text>
+                <text v-if="drillLevel >= 2 && selected.length > 0" class="region-breadcrumb-sep">/</text>
+                <text v-if="drillLevel >= 2 && selected.length > 0" class="region-breadcrumb-item region-breadcrumb-item--active">{{ (drillCity && drillCity.children && drillCity.children.find(c => c.code === selected[0])) ? drillCity.children.find(c => c.code === selected[0]).name : '' }}</text>
+              </view>
+              <view v-if="regionTreeLoading" class="region-loading"><text class="region-loading-text">加载中...</text></view>
+              <view v-else class="org-tag-row">
+                <view v-for="item in currentRegionItems" :key="item.code" class="org-tag" :class="{ 'org-tag--active': isRegionSelected(item) }" @tap="onRegionTap(item)">
+                  <text class="org-tag-text" :class="{ 'org-tag-text--active': isRegionSelected(item) }">{{ item.name }}</text>
                 </view>
               </view>
-              <view class="org-tag-row">
-                <view v-for="item in currentRegionItems" :key="item" class="org-tag" :class="{ 'org-tag--active': selected.includes(item) }" @tap="toggle(item)">
-                  <text class="org-tag-text" :class="{ 'org-tag-text--active': selected.includes(item) }">{{ item }}</text>
+            </view>
+            <view v-if="currentType === 'userCascader'" class="region-section">
+              <view class="region-breadcrumb">
+                <text class="region-breadcrumb-item" :class="{ 'region-breadcrumb-item--active': userDrillStack.length === 0 }" @tap="userCascaderBackTo(0)">{{ userDrillStack.length > 0 ? userDrillStack[0].name : '请选择公司' }}</text>
+                <template v-for="(node, idx) in userDrillStack.slice(1)" :key="getNodeKey(node)">
+                  <text class="region-breadcrumb-sep">/</text>
+                  <text class="region-breadcrumb-item" :class="{ 'region-breadcrumb-item--active': idx + 1 === userDrillStack.length - 1 }" @tap="userCascaderBackTo(idx + 1)">{{ node.name }}</text>
+                </template>
+                <template v-if="selected.length > 0">
+                  <text class="region-breadcrumb-sep">/</text>
+                  <text class="region-breadcrumb-item region-breadcrumb-item--active">{{ buildUserCascaderPath().split('/').pop() }}</text>
+                </template>
+              </view>
+              <view v-if="userCascaderLoading" class="region-loading"><text class="region-loading-text">加载中...</text></view>
+              <view v-else class="org-tag-row">
+                <view v-for="item in currentUserCascaderItems" :key="getNodeKey(item)" class="org-tag" :class="{ 'org-tag--active': isUserCascaderSelected(item) }" @tap="onUserCascaderTap(item)">
+                  <text class="org-tag-text" :class="{ 'org-tag-text--active': isUserCascaderSelected(item) }">{{ item.name }}</text>
                 </view>
               </view>
             </view>
@@ -129,7 +125,9 @@
 </template>
 
 <script setup>
-import { ref, computed, watch } from 'vue'
+import { ref, reactive, computed, watch } from 'vue'
+import { getRegionTree } from '@/api/platform'
+import { getUserCascader } from '@/api/system'
 
 const props = defineProps({
   modelValue: { type: Boolean, default: false },
@@ -149,57 +147,48 @@ const visible = computed({
 })
 
 const activeIdx = ref(0)
-const selected = ref([])
+const selectedMap = reactive({})
+const selected = computed({
+  get: () => {
+    if (!selectedMap[currentType.value]) {
+      selectedMap[currentType.value] = []
+    }
+    return selectedMap[currentType.value]
+  },
+  set: (val) => { selectedMap[currentType.value] = val }
+})
 const showDatePopup = ref(false)
 const datePickerTarget = ref('start')
 const startTime = ref('')
 const endTime = ref('')
 
-const regionTabActive = ref('省')
-const regionTabs = ['省', '市', '区']
+const regionTree = ref([])
+const regionTreeLoading = ref(false)
+const drillLevel = ref(0)
+const drillProvince = ref(null)
+const drillCity = ref(null)
 
-const companyList = ['德贝尔总公司', '江苏扬州办事处', '江苏苏州办事处', '江苏徐州办事处']
-const deptList = ['销售总部', '开发总部', '财务总部', '外贸总部']
-const subDeptList = ['销售一部', '销售二部']
-const employeeRows = [
-  ['张传送', '李治廷'],
-  ['仇茂茂', '李聪'],
-  ['屈伊', '陈子奕'],
-  ['仇茂茂', '李聪'],
-]
+const userCascaderTree = ref([])
+const userCascaderLoading = ref(false)
+const userDrillStack = ref([])
 
-const industryList = ['电气行业', '机械制造', '化工行业', '纺织服装', '信息技术', '建筑工程', '食品加工', '医药制造']
-const leadLevelList = ['全部', 'A级线索', 'B级线索', 'C级线索', 'D级线索']
-
-const regionProvinceList = ['全部', '广东省', '江苏省', '福建省', '北京市', '天津市', '上海市', '江西省', '广西省', '四川省', '重庆市', '云南省', '贵州省']
-
-const regionDetailList = ['广东省/深圳市/南山区', '广东省/深圳市/福田区', '广东省/广州市/天河区', '江苏省/苏州市/姑苏区', '江苏省/扬州市', '江苏省/徐州市']
-
-const regionCityList = computed(() => {
-  const cities = new Set()
-  regionDetailList.forEach(r => {
-    const parts = r.split('/')
-    if (parts.length >= 2) cities.add(parts[1])
-  })
-  return ['全部', ...cities]
-})
-
-const regionDistrictList = computed(() => {
-  const districts = new Set()
-  regionDetailList.forEach(r => {
-    const parts = r.split('/')
-    if (parts.length >= 3) districts.add(parts[2])
-  })
-  return ['全部', ...districts]
-})
+const industryList = ['电气行业', '管道行业', '卷涂行业', '家居行业', '家具行业', '交通行业', '行业类别', '铝材行业', '体育用品', '五金行业', '消防器材', '新能源行业', '重工行业', '其他行业']
+const leadLevelList = ['A级线索', 'B级线索', 'C级线索', 'D级线索']
 
 const currentRegionItems = computed(() => {
-  if (regionTabActive.value === '省') return regionProvinceList
-  if (regionTabActive.value === '市') return regionCityList.value
-  return regionDistrictList.value
+  if (drillLevel.value === 0) return regionTree.value
+  if (drillLevel.value === 1 && drillProvince.value) return drillProvince.value.children || []
+  if (drillLevel.value === 2 && drillCity.value) return drillCity.value.children || []
+  return []
 })
 
-const channelList = ['全部', '抖音平台', '百度平台', '腾讯广告', '小红书']
+const currentUserCascaderItems = computed(() => {
+  if (userDrillStack.value.length === 0) return userCascaderTree.value
+  const last = userDrillStack.value[userDrillStack.value.length - 1]
+  return last.children || []
+})
+
+const channelList = ['抖音平台', '百度平台', '腾讯广告', '小红书']
 
 const sidebarTypeMap = computed(() => props.sidebarItems.map(i => i.type))
 
@@ -226,11 +215,37 @@ const pickerValue = ref([2, now.getMonth(), now.getDate() - 1])
 
 watch(() => props.modelValue, (val) => {
   if (val) {
-    selected.value = [...props.initialSelected]
+    if (props.initialSelected.length > 0) {
+      selectedMap[currentType.value] = [...props.initialSelected]
+    } else if (!selectedMap[currentType.value]) {
+      selectedMap[currentType.value] = []
+    }
     activeIdx.value = 0
-    regionTabActive.value = '省'
+    drillLevel.value = 0
+    drillProvince.value = null
+    drillCity.value = null
+    userDrillStack.value = []
     startTime.value = ''
     endTime.value = ''
+    // 预加载地区树和用户级联数据（弹窗打开时立即请求，切换侧边栏时立即可用）
+    if (regionTree.value.length === 0) {
+      fetchRegionTree().then(() => {
+        if (currentType.value === 'region' && selected.value.length > 0) {
+          restoreRegionDrill(selected.value[0])
+        }
+      })
+    } else if (currentType.value === 'region' && selected.value.length > 0) {
+      restoreRegionDrill(selected.value[0])
+    }
+    if (userCascaderTree.value.length === 0) {
+      fetchUserCascader().then(() => {
+        if (currentType.value === 'userCascader' && selected.value.length > 0) {
+          restoreUserCascaderDrill(Number(selected.value[0]))
+        }
+      })
+    } else if (currentType.value === 'userCascader' && selected.value.length > 0) {
+      restoreUserCascaderDrill(Number(selected.value[0]))
+    }
   }
 })
 
@@ -247,20 +262,235 @@ const toggle = (tag) => {
   }
 }
 
+const fetchRegionTree = async () => {
+  if (regionTree.value.length > 0 || regionTreeLoading.value) return
+  regionTreeLoading.value = true
+  try {
+    const res = await getRegionTree()
+    regionTree.value = res.items || []
+  } catch {
+    // 加载失败保持空列表
+  } finally {
+    regionTreeLoading.value = false
+  }
+}
+
+const restoreRegionDrill = (code) => {
+  if (!code || regionTree.value.length === 0) return
+  for (const province of regionTree.value) {
+    for (const city of province.children || []) {
+      for (const district of city.children || []) {
+        if (district.code === code) {
+          drillProvince.value = province
+          drillCity.value = city
+          drillLevel.value = 2
+          return
+        }
+      }
+    }
+  }
+}
+
+const isRegionSelected = (item) => {
+  if (drillLevel.value === 0) return drillProvince.value?.code === item.code
+  if (drillLevel.value === 1) return drillCity.value?.code === item.code
+  return selected.value.includes(item.code)
+}
+
+const onRegionTap = (item) => {
+  if (item.level === 1) {
+    drillProvince.value = item
+    drillCity.value = null
+    drillLevel.value = 1
+    selected.value = []
+  } else if (item.level === 2) {
+    drillCity.value = item
+    drillLevel.value = 2
+    selected.value = []
+  } else if (item.level === 3) {
+    if (!props.multiple) {
+      selected.value = [item.code]
+    } else {
+      const idx = selected.value.indexOf(item.code)
+      if (idx >= 0) {
+        selected.value.splice(idx, 1)
+      } else {
+        selected.value.push(item.code)
+      }
+    }
+  }
+}
+
+const drillBackTo = (level) => {
+  if (level === 0) {
+    drillProvince.value = null
+    drillCity.value = null
+    drillLevel.value = 0
+    selected.value = []
+  } else if (level === 1) {
+    drillCity.value = null
+    drillLevel.value = 1
+    selected.value = []
+  }
+}
+
+const buildRegionPath = () => {
+  const parts = []
+  if (drillProvince.value) parts.push(drillProvince.value.name)
+  if (drillCity.value) parts.push(drillCity.value.name)
+  if (drillLevel.value >= 2 && selected.value.length > 0) {
+    const district = drillCity.value?.children?.find(c => c.code === selected.value[0])
+    if (district) parts.push(district.name)
+  }
+  return parts.join('/')
+}
+
+const findPathByCode = (code) => {
+  for (const p of regionTree.value) {
+    for (const c of p.children || []) {
+      for (const d of c.children || []) {
+        if (d.code === code) return `province:${p.code}/city:${c.code}/district:${d.code}`
+      }
+    }
+  }
+  return ''
+}
+
+const fetchUserCascader = async () => {
+  if (userCascaderTree.value.length > 0 || userCascaderLoading.value) return
+  userCascaderLoading.value = true
+  try {
+    const res = await getUserCascader({ permissionCode: 'lead.create', companyId: 1 })
+    userCascaderTree.value = res.items || []
+  } catch {
+    // 加载失败保持空列表
+  } finally {
+    userCascaderLoading.value = false
+  }
+  return
+}
+
+const getNodeKey = (node) => {
+  if (node.nodeType === 'user') return `u-${node.userId}`
+  if (node.nodeType === 'department') return `d-${node.departmentId || node.name}`
+  return `c-${node.companyId || node.name}`
+}
+
+const isUserCascaderSelected = (item) => {
+  return selected.value.length > 0 && selected.value[0] === item.userId
+}
+
+const onUserCascaderTap = (item) => {
+  if (item.nodeType === 'user') {
+    if (!props.multiple) {
+      selected.value = [item.userId]
+    } else {
+      const idx = selected.value.indexOf(item.userId)
+      if (idx >= 0) {
+        selected.value.splice(idx, 1)
+      } else {
+        selected.value.push(item.userId)
+      }
+    }
+  } else {
+    userDrillStack.value.push(item)
+    selected.value = []
+  }
+}
+
+const userCascaderBackTo = (index) => {
+  userDrillStack.value = userDrillStack.value.slice(0, index)
+  selected.value = []
+}
+
+const buildUserCascaderPath = () => {
+  const parts = userDrillStack.value.map(n => n.name)
+  if (selected.value.length > 0) {
+    const lastChildren = userDrillStack.value.length > 0
+      ? userDrillStack.value[userDrillStack.value.length - 1].children || []
+      : userCascaderTree.value
+    const selectedUser = lastChildren.find(c => c.userId === selected.value[0])
+    if (selectedUser) parts.push(selectedUser.name)
+  }
+  return parts.join('/')
+}
+
+const getSelectedUserId = () => {
+  if (selected.value.length > 0) return selected.value[0]
+  return undefined
+}
+
+const getSelectedUserName = () => {
+  if (selected.value.length === 0) return undefined
+  const lastChildren = userDrillStack.value.length > 0
+    ? userDrillStack.value[userDrillStack.value.length - 1].children || []
+    : userCascaderTree.value
+  const user = lastChildren.find(c => c.userId === selected.value[0])
+  return user ? user.name : undefined
+}
+
+const restoreUserCascaderDrill = (targetId) => {
+  if (!targetId || userCascaderTree.value.length === 0) return
+  const findPath = (nodes, path = []) => {
+    for (const node of nodes) {
+      if (node.nodeType === 'user' && node.userId === targetId) return [...path]
+      if (node.children && node.children.length > 0) {
+        const found = findPath(node.children, [...path, node])
+        if (found) return found
+      }
+    }
+    return null
+  }
+  const path = findPath(userCascaderTree.value)
+  if (path) {
+    userDrillStack.value = path
+  }
+}
+
 const onClear = () => {
   selected.value = []
   startTime.value = ''
   endTime.value = ''
-  emit('clear')
+  const payload = { type: currentType.value }
+  if (!props.simple && props.sidebarItems[activeIdx.value]) {
+    payload.paramKey = props.sidebarItems[activeIdx.value].paramKey || currentType.value
+  }
+  emit('clear', payload)
 }
 
 const onConfirm = () => {
-  emit('confirm', {
+  const payload = {
     type: currentType.value,
-    selected: [...selected.value],
+    selected: currentType.value === 'region' && !props.simple
+      ? selected.value.map(code => findPathByCode(code)).filter(Boolean)
+      : [...selected.value],
     startTime: startTime.value,
     endTime: endTime.value,
-  })
+  }
+
+  // 非 simple 模式携带 sidebar 项的 paramKey，用于 API 参数映射
+  if (!props.simple && props.sidebarItems[activeIdx.value]) {
+    payload.paramKey = props.sidebarItems[activeIdx.value].paramKey || currentType.value
+  }
+
+  if (currentType.value === 'region' && props.simple) {
+    payload.regionCodes = {
+      provinceCode: drillProvince.value?.code || '',
+      cityCode: drillCity.value?.code || '',
+      districtCode: drillLevel.value >= 2 ? selected.value[0] : '',
+    }
+    payload.regionPath = buildRegionPath()
+  }
+
+  if (currentType.value === 'userCascader') {
+    payload.userId = getSelectedUserId()
+    payload.userName = getSelectedUserName()
+    if (props.simple) {
+      payload.userCascaderPath = buildUserCascaderPath()
+    }
+  }
+
+  emit('confirm', payload)
   visible.value = false
 }
 
@@ -359,24 +589,34 @@ const onPickerChange = (e) => {
 .region-section {
   padding: 0;
 }
-.region-tabs {
-  display: flex;
-  gap: 24rpx;
-  margin-bottom: 24rpx;
-}
-.region-tab {
-  flex: 1;
+.region-breadcrumb {
   display: flex;
   align-items: center;
-  justify-content: center;
+  flex-wrap: wrap;
+  gap: 8rpx;
+  margin-bottom: 24rpx;
+  padding: 16rpx 0;
 }
-.region-tab-text {
+.region-breadcrumb-item {
   font-size: 26rpx;
-  font-weight: 500;
   color: #62687D;
 }
-.region-tab-text--active {
-  color: #1A1D24;
+.region-breadcrumb-item--active {
+  color: #37AE7E;
+  font-weight: 500;
+}
+.region-breadcrumb-sep {
+  font-size: 26rpx;
+  color: #BBBEC2;
+}
+.region-loading {
+  display: flex;
+  justify-content: center;
+  padding: 40rpx 0;
+}
+.region-loading-text {
+  font-size: 26rpx;
+  color: #9292A5;
 }
 .org-tag-row {
   display: flex;

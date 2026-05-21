@@ -23,11 +23,18 @@
     "miniprogram": {
       "list": [
         {
-          "name": "老板首页",
-          "pathName": "subpackages/boss/ops-home/index",
+          "name": "新增线索",
+          "pathName": "subpackages/dev/leads/add-lead/index",
           "query": "",
           "scene": null,
           "launchMode": "default"
+        },
+        {
+          "name": "老板首页",
+          "pathName": "subpackages/boss/ops-home/index",
+          "query": "",
+          "launchMode": "default",
+          "scene": null
         },
         {
           "name": "新增内容素材",

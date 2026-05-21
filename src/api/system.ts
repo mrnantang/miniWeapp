@@ -16,8 +16,30 @@ export interface CompanyDepartmentTreeResponse {
   items: CompanyDepartmentTreeNode[]
 }
 
-export function getCompanyDepartmentTree(permissionCode: string, companyId?: number): Promise<CompanyDepartmentTreeResponse> {
+export const getCompanyDepartmentTree = (permissionCode: string, companyId?: number): Promise<CompanyDepartmentTreeResponse> => {
   const params: Record<string, unknown> = { permissionCode }
   if (companyId) params.companyId = companyId
   return get<CompanyDepartmentTreeResponse>('/system/companies/departments/tree', params)
+}
+
+// 公司-用户级联选择器节点
+export interface UserCascaderNode {
+  companyId?: number
+  departmentId?: number
+  userId?: number
+  name: string
+  displayName?: string
+  nodeType: string // 'company' | 'department' | 'user'
+  isLeaf?: boolean
+  phone?: string
+  children: UserCascaderNode[]
+}
+
+export interface UserCascaderResponse {
+  items: UserCascaderNode[]
+}
+
+// 获取公司-用户级联选择器数据（用于选择负责人/跟进人）
+export const getUserCascader = (params?: { permissionCode?: string; companyId?: number }): Promise<UserCascaderResponse> => {
+  return get<UserCascaderResponse>('/system/companies/user-cascader', params as Record<string, unknown>)
 }

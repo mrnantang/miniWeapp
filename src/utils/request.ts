@@ -17,6 +17,7 @@ function getBaseUrl(): string {
 
 function authHeader(): Record<string, string> {
   const token = getToken()
+  // const token = ''
   return token ? { Authorization: `Bearer ${token}` } : {}
 }
 
@@ -25,8 +26,8 @@ async function handleResponse<T>(res: Taro.request.SuccessCallbackResult<ApiResp
   if (body.code === 200) {
     return body.data
   }
-  if (body.code === 401 && url !== '/auth/login') {
-    clearAuth()
+  if (body.code === 401 && url !== '/auth/login' && url !== '/auth/me') {
+    // clearAuth()
     Taro.reLaunch({ url: '/pages/login/index' })
     return Promise.reject(new Error('登录已过期，请重新登录'))
   }
@@ -34,12 +35,25 @@ async function handleResponse<T>(res: Taro.request.SuccessCallbackResult<ApiResp
 }
 
 export async function get<T>(url: string, params?: Record<string, unknown>): Promise<T> {
+  let fullUrl = `${getBaseUrl()}${url}`
+  if (params) {
+    const parts: string[] = []
+    for (const [key, val] of Object.entries(params)) {
+      if (val === undefined || val === null) continue
+      if (Array.isArray(val)) {
+        for (const item of val) {
+          parts.push(`${encodeURIComponent(key)}=${encodeURIComponent(String(item))}`)
+        }
+      } else {
+        parts.push(`${encodeURIComponent(key)}=${encodeURIComponent(String(val))}`)
+      }
+    }
+    if (parts.length > 0) fullUrl += '?' + parts.join('&')
+  }
   const res = await Taro.request<ApiResponse<T>>({
-    url: `${getBaseUrl()}${url}`,
+    url: fullUrl,
     method: 'GET',
-    data: params,
     header: {
-      'Content-Type': 'application/json',
       ...authHeader(),
     },
   })

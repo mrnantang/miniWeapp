@@ -9,16 +9,13 @@ const KEYS = {
 } as const
 
 export function getToken(): string {
-  return Taro.getStorageSync(KEYS.TOKEN) || ''
+  return Taro.getStorageSync(KEYS.TOKEN)
 }
 
 export function setToken(token: string) {
   Taro.setStorageSync(KEYS.TOKEN, token)
 }
 
-export function removeToken() {
-  Taro.removeStorageSync(KEYS.TOKEN)
-}
 
 export function getUserInfo<T = Record<string, unknown>>(): T | null {
   const raw = Taro.getStorageSync(KEYS.USER_INFO)
@@ -66,7 +63,6 @@ export function removeRememberedAccount() {
 
 /** 清除所有登录相关数据 */
 export function clearAuth() {
-  removeToken()
   removeUserInfo()
   removePermissions()
 }

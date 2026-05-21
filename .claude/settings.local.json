@@ -15,7 +15,9 @@
       "Bash(curl -s -w \"\\\\n%{http_code}\" http://124.223.105.21:8080/dber-backend/auth/login -X POST -H \"Content-Type: application/json\" -d '{\"account\":\"test\",\"password\":\"test\"}')",
       "Bash(curl -s -w \"\\\\n%{http_code}\" http://124.223.105.21:8080/ -X GET)",
       "Bash(sed -i '/const rolePathMap = {/,/^$/{ *)",
-      "Bash(sed -n '80,110p' src/pages/login/index.vue)"
+      "Bash(sed -n '80,110p' src/pages/login/index.vue)",
+      "Bash(npm run *)",
+      "Bash(pnpm run *)"
     ]
   }
 }
