@@ -21,7 +21,6 @@
             :class="{ 'leads-tab--active': activeLeadTab === tab.value }" @tap="onTabChange(tab.value)">
             <text class="leads-tab-text" :class="{ 'leads-tab-text--active': activeLeadTab === tab.value }">
               {{ tab.label }}
-              <text v-if="tabCount(tab.value) !== null" class="leads-tab-count">({{ tabCount(tab.value) }})</text>
             </text>
           </view>
         </view>
@@ -33,39 +32,87 @@
           <text class="leads-empty-text">加载中...</text>
         </view>
 
-        <view v-for="card in list" :key="card.id" class="lc-card" @tap="goDetail(card.id)">
-          <view class="lc-head">
-            <text class="lc-name">{{ card.customerName || card.companyName }}</text>
-            <view class="lc-badge" :class="statusBadgeStyle(card.status)">
-              <text class="lc-badge-text" :class="statusBadgeTextStyle(card.status)">{{ statusLabel(card.status)
-              }}</text>
+        <!-- 公海卡片 -->
+        <template v-if="POOL_TABS.includes(activeLeadTab)">
+          <view v-for="card in list" :key="card.id" class="lc-card" @tap="goDetail(card.id)">
+            <view class="lc-head">
+              <text class="lc-name">{{ card.customerName || card.companyName }}</text>
+            </view>
+            <view class="lc-info">
+              <view class="lc-info-item">
+                <view class="pool-icon pool-icon--phone">
+                  <image class="pool-icon-img" :src="iconPhone" mode="aspectFit" />
+                </view>
+                <text class="lc-info-text lc-info-text--active">{{ card.phone || '-' }}</text>
+              </view>
+              <view class="lc-info-item">
+                <view class="pool-icon pool-icon--default">
+                  <image class="pool-icon-img" :src="gradeIcon" mode="aspectFit" />
+                </view>
+                <text class="lc-info-text">{{ card.leadLevel || '-' }}级线索</text>
+              </view>
+            </view>
+            <view class="lc-tags">
+              <view class="lc-info-item">
+                <view class="pool-icon pool-icon--default">
+                  <image class="pool-icon-img" :src="iconIndustry" mode="aspectFit" />
+                </view>
+                <text class="lc-info-text">{{ card.customerIndustryLabel || '-' }}</text>
+              </view>
+              <view class="lc-info-item">
+                <view class="pool-icon pool-icon--default">
+                  <image class="pool-icon-img" :src="locationIcon" mode="aspectFit" />
+                </view>
+                <text class="lc-info-text">{{ regionDisplay(card) || '-' }}</text>
+              </view>
+            </view>
+            <view class="lc-actions">
+              <view class="pool-btn" @tap.stop="onAssignPool(card.id)">
+                <text class="pool-btn-text">分配</text>
+              </view>
+              <view class="pool-btn" @tap.stop="onClaimPool(card.id)">
+                <text class="pool-btn-text">立刻领取</text>
+              </view>
             </view>
           </view>
-          <view class="lc-info">
-            <view class="lc-info-item">
-              <image class="lc-icon" :src="iconPhone" mode="aspectFit" />
-              <text class="lc-info-text lc-info-text--active">{{ card.phone || '-' }}</text>
+        </template>
+
+        <!-- 普通卡片 -->
+        <template v-else>
+          <view v-for="card in list" :key="card.id" class="lc-card" @tap="goDetail(card.id)">
+            <view class="lc-head">
+              <text class="lc-name">{{ card.customerName || card.companyName }}</text>
+              <view class="lc-badge" :class="statusBadgeStyle(card.status)">
+                <text class="lc-badge-text" :class="statusBadgeTextStyle(card.status)">{{ statusLabel(card.status)
+                }}</text>
+              </view>
             </view>
-            <view class="lc-info-item">
-              <image class="lc-icon" :src="gradeIcon" mode="aspectFit" />
-              <text class="lc-info-text">{{ card.leadLevel || '-' }}级线索</text>
+            <view class="lc-info">
+              <view class="lc-info-item">
+                <image class="lc-icon" :src="iconPhone" mode="aspectFit" />
+                <text class="lc-info-text lc-info-text--active">{{ card.phone || '-' }}</text>
+              </view>
+              <view class="lc-info-item">
+                <image class="lc-icon" :src="gradeIcon" mode="aspectFit" />
+                <text class="lc-info-text">{{ card.leadLevel || '-' }}级线索</text>
+              </view>
+            </view>
+            <view class="lc-tags">
+              <view class="lc-info-item">
+                <image class="lc-icon" :src="iconIndustry" mode="aspectFit" />
+                <text class="lc-info-text">{{ card.customerIndustryLabel || '-' }}</text>
+              </view>
+              <view class="lc-info-item">
+                <image class="lc-icon" :src="locationIcon" mode="aspectFit" />
+                <text class="lc-info-text">{{ regionDisplay(card) || '-' }}</text>
+              </view>
+            </view>
+            <view class="lc-note">
+              <text class="lc-note-label">最新跟进：</text>
+              <text class="lc-note-text">{{ card.remark || '暂无' }}</text>
             </view>
           </view>
-          <view class="lc-tags">
-            <view class="lc-info-item">
-              <image class="lc-icon" :src="iconIndustry" mode="aspectFit" />
-              <text class="lc-info-text">{{ card.customerIndustryLabel || '-' }}</text>
-            </view>
-            <view class="lc-info-item">
-              <image class="lc-icon" :src="locationIcon" mode="aspectFit" />
-              <text class="lc-info-text">{{ regionDisplay(card) || '-' }}</text>
-            </view>
-          </view>
-          <view class="lc-note">
-            <text class="lc-note-label">最新跟进：</text>
-            <text class="lc-note-text">{{ card.remark || '暂无' }}</text>
-          </view>
-        </view>
+        </template>
 
         <view v-if="loading && list.length > 0" class="leads-loading-more">
           <text class="leads-loading-more-text">加载更多...</text>
@@ -93,7 +140,7 @@ import { ref, reactive, onMounted } from 'vue'
 import Taro, { useDidShow } from '@tarojs/taro'
 import TabBar from '../tabs/index.vue'
 import FilterPopup from './components/FilterPopup.vue'
-import { getLeadList, type LeadItem, type LeadListSummary } from '@/api/lead'
+import { getLeadList, getLeadsPools, assignLeads, claimLeads, type LeadItem, type LeadListSummary } from '@/api/lead'
 import gradeIcon from '@/assets/dev/icon-grade.png'
 import locationIcon from '@/assets/dev/icon-location.png'
 import iconSearch from '@/assets/dev/icon-search.png'
@@ -106,6 +153,10 @@ const TAB_MAP: Record<string, string> = {
   all: 'all',
   pending_followup: 'pending_followup',
   soon_recycle: 'soon_recycle',
+  operation: 'operation',
+  sales: 'sales',
+  development: 'development',
+  global: 'global'
 }
 
 const STATUS_LABEL: Record<string, string> = {
@@ -119,11 +170,13 @@ const leadsTabs = [
   { label: '全部', value: 'all' },
   { label: '待跟进线索', value: 'pending_followup' },
   { label: '即将回收线索', value: 'soon_recycle' },
-  { label: '运营公海', value: 'pool_operation' },
-  { label: '销售公海', value: 'pool_sales' },
-  { label: '开发公海', value: 'pool_development' },
-  { label: '大公海', value: 'pool_global' },
+  { label: '运营公海', value: 'operation' },
+  { label: '销售公海', value: 'sales' },
+  { label: '开发公海', value: 'development' },
+  { label: '大公海', value: 'global' },
 ]
+
+const POOL_TABS = ['operation', 'sales', 'development', 'global']
 
 const activeLeadTab = ref('all')
 const list = ref<LeadItem[]>([])
@@ -173,10 +226,10 @@ const tabCount = (tabValue: string): number | null => {
     all: summary.value.allCount,
     pending_followup: summary.value.pendingFollowupCount,
     soon_recycle: summary.value.soonRecycleCount,
-    pool_operation: summary.value.operationPoolCount,
-    pool_sales: summary.value.salesPoolCount,
-    pool_development: summary.value.developmentPoolCount,
-    pool_global: summary.value.globalPoolCount,
+    operation: summary.value.operationPoolCount,
+    sales: summary.value.salesPoolCount,
+    development: summary.value.developmentPoolCount,
+    global: summary.value.globalPoolCount,
   }
   return map[tabValue] ?? null
 }
@@ -205,13 +258,6 @@ const regionDisplay = (item: LeadItem): string => {
 const fetchList = async (reset = false) => {
   if (loading.value) return
   const currentTab = activeLeadTab.value
-
-  // 公海 Tab 暂不请求（无 /api/leads/pools 接口）
-  if (currentTab.startsWith('pool_')) {
-    list.value = []
-    hasMore.value = false
-    return
-  }
 
   if (reset) {
     page.value = 1
@@ -261,14 +307,27 @@ const fetchList = async (reset = false) => {
       if (filters.assignedAt[0]) params.assignedAtStart = filters.assignedAt[0]
       if (filters.assignedAt[1]) params.assignedAtEnd = filters.assignedAt[1]
     }
-    const res = await getLeadList(params as Parameters<typeof getLeadList>[0])
-    if (reset) {
-      list.value = res.items || []
+    const isPoolTab = POOL_TABS.includes(currentTab)
+    if (isPoolTab) {
+      delete params.tab
+      params.tab = currentTab
+      const res = await getLeadsPools(params as Parameters<typeof getLeadsPools>[0])
+      if (reset) {
+        list.value = res.items || []
+      } else {
+        list.value = [...list.value, ...(res.items || [])]
+      }
+      hasMore.value = list.value.length < res.total
     } else {
-      list.value = [...list.value, ...(res.items || [])]
+      const res = await getLeadList(params as Parameters<typeof getLeadList>[0])
+      if (reset) {
+        list.value = res.items || []
+      } else {
+        list.value = [...list.value, ...(res.items || [])]
+      }
+      summary.value = res.summary || null
+      hasMore.value = list.value.length < res.total
     }
-    summary.value = res.summary || null
-    hasMore.value = list.value.length < res.total
   } catch {
     // 请求失败保持当前数据
   } finally {
@@ -330,6 +389,20 @@ const goAddLead = () => {
 
 const goDetail = (id: number) => {
   Taro.navigateTo({ url: `/subpackages/dev/leads/detail/index?id=${id}` })
+}
+
+const onAssignPool = async (_id: number) => {
+  Taro.showToast({ title: '功能开发中', icon: 'none' })
+}
+
+const onClaimPool = async (id: number) => {
+  try {
+    await claimLeads({ leadIds: [id] })
+    Taro.showToast({ title: '领取成功', icon: 'success' })
+    fetchList(true)
+  } catch (e) {
+    Taro.showToast({ title: (e as Error).message || '领取失败', icon: 'none' })
+  }
 }
 
 onMounted(() => {
@@ -584,5 +657,45 @@ useDidShow(() => {
 .leads-loading-more-text {
   font-size: 26rpx;
   color: #9292A5;
+}
+
+/* ====== 公海卡片 ====== */
+.pool-icon {
+  width: 36rpx;
+  height: 36rpx;
+  border-radius: 5rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+.pool-icon--phone {
+  background: #EDFAF5;
+}
+.pool-icon--default {
+  background: #F0F2FA;
+}
+.pool-icon-img {
+  width: 24rpx;
+  height: 24rpx;
+}
+
+.lc-actions {
+  display: flex;
+  gap: 20rpx;
+}
+.pool-btn {
+  flex: 1;
+  height: 56rpx;
+  border-radius: 8rpx;
+  background: #FFFFFF;
+  border: 1rpx solid #37AE7E;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.pool-btn-text {
+  font-size: 24rpx;
+  color: #37AE7E;
 }
 </style>

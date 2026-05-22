@@ -4,10 +4,9 @@
       <image class="nav-bar-back-icon" :src="iconBack" mode="aspectFit" />
     </view>
     <text class="nav-bar-title">{{ title }}</text>
-    <view class="nav-bar-right" />
+    <view class="nav-bar-right"></view>
   </view>
 </template>
-
 <script setup>
 import Taro from '@tarojs/taro'
 import iconBack from '@/assets/dev/icon-back.png'

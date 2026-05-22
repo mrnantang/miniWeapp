@@ -170,6 +170,11 @@ export function claimLeads(data: BatchClaimRequest): Promise<{ successCount: num
   return post('/leads/claim', data as unknown as Record<string, unknown>)
 }
 
+/** 查询跟进记录列表 */
+export function getFollowRecords(id: number): Promise<FollowRecordItem[]> {
+  return get<FollowRecordItem[]>(`/leads/${id}/follow-records`)
+}
+
 /** 新增跟进记录 */
 export function addFollowRecord(id: number, data: CreateFollowRecordRequest): Promise<FollowRecordItem> {
   return post<FollowRecordItem>(`/leads/${id}/follow-records`, data as unknown as Record<string, unknown>)
@@ -183,4 +188,44 @@ export function updateLeadStatus(id: number, data: UpdateLeadStatusRequest): Pro
 /** 从线索创建客户与商机 */
 export function createCustomerAndOpportunity(id: number, data?: Record<string, unknown>): Promise<Record<string, unknown>> {
   return post(`/leads/${id}/customer-opportunity`, data || {})
+}
+
+
+/** 查询分配记录 */
+export function getAssignmentLogs(id: number):any {
+  return get(`/leads/${id}/assignment-logs`)
+}
+
+
+
+
+/** 查询线索记录 */
+export function getLeadRecords(id: number) {
+  return get(`/leads/${id}/lead-records`)
+}
+
+// ========== 公海池 ==========
+
+export interface PoolListParams {
+  poolCode?: string
+  page?: number
+  pageSize?: number
+  customerName?: string
+  customerIndustries?: string[]
+  leadLevels?: string[]
+  channelCodes?: string[]
+  regionPaths?: string[]
+  ownerUserName?: string
+  followerUserName?: string
+}
+
+export interface PoolListResponse {
+  items: LeadItem[]
+  page: number
+  pageSize: number
+  total: number
+}
+
+export function getLeadsPools(params?: PoolListParams): Promise<PoolListResponse> {
+  return get<PoolListResponse>('/leads/pools', params as unknown as Record<string, unknown>)
 }
