@@ -132,6 +132,44 @@
       @clear="onFilterClear" />
 
     <tab-bar />
+
+    <!-- 分配弹窗 -->
+    <view v-if="showAssignModal" class="modal-mask" @tap="showAssignModal = false">
+      <view class="modal-card modal-card--assign" @tap.stop>
+        <text class="modal-title">选择跟进人</text>
+        <view class="assign-breadcrumb">
+          <text class="assign-crumb" @tap="goToLevel(-1)">全部</text>
+          <text v-for="(crumb, i) in assignBreadcrumb" :key="i" class="assign-crumb" @tap="goToLevel(i)">
+            <text class="assign-crumb-sep">&gt;</text>{{ crumb }}
+          </text>
+        </view>
+        <scroll-view class="assign-list" scroll-y="true">
+          <view
+            v-for="node in assignCurrentNodes"
+            :key="node.userId || node.departmentId || node.companyId"
+            class="assign-item"
+            :class="{ 'assign-item--selected': selectedUser && selectedUser.userId === node.userId }"
+            @tap="selectAssignNode(node)"
+          >
+            <view class="assign-item-left">
+              <view class="assign-checkbox" :class="{ 'assign-checkbox--checked': selectedUser && selectedUser.userId === node.userId }">
+                <view v-if="selectedUser && selectedUser.userId === node.userId" class="assign-checkbox-dot" />
+              </view>
+              <text class="assign-item-text">{{ node.name }}</text>
+            </view>
+            <text v-if="!node.isLeaf" class="assign-item-arrow">&gt;</text>
+          </view>
+        </scroll-view>
+        <view class="modal-btns">
+          <view class="modal-btn modal-btn--cancel" @tap="showAssignModal = false">
+            <text class="modal-btn-text">取消</text>
+          </view>
+          <view class="modal-btn modal-btn--confirm" @tap="confirmAssign">
+            <text class="modal-btn-text modal-btn-text--confirm">确定</text>
+          </view>
+        </view>
+      </view>
+    </view>
   </view>
 </template>
 
@@ -141,6 +179,7 @@ import Taro, { useDidShow } from '@tarojs/taro'
 import TabBar from '../tabs/index.vue'
 import FilterPopup from './components/FilterPopup.vue'
 import { getLeadList, getLeadsPools, assignLeads, claimLeads, type LeadItem, type LeadListSummary } from '@/api/lead'
+import { getUserCascader, type UserCascaderNode } from '@/api/system'
 import gradeIcon from '@/assets/dev/icon-grade.png'
 import locationIcon from '@/assets/dev/icon-location.png'
 import iconSearch from '@/assets/dev/icon-search.png'
@@ -187,6 +226,14 @@ const pageSize = 10
 const hasMore = ref(true)
 const searchKeyword = ref('')
 const showFilter = ref(false)
+
+const showAssignModal = ref(false)
+const assignCascaderData = ref<UserCascaderNode[]>([])
+const assignBreadcrumb = ref<string[]>([])
+const assignCurrentNodes = ref<UserCascaderNode[]>([])
+const assignNodeStack = ref<UserCascaderNode[][]>([])
+const selectedUser = ref<UserCascaderNode | null>(null)
+const pendingAssignLeadIds = ref<number[]>([])
 
 const filters = reactive<Record<string, string[]>>({})
 
@@ -310,7 +357,7 @@ const fetchList = async (reset = false) => {
     const isPoolTab = POOL_TABS.includes(currentTab)
     if (isPoolTab) {
       delete params.tab
-      params.tab = currentTab
+      params.poolCode = currentTab
       const res = await getLeadsPools(params as Parameters<typeof getLeadsPools>[0])
       if (reset) {
         list.value = res.items || []
@@ -391,8 +438,62 @@ const goDetail = (id: number) => {
   Taro.navigateTo({ url: `/subpackages/dev/leads/detail/index?id=${id}` })
 }
 
-const onAssignPool = async (_id: number) => {
-  Taro.showToast({ title: '功能开发中', icon: 'none' })
+const onAssignPool = (id: number) => {
+  openAssignModal([id])
+}
+
+async function openAssignModal(leadIds: number[]) {
+  pendingAssignLeadIds.value = leadIds
+  selectedUser.value = null
+  assignBreadcrumb.value = []
+  assignNodeStack.value = []
+  try {
+    const res = await getUserCascader()
+    assignCascaderData.value = res.items || []
+    assignCurrentNodes.value = assignCascaderData.value
+    showAssignModal.value = true
+  } catch {
+    Taro.showToast({ title: '获取跟进人列表失败', icon: 'none' })
+  }
+}
+
+function selectAssignNode(node: UserCascaderNode) {
+  if (node.isLeaf && node.userId) {
+    selectedUser.value = node
+  } else if (node.children && node.children.length) {
+    assignNodeStack.value.push(assignCurrentNodes.value)
+    assignBreadcrumb.value.push(node.name)
+    assignCurrentNodes.value = node.children
+  }
+}
+
+function goToLevel(index: number) {
+  if (index < 0) {
+    assignBreadcrumb.value = []
+    assignNodeStack.value = []
+    assignCurrentNodes.value = assignCascaderData.value
+    selectedUser.value = null
+    return
+  }
+  while (assignBreadcrumb.value.length > index + 1) {
+    assignBreadcrumb.value.pop()
+    assignCurrentNodes.value = assignNodeStack.value.pop() || assignCascaderData.value
+  }
+}
+
+async function confirmAssign() {
+  if (!selectedUser.value || !selectedUser.value.userId) {
+    Taro.showToast({ title: '请选择跟进人', icon: 'none' })
+    return
+  }
+  showAssignModal.value = false
+  try {
+    await assignLeads({ leadIds: pendingAssignLeadIds.value, followerUserId: selectedUser.value.userId })
+    Taro.showToast({ title: '分配成功', icon: 'success' })
+    fetchList(true)
+  } catch (e) {
+    Taro.showToast({ title: (e as Error).message || '分配失败', icon: 'none' })
+  }
 }
 
 const onClaimPool = async (id: number) => {
@@ -697,5 +798,154 @@ useDidShow(() => {
 .pool-btn-text {
   font-size: 24rpx;
   color: #37AE7E;
+}
+
+/* ====== 分配弹窗 ====== */
+.modal-mask {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.45);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.modal-card {
+  width: 560rpx;
+  background: #FFFFFF;
+  border-radius: 16rpx;
+  padding: 40rpx 32rpx 32rpx;
+  display: flex;
+  flex-direction: column;
+  gap: 28rpx;
+}
+
+.modal-card--assign {
+  width: 600rpx;
+  max-height: 80vh;
+}
+
+.modal-title {
+  font-size: 32rpx;
+  font-weight: 500;
+  color: #1A1D24;
+  text-align: center;
+}
+
+.modal-btns {
+  display: flex;
+  gap: 20rpx;
+}
+
+.modal-btn {
+  flex: 1;
+  height: 72rpx;
+  border-radius: 8rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.modal-btn--cancel {
+  background: #F6F7FB;
+}
+
+.modal-btn--confirm {
+  background: #37AE7E;
+}
+
+.modal-btn-text {
+  font-size: 28rpx;
+  color: #62687D;
+}
+
+.modal-btn-text--confirm {
+  color: #FFFFFF;
+}
+
+.assign-breadcrumb {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 4rpx;
+}
+
+.assign-crumb {
+  font-size: 26rpx;
+  color: #37AE7E;
+}
+
+.assign-crumb-sep {
+  font-size: 26rpx;
+  color: #9292A5;
+  margin: 0 4rpx;
+}
+
+.assign-list {
+  max-height: 480rpx;
+  background: #FBFBFB;
+  border-radius: 8rpx;
+  border: 1rpx solid #ECEBEB;
+}
+
+.assign-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 24rpx 20rpx;
+  border-bottom: 1rpx solid #F4F4F4;
+}
+
+.assign-item:last-child {
+  border-bottom: none;
+}
+
+.assign-item--selected {
+  background: #EDFAF5;
+}
+
+.assign-item-left {
+  display: flex;
+  align-items: center;
+  gap: 16rpx;
+}
+
+.assign-checkbox {
+  width: 36rpx;
+  height: 36rpx;
+  border-radius: 50%;
+  border: 2rpx solid #E5E6EB;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.assign-checkbox--checked {
+  background: #37AE7E;
+  border-color: #37AE7E;
+}
+
+.assign-checkbox-dot {
+  width: 18rpx;
+  height: 14rpx;
+  border-left: 4rpx solid #FFFFFF;
+  border-bottom: 4rpx solid #FFFFFF;
+  transform: rotate(-45deg);
+  margin-top: -4rpx;
+}
+
+.assign-item-text {
+  font-size: 28rpx;
+  color: #1A1D24;
+}
+
+.assign-item-arrow {
+  font-size: 28rpx;
+  color: #9292A5;
 }
 </style>

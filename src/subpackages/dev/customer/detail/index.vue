@@ -2,10 +2,18 @@
   <view class="cd-page">
     <NavBar title="客户详情" />
 
-    <scroll-view class="cd-scroll" scroll-y="true" :enhanced="true" :show-scrollbar="false">
+    <!-- 加载/空状态 -->
+    <view v-if="!customer && !loading" class="empty-page">
+      <text class="empty-text">客户不存在</text>
+    </view>
+    <view v-if="loading" class="empty-page">
+      <text class="empty-text">加载中...</text>
+    </view>
+
+    <scroll-view v-if="customer" class="cd-scroll" scroll-y="true" :enhanced="true" :show-scrollbar="false">
       <view class="cd-card">
         <view class="cd-header-row">
-          <text class="cd-company-name">金山投资有限公司</text>
+          <text class="cd-company-name">{{ customer.name }}</text>
           <view class="cd-header-actions">
             <view class="cd-header-action" @tap="showTransferPopup = true">
               <text class="cd-header-action-text">转移</text>
@@ -20,20 +28,20 @@
         <view class="cd-divider" />
         <view class="cd-field">
           <text class="cd-label">负责人</text>
-          <text class="cd-value">孙星星</text>
+          <text class="cd-value">{{ customer.ownerUserName || '-' }}</text>
         </view>
         <view class="cd-field">
           <text class="cd-label">协作人</text>
-          <text class="cd-value">张运营 | 陈开发</text>
+          <text class="cd-value">{{ (customer.ownedUserNames || []).join(' | ') || '-' }}</text>
           <image class="cd-edit-icon" :src="iconEdit" mode="aspectFit" />
         </view>
         <view class="cd-field">
           <text class="cd-label">客户创建时间</text>
-          <text class="cd-value">2024/01/23 10:12</text>
+          <text class="cd-value">{{ (customer as any).createdAt || '-' }}</text>
         </view>
         <view class="cd-field">
           <text class="cd-label">关联线索</text>
-          <text class="cd-value">XS-19872912</text>
+          <text class="cd-value">{{ (customer as any).leadNo || '-' }}</text>
         </view>
       </view>
 
@@ -113,22 +121,22 @@
         <view v-if="infoTab === 'basic'" class="cd-info-card">
           <view class="cd-info-row">
             <text class="cd-info-label">客户名称</text>
-            <text class="cd-info-value">金山投资有限公司</text>
+            <text class="cd-info-value">{{ customer.name || '-' }}</text>
           </view>
           <view class="cd-info-divider" />
           <view class="cd-info-row">
             <text class="cd-info-label">联系人</text>
-            <text class="cd-info-value">张先生</text>
+            <text class="cd-info-value">{{ customer.contactName || '-' }}</text>
           </view>
           <view class="cd-info-divider" />
           <view class="cd-info-row">
             <text class="cd-info-label">联系人职位</text>
-            <text class="cd-info-value">主管</text>
+            <text class="cd-info-value">{{ customer.contactPosition || '-' }}</text>
           </view>
           <view class="cd-info-divider" />
           <view class="cd-info-row">
             <text class="cd-info-label">客户行业</text>
-            <text class="cd-info-value">电气行业</text>
+            <text class="cd-info-value">{{ customer.industryLabel || '-' }}</text>
           </view>
           <view class="cd-info-divider" />
           <view class="cd-info-row">
@@ -138,22 +146,22 @@
           <view class="cd-info-divider" />
           <view class="cd-info-row">
             <text class="cd-info-label">项目类型</text>
-            <text class="cd-info-value">新线</text>
+            <text class="cd-info-value">{{ customer.projectType || '-' }}</text>
           </view>
           <view class="cd-info-divider" />
           <view class="cd-info-row">
             <text class="cd-info-label">客户类别</text>
-            <text class="cd-info-value">行业朋友</text>
+            <text class="cd-info-value">{{ customer.categoryLabel || '-' }}</text>
           </view>
           <view class="cd-info-divider" />
           <view class="cd-info-row">
             <text class="cd-info-label">客户等级</text>
-            <text class="cd-info-value">A级客户</text>
+            <text class="cd-info-value">{{ customer.levelLabel || '-' }}</text>
           </view>
           <view class="cd-info-divider" />
           <view class="cd-info-row">
             <text class="cd-info-label">是否使用其他品牌喷粉枪</text>
-            <text class="cd-info-value">是</text>
+            <text class="cd-info-value">-</text>
           </view>
           <view class="cd-info-divider" />
           <view class="cd-info-row">
@@ -168,7 +176,7 @@
           <view class="cd-info-divider" />
           <view class="cd-info-row">
             <text class="cd-info-label">类型</text>
-            <text class="cd-info-value">手动喷粉枪</text>
+            <text class="cd-info-value">-</text>
           </view>
         </view>
         <view v-if="infoTab === 'opportunity'" class="cd-opp-list">
@@ -469,14 +477,19 @@
   </view>
 </template>
 
-<script setup>
-import { ref } from 'vue'
+<script setup lang="ts">
+import { ref, onMounted } from 'vue'
 import Taro from '@tarojs/taro'
 import NavBar from '@/components/NavBar.vue'
+import { getCustomerDetail, type CustomerItem } from '@/api/customer'
 import iconEdit from '@/assets/dev/edit.png'
 import iconDelete from '@/assets/dev/delete.png'
 import iconClose from '@/assets/dev/icon-close.png'
 import rightArrow from '@/assets/dev/rightArror.png'
+
+const customerId = ref(0)
+const customer = ref<CustomerItem | null>(null)
+const loading = ref(true)
 
 const showTransferPopup = ref(false)
 const showTransferDetailPopup = ref(false)
@@ -523,6 +536,17 @@ const perfCards = [
   { name: '金石信息科技有限公司', status: '待确认', opportunity: '金石科技高端机采购书', contract: '智能设备购销合同', totalAmount: '￥200000', paidAmount: '￥100000' },
   { name: '超凡实业技术有限公司', status: '待确认', opportunity: '超凡科技自动报价单', contract: '超凡科技购销合同', totalAmount: '￥300000', paidAmount: '￥150000' },
 ]
+
+async function fetchDetail() {
+  loading.value = true
+  try {
+    customer.value = await getCustomerDetail(customerId.value)
+  } catch {
+    customer.value = null
+  } finally {
+    loading.value = false
+  }
+}
 
 const onTransferToPerson = () => {
   showTransferPopup.value = false
@@ -654,6 +678,18 @@ const onAddFollow = () => {
 const onCheckOut = () => {
   Taro.showToast({ title: '签退打卡', icon: 'none' })
 }
+
+onMounted(() => {
+  const pages = Taro.getCurrentPages()
+  const current = pages[pages.length - 1]
+  const id = current?.options?.id
+  if (id) {
+    customerId.value = Number(id)
+    fetchDetail()
+  } else {
+    loading.value = false
+  }
+})
 </script>
 
 <style>
@@ -662,6 +698,18 @@ const onCheckOut = () => {
   background: #F5F7F9;
   display: flex;
   flex-direction: column;
+}
+
+.empty-page {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100vh;
+}
+
+.empty-text {
+  font-size: 28rpx;
+  color: #9292A5;
 }
 
 .cd-scroll {

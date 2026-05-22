@@ -3,7 +3,7 @@
     <view class="customer-wrap">
       <view class="customer-search-row">
         <view class="customer-search-box">
-          <input class="customer-search-input" placeholder="请输入搜索" placeholder-style="color:#9292A5;font-size:30rpx" />
+          <input class="customer-search-input" v-model="searchKeyword" placeholder="请输入搜索" placeholder-style="color:#9292A5;font-size:30rpx" @input="onSearchInput" />
           <image class="customer-search-icon" :src="iconSearch" mode="aspectFit" />
         </view>
         <view class="customer-btn" @tap="showFilter = true">
@@ -18,48 +18,66 @@
         <view class="customer-tabs">
           <view
             v-for="tab in customerTabs"
-            :key="tab"
+            :key="tab.value"
             class="customer-tab"
-            :class="{ 'customer-tab--active': activeCustomerTab === tab }"
-            @tap="activeCustomerTab = tab"
+            :class="{ 'customer-tab--active': activeCustomerTab === tab.value }"
+            @tap="onTabChange(tab.value)"
           >
-            <text class="customer-tab-text" :class="{ 'customer-tab-text--active': activeCustomerTab === tab }">{{ tab }}</text>
+            <text class="customer-tab-text" :class="{ 'customer-tab-text--active': activeCustomerTab === tab.value }">{{ tab.label }}</text>
           </view>
         </view>
       </scroll-view>
 
-      <view v-for="card in customerCards" :key="card.name" class="cc-card" @tap="goDetail(card)">
-        <view class="cc-head">
-          <text class="cc-name">{{ card.name }}</text>
-          <view class="cc-badge" :class="'cc-badge--' + card.badgeStyle">
-            <text class="cc-badge-text" :class="'cc-badge-text--' + card.badgeStyle">{{ card.badge }}</text>
+      <scroll-view class="customer-list-scroll" scroll-y="true" :enhanced="true" :show-scrollbar="false" @scrolltolower="onLoadMore">
+        <view v-if="loading && list.length === 0" class="customer-empty">
+          <text class="customer-empty-text">加载中...</text>
+        </view>
+
+        <view v-for="card in list" :key="card.id" class="cc-card" @tap="goDetail(card.id)">
+          <view class="cc-head">
+            <text class="cc-name">{{ card.name }}</text>
+            <view class="cc-badge" :class="'cc-badge--' + (FOLLOW_STATUS_STYLE[card.followStatus] || 'cyan')">
+              <text class="cc-badge-text" :class="'cc-badge-text--' + (FOLLOW_STATUS_STYLE[card.followStatus] || 'cyan')">{{ card.followStatusLabel || '待定' }}</text>
+            </view>
+          </view>
+          <view class="cc-info">
+            <view class="cc-info-item">
+              <image class="cc-icon" :src="iconPhone" mode="aspectFit" />
+              <text class="cc-info-text cc-info-text--active">{{ card.phone || '-' }}</text>
+            </view>
+            <view class="cc-info-item">
+              <image class="cc-icon" :src="gradeIcon" mode="aspectFit" />
+              <text class="cc-info-text">{{ card.levelLabel || '-' }}</text>
+            </view>
+          </view>
+          <view class="cc-tags">
+            <view class="cc-info-item">
+              <image class="cc-icon" :src="iconIndustry" mode="aspectFit" />
+              <text class="cc-info-text">{{ card.industryLabel || '-' }}</text>
+            </view>
+            <view class="cc-info-item">
+              <image class="cc-icon" :src="locationIcon" mode="aspectFit" />
+              <text class="cc-info-text">{{ regionDisplay(card) || '-' }}</text>
+            </view>
+          </view>
+          <view class="cc-note">
+            <text class="cc-note-label">最新跟进：</text>
+            <text class="cc-note-text">{{ card.latestFollowRecord || '暂无' }}</text>
           </view>
         </view>
-        <view class="cc-info">
-          <view class="cc-info-item">
-            <image class="cc-icon" :src="iconPhone" mode="aspectFit" />
-            <text class="cc-info-text cc-info-text--active">15899280987</text>
-          </view>
-          <view class="cc-info-item">
-            <image class="cc-icon" :src="card.icon2" mode="aspectFit" />
-            <text class="cc-info-text">{{ card.label2 }}</text>
-          </view>
+
+        <view v-if="loading && list.length > 0" class="customer-loading-more">
+          <text class="customer-loading-more-text">加载更多...</text>
         </view>
-        <view class="cc-tags">
-          <view class="cc-info-item">
-            <image class="cc-icon" :src="iconIndustry" mode="aspectFit" />
-            <text class="cc-info-text">{{ card.industry }}</text>
-          </view>
-          <view class="cc-info-item">
-            <image class="cc-icon" :src="card.icon4" mode="aspectFit" />
-            <text class="cc-info-text">{{ card.label4 }}</text>
-          </view>
+
+        <view v-if="!loading && list.length === 0" class="customer-empty">
+          <text class="customer-empty-text">暂无数据</text>
         </view>
-        <view class="cc-note">
-          <text class="cc-note-label">最新跟进：</text>
-          <text class="cc-note-text">{{ card.note }}</text>
+
+        <view v-if="!hasMore && list.length > 0" class="customer-empty">
+          <text class="customer-empty-text">没有更多了</text>
         </view>
-      </view>
+      </scroll-view>
     </view>
 
     <FilterPopup v-model="showFilter" :sidebar-items="filterSidebarItems" @confirm="onFilterPopupConfirm" />
@@ -68,55 +86,157 @@
   </view>
 </template>
 
-<script setup>
-import { ref } from 'vue'
+<script setup lang="ts">
+import { ref, reactive, onMounted } from 'vue'
+import Taro, { useDidShow } from '@tarojs/taro'
 import TabBar from '../tabs/index.vue'
 import FilterPopup from '../leads/components/FilterPopup.vue'
+import { getCustomerList, type CustomerItem } from '@/api/customer'
 import gradeIcon from '@/assets/dev/icon-grade.png'
 import locationIcon from '@/assets/dev/icon-location.png'
-import wechatIcon from '@/assets/dev/icon-wechat.png'
 import iconSearch from '@/assets/dev/icon-search.png'
 import iconFilter from '@/assets/dev/icon-filter.png'
 import iconAdd from '@/assets/dev/icon-add.png'
 import iconPhone from '@/assets/dev/icon-phone.png'
 import iconIndustry from '@/assets/dev/icon-industry.png'
-import Taro from '@tarojs/taro'
-const customerTabs = ['全部', '待跟进客户', '即将回收客户', '运营公海', '销售公海', '开发公海', '大公海']
-const activeCustomerTab = ref('全部')
 
-const customerCards = [
-  { name: '超凡实业技术有限公司', badge: '待定', badgeStyle: 'cyan', icon2: gradeIcon, label2: 'A级线索', industry: '电气行业', icon4: locationIcon, label4: '广东省/深圳市/南山区', note: '客户有意向，但未表明哪款产品' },
-  { name: '金剑制造实业控股', badge: '有效', badgeStyle: 'green', icon2: gradeIcon, label2: 'A级线索', industry: '电气行业', icon4: locationIcon, label4: '广东省/深圳市/南山区', note: '客户有意向，但未表明哪款产品' },
-  { name: '及时设计文化传媒有限公司', badge: '无效', badgeStyle: 'gray', icon2: gradeIcon, label2: 'A级线索', industry: '电气行业', icon4: locationIcon, label4: '广东省/深圳市/南山区', note: '客户有意向，但未表明哪款产品' },
+const TAB_MAP: Record<string, string> = {
+  all: 'all',
+  pending_followup: 'pending_followup',
+  soon_recycle: 'soon_recycle',
+  operation: 'operation',
+  sales: 'sales',
+  development: 'development',
+  global: 'global',
+}
+
+const FOLLOW_STATUS_STYLE: Record<string, string> = {
+  pending: 'cyan',
+  valid: 'green',
+  invalid: 'gray',
+  duplicate: 'gray',
+}
+
+const customerTabs = [
+  { label: '全部', value: 'all' },
+  { label: '待跟进客户', value: 'pending_followup' },
+  { label: '即将回收客户', value: 'soon_recycle' },
+  { label: '运营公海', value: 'operation' },
+  { label: '销售公海', value: 'sales' },
+  { label: '开发公海', value: 'development' },
+  { label: '大公海', value: 'global' },
 ]
 
+const activeCustomerTab = ref('all')
+const list = ref<CustomerItem[]>([])
+const loading = ref(false)
+const page = ref(1)
+const pageSize = 10
+const hasMore = ref(true)
+const searchKeyword = ref('')
 const showFilter = ref(false)
-const selectedTags = ref([])
+const filters = reactive<Record<string, string[]>>({})
+
+let searchTimer: ReturnType<typeof setTimeout> | null = null
 
 const filterSidebarItems = [
-  { label: '公司名称', type: 'org' },
-  { label: '部门来源', type: 'org' },
-  { label: '客户行业', type: 'industry' },
-  { label: '线索等级', type: 'leadLevel' },
-  { label: '省/市/区', type: 'region' },
-  { label: '渠道来源', type: 'channel' },
-  { label: '负责人', type: 'org' },
-  { label: '协作人', type: 'org' },
-  { label: '客户创建时间', type: 'time' },
+  { label: '客户行业', type: 'industry', paramKey: 'industry' },
+  { label: '客户等级', type: 'leadLevel', paramKey: 'level' },
+  { label: '省/市/区', type: 'region', paramKey: 'regionPaths' },
+  { label: '渠道来源', type: 'channel', paramKey: 'channelCodes' },
+  { label: '负责人', type: 'userCascader', paramKey: 'ownerUserName' },
+  { label: '客户创建时间', type: 'time', paramKey: 'createdAt' },
 ]
 
-const onFilterPopupConfirm = (result) => {
-  selectedTags.value = result.selected
+const regionDisplay = (item: CustomerItem): string => {
+  const parts = [item.provinceName, item.cityName, item.districtName].filter(Boolean)
+  return parts.join('/')
+}
+
+const fetchList = async (reset = false) => {
+  if (loading.value) return
+  if (reset) {
+    page.value = 1
+    list.value = []
+    hasMore.value = true
+  }
+  loading.value = true
+  try {
+    const params: Record<string, unknown> = {
+      tab: TAB_MAP[activeCustomerTab.value] || 'all',
+      page: page.value,
+      pageSize,
+    }
+    if (searchKeyword.value.trim()) {
+      params.customerName = searchKeyword.value.trim()
+    }
+    if (filters.industry?.length) params.industry = filters.industry[0]
+    if (filters.level?.length) params.level = filters.level[0]
+    if (filters.regionPaths?.length) params.regionPaths = filters.regionPaths
+    if (filters.ownerUserName?.length) params.ownerUserName = filters.ownerUserName[0]
+    const res = await getCustomerList(params as Parameters<typeof getCustomerList>[0])
+    if (reset) {
+      list.value = res.items || []
+    } else {
+      list.value = [...list.value, ...(res.items || [])]
+    }
+    hasMore.value = list.value.length < res.total
+  } catch {
+    // keep current data on failure
+  } finally {
+    loading.value = false
+  }
+}
+
+const onTabChange = (tabValue: string) => {
+  if (activeCustomerTab.value === tabValue) return
+  activeCustomerTab.value = tabValue
+  fetchList(true)
+}
+
+const onLoadMore = () => {
+  if (loading.value || !hasMore.value) return
+  page.value++
+  fetchList(false)
+}
+
+const onSearchInput = () => {
+  if (searchTimer) clearTimeout(searchTimer)
+  searchTimer = setTimeout(() => {
+    fetchList(true)
+  }, 300)
+}
+
+const onFilterPopupConfirm = (result: { type: string; selected: string[]; paramKey?: string; startTime?: string; endTime?: string }) => {
+  const key = result.paramKey || result.type
+  if (result.type === 'time') {
+    // time type not yet supported in API params
+  } else {
+    if (result.selected.length === 0) {
+      delete filters[key]
+    } else {
+      filters[key] = result.selected
+    }
+  }
   showFilter.value = false
+  fetchList(true)
 }
 
 const goAddCustomer = () => {
   Taro.navigateTo({ url: '/subpackages/dev/customer/add-customer/index' })
 }
 
-const goDetail = (card) => {
-  Taro.navigateTo({ url: '/subpackages/dev/customer/detail/index' })
+const goDetail = (id: number) => {
+  Taro.navigateTo({ url: `/subpackages/dev/customer/detail/index?id=${id}` })
 }
+
+onMounted(() => {
+  fetchList(true)
+})
+
+useDidShow(() => {
+  fetchList(true)
+})
 </script>
 
 <style>
@@ -297,5 +417,31 @@ const goDetail = (card) => {
 .cc-note-text {
   font-size: 24rpx;
   color: #1A1D24;
+}
+
+.customer-list-scroll {
+  height: calc(100vh - 400rpx);
+}
+
+.customer-empty {
+  display: flex;
+  justify-content: center;
+  padding: 60rpx 0;
+}
+
+.customer-empty-text {
+  font-size: 28rpx;
+  color: #9292A5;
+}
+
+.customer-loading-more {
+  display: flex;
+  justify-content: center;
+  padding: 30rpx 0;
+}
+
+.customer-loading-more-text {
+  font-size: 26rpx;
+  color: #9292A5;
 }
 </style>

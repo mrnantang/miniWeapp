@@ -52,3 +52,8 @@ export interface CustomerListParams {
 export function getCustomerList(params?: CustomerListParams): Promise<CustomerListResponse> {
   return get<CustomerListResponse>('/customers', params as Record<string, unknown>)
 }
+
+/** 查询客户详情 */
+export function getCustomerDetail(id: number): Promise<CustomerItem> {
+  return get<CustomerItem>(`/customers/${id}`)
+}

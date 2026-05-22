@@ -1,14 +1,7 @@
 <template>
   <view class="detail-page">
     <!-- 自定义导航栏 -->
-    <NavBar title="线索详情">
-      <!-- <template #right>
-        <view class="nav-edit-btn" @tap="onEdit">
-          <image class="nav-edit-icon" :src="iconEdit" mode="aspectFit" />
-          <text class="nav-edit-text">编辑</text>
-        </view>
-      </template> -->
-    </NavBar>
+    <NavBar title="线索详情"></NavBar>
 
     <!-- 加载/空状态 -->
     <view v-if="!lead && !loading" class="empty-page">
@@ -25,10 +18,10 @@
         <!-- 标题行 -->
         <view class="card-header">
           <text class="card-header-title">线索基础信息</text>
-          <view class="card-header-right" @tap="onEdit">
+        <!--   <view class="card-header-right" @tap="onEdit">
             <image class="card-edit-icon" :src="iconEdit" mode="aspectFit" />
             <text class="card-edit-text">编辑</text>
-          </view>
+          </view> -->
         </view>
         <view class="card-divider" />
 
@@ -120,7 +113,7 @@
         </view>
 
         <!-- 添加跟进记录按钮 -->
-        <view v-if="activeTab === 'follow'" class="add-follow-btn" @tap="onAddFollow">
+        <view v-if="activeTab === 'follow' && !lead.poolCode" class="add-follow-btn" @tap="onAddFollow">
           <text class="add-follow-btn-text">添加跟进记录</text>
         </view>
       </view>
@@ -129,8 +122,20 @@
       <view class="bottom-spacer" />
     </scroll-view>
 
-    <!-- 底部固定操作栏 -->
-    <view v-if="lead" class="bottom-bar">
+    <!-- 底部固定操作栏：公海 -->
+    <view v-if="lead && lead.poolCode" class="bottom-bar">
+      <view class="bottom-row">
+        <view class="btn-solid" @tap="onAssignPool">
+          <text class="btn-solid-text">分配</text>
+        </view>
+        <view class="btn-solid" @tap="onClaimPool">
+          <text class="btn-solid-text">立刻领取</text>
+        </view>
+      </view>
+    </view>
+
+    <!-- 底部固定操作栏：线索 -->
+    <view v-else-if="lead" class="bottom-bar">
       <view class="bottom-row">
         <view class="btn-outline" @tap="onStatusChange('invalid')">
           <text class="btn-outline-text">无效</text>
@@ -180,6 +185,44 @@
         </view>
       </view>
     </view>
+
+    <!-- 分配弹窗 -->
+    <view v-if="showAssignModal" class="modal-mask" @tap="showAssignModal = false">
+      <view class="modal-card modal-card--assign" @tap.stop>
+        <text class="modal-title">选择跟进人</text>
+        <view class="assign-breadcrumb">
+          <text class="assign-crumb" @tap="goToLevel(-1)">全部</text>
+          <text v-for="(crumb, i) in assignBreadcrumb" :key="i" class="assign-crumb" @tap="goToLevel(i)">
+            <text class="assign-crumb-sep">&gt;</text>{{ crumb }}
+          </text>
+        </view>
+        <scroll-view class="assign-list" scroll-y="true">
+          <view
+            v-for="node in assignCurrentNodes"
+            :key="node.userId || node.departmentId || node.companyId"
+            class="assign-item"
+            :class="{ 'assign-item--selected': selectedUser && selectedUser.userId === node.userId }"
+            @tap="selectAssignNode(node)"
+          >
+            <view class="assign-item-left">
+              <view class="assign-checkbox" :class="{ 'assign-checkbox--checked': selectedUser && selectedUser.userId === node.userId }">
+                <view v-if="selectedUser && selectedUser.userId === node.userId" class="assign-checkbox-dot" />
+              </view>
+              <text class="assign-item-text">{{ node.name }}</text>
+            </view>
+            <text v-if="!node.isLeaf" class="assign-item-arrow">&gt;</text>
+          </view>
+        </scroll-view>
+        <view class="modal-btns">
+          <view class="modal-btn modal-btn--cancel" @tap="showAssignModal = false">
+            <text class="modal-btn-text">取消</text>
+          </view>
+          <view class="modal-btn modal-btn--confirm" @tap="confirmAssign">
+            <text class="modal-btn-text modal-btn-text--confirm">确定</text>
+          </view>
+        </view>
+      </view>
+    </view>
   </view>
 </template>
 
@@ -187,7 +230,8 @@
 import { ref, computed, onMounted } from 'vue'
 import Taro from '@tarojs/taro'
 import NavBar from '@/components/NavBar.vue'
-import { getLeadDetail, getFollowRecords, updateLeadStatus, addFollowRecord, getAssignmentLogs, getLeadRecords, type LeadItem, type FollowRecordItem } from '@/api/lead'
+import { getLeadDetail, getFollowRecords, updateLeadStatus, addFollowRecord, getAssignmentLogs, getLeadRecords, assignLeads, claimLeads, type LeadItem, type FollowRecordItem } from '@/api/lead'
+import { getUserCascader, type UserCascaderNode } from '@/api/system'
 import iconEdit from '@/assets/dev/edit.png'
 
 // ====== 常量 ======
@@ -222,6 +266,14 @@ const pendingStatus = ref('')
 
 const showFollowModal = ref(false)
 const followContent = ref('')
+
+const showAssignModal = ref(false)
+const assignCascaderData = ref<UserCascaderNode[]>([])
+const assignBreadcrumb = ref<string[]>([])
+const assignCurrentNodes = ref<UserCascaderNode[]>([])
+const assignNodeStack = ref<UserCascaderNode[][]>([])
+const selectedUser = ref<UserCascaderNode | null>(null)
+const pendingAssignLeadIds = ref<number[]>([])
 
 // ====== 本地类型 ======
 interface TimelineRecord {
@@ -404,7 +456,75 @@ async function doUpdateStatus(status: string, reason?: string) {
 }
 
 function onAssign() {
-  Taro.showToast({ title: '功能开发中', icon: 'none' })
+  openAssignModal([leadId.value])
+}
+
+function onAssignPool() {
+  openAssignModal([leadId.value])
+}
+
+async function openAssignModal(leadIds: number[]) {
+  pendingAssignLeadIds.value = leadIds
+  selectedUser.value = null
+  assignBreadcrumb.value = []
+  assignNodeStack.value = []
+  try {
+    const res = await getUserCascader()
+    assignCascaderData.value = res.items || []
+    assignCurrentNodes.value = assignCascaderData.value
+    showAssignModal.value = true
+  } catch {
+    Taro.showToast({ title: '获取跟进人列表失败', icon: 'none' })
+  }
+}
+
+function selectAssignNode(node: UserCascaderNode) {
+  if (node.isLeaf && node.userId) {
+    selectedUser.value = node
+  } else if (node.children && node.children.length) {
+    assignNodeStack.value.push(assignCurrentNodes.value)
+    assignBreadcrumb.value.push(node.name)
+    assignCurrentNodes.value = node.children
+  }
+}
+
+function goToLevel(index: number) {
+  if (index < 0) {
+    assignBreadcrumb.value = []
+    assignNodeStack.value = []
+    assignCurrentNodes.value = assignCascaderData.value
+    selectedUser.value = null
+    return
+  }
+  while (assignBreadcrumb.value.length > index + 1) {
+    assignBreadcrumb.value.pop()
+    assignCurrentNodes.value = assignNodeStack.value.pop() || assignCascaderData.value
+  }
+}
+
+async function confirmAssign() {
+  if (!selectedUser.value || !selectedUser.value.userId) {
+    Taro.showToast({ title: '请选择跟进人', icon: 'none' })
+    return
+  }
+  showAssignModal.value = false
+  try {
+    await assignLeads({ leadIds: pendingAssignLeadIds.value, followerUserId: selectedUser.value.userId })
+    Taro.showToast({ title: '分配成功', icon: 'success' })
+    fetchDetail()
+  } catch (e) {
+    Taro.showToast({ title: (e as Error).message || '分配失败', icon: 'none' })
+  }
+}
+
+async function onClaimPool() {
+  try {
+    await claimLeads({ leadIds: [leadId.value] })
+    Taro.showToast({ title: '领取成功', icon: 'success' })
+    fetchDetail()
+  } catch (e) {
+    Taro.showToast({ title: (e as Error).message || '领取失败', icon: 'none' })
+  }
 }
 
 function onAddFollow() {
@@ -847,5 +967,96 @@ onMounted(() => {
 }
 .modal-btn-text--confirm {
   color: #FFFFFF;
+}
+
+/* ====== 分配弹窗 ====== */
+.modal-card--assign {
+  width: 600rpx;
+  max-height: 80vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.assign-breadcrumb {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 4rpx;
+  padding: 0;
+}
+
+.assign-crumb {
+  font-size: 26rpx;
+  color: #37AE7E;
+}
+
+.assign-crumb-sep {
+  font-size: 26rpx;
+  color: #9292A5;
+  margin: 0 4rpx;
+}
+
+.assign-list {
+  max-height: 480rpx;
+  background: #FBFBFB;
+  border-radius: 8rpx;
+  border: 1rpx solid #ECEBEB;
+}
+
+.assign-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 24rpx 20rpx;
+  border-bottom: 1rpx solid #F4F4F4;
+}
+
+.assign-item:last-child {
+  border-bottom: none;
+}
+
+.assign-item--selected {
+  background: #EDFAF5;
+}
+
+.assign-item-left {
+  display: flex;
+  align-items: center;
+  gap: 16rpx;
+}
+
+.assign-checkbox {
+  width: 36rpx;
+  height: 36rpx;
+  border-radius: 50%;
+  border: 2rpx solid #E5E6EB;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.assign-checkbox--checked {
+  background: #37AE7E;
+  border-color: #37AE7E;
+}
+
+.assign-checkbox-dot {
+  width: 18rpx;
+  height: 14rpx;
+  border-left: 4rpx solid #FFFFFF;
+  border-bottom: 4rpx solid #FFFFFF;
+  transform: rotate(-45deg);
+  margin-top: -4rpx;
+}
+
+.assign-item-text {
+  font-size: 28rpx;
+  color: #1A1D24;
+}
+
+.assign-item-arrow {
+  font-size: 28rpx;
+  color: #9292A5;
 }
 </style>
