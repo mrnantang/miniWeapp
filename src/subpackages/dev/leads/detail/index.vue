@@ -186,7 +186,7 @@
       </view>
     </view>
 
-    <!-- 分配弹窗 -->
+    <!-- 分配弹窗（仅公海） -->
     <view v-if="showAssignModal" class="modal-mask" @tap="showAssignModal = false">
       <view class="modal-card modal-card--assign" @tap.stop>
         <text class="modal-title">选择跟进人</text>
@@ -267,13 +267,13 @@ const pendingStatus = ref('')
 const showFollowModal = ref(false)
 const followContent = ref('')
 
+// 分配弹窗（仅公海）
 const showAssignModal = ref(false)
 const assignCascaderData = ref<UserCascaderNode[]>([])
 const assignBreadcrumb = ref<string[]>([])
 const assignCurrentNodes = ref<UserCascaderNode[]>([])
 const assignNodeStack = ref<UserCascaderNode[][]>([])
 const selectedUser = ref<UserCascaderNode | null>(null)
-const pendingAssignLeadIds = ref<number[]>([])
 
 // ====== 本地类型 ======
 interface TimelineRecord {
@@ -456,15 +456,14 @@ async function doUpdateStatus(status: string, reason?: string) {
 }
 
 function onAssign() {
-  openAssignModal([leadId.value])
+  Taro.navigateTo({ url: `/subpackages/dev/leads/assign/index?id=${leadId.value}` })
 }
 
 function onAssignPool() {
-  openAssignModal([leadId.value])
+  openAssignModal()
 }
 
-async function openAssignModal(leadIds: number[]) {
-  pendingAssignLeadIds.value = leadIds
+async function openAssignModal() {
   selectedUser.value = null
   assignBreadcrumb.value = []
   assignNodeStack.value = []
@@ -509,7 +508,7 @@ async function confirmAssign() {
   }
   showAssignModal.value = false
   try {
-    await assignLeads({ leadIds: pendingAssignLeadIds.value, followerUserId: selectedUser.value.userId })
+    await assignLeads({ leadIds: [leadId.value], followerUserId: selectedUser.value.userId })
     Taro.showToast({ title: '分配成功', icon: 'success' })
     fetchDetail()
   } catch (e) {
@@ -982,7 +981,6 @@ onMounted(() => {
   align-items: center;
   flex-wrap: wrap;
   gap: 4rpx;
-  padding: 0;
 }
 
 .assign-crumb {
