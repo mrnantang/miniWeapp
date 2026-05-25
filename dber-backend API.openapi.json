@@ -102,6 +102,12 @@
     },
     {
       "name": "System Public Pool"
+    },
+    {
+      "name": "Finance Expense"
+    },
+    {
+      "name": "Finance Invoice"
     }
   ],
   "paths": {
@@ -2069,6 +2075,160 @@
                   "allOf": [
                     {
                       "$ref": "#/components/schemas/UnauthorizedEnvelope"
+                    },
+                    {
+                      "properties": {
+                        "data": {
+                          "$ref": "#/components/schemas/EmptyData"
+                        }
+                      },
+                      "type": "object"
+                    }
+                  ]
+                }
+              }
+            },
+            "headers": {}
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/InternalServerErrorEnvelope"
+                    },
+                    {
+                      "properties": {
+                        "data": {
+                          "$ref": "#/components/schemas/EmptyData"
+                        }
+                      },
+                      "type": "object"
+                    }
+                  ]
+                }
+              }
+            },
+            "headers": {}
+          }
+        },
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ]
+      }
+    },
+    "/api/platform/channels/{id}": {
+      "put": {
+        "summary": "编辑渠道",
+        "deprecated": false,
+        "description": "按指定 ID 编辑共享渠道名称",
+        "tags": [
+          "Platform"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "渠道 ID",
+            "required": true,
+            "example": 0,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/api.UpdateChannelRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/ResponseEnvelope"
+                    },
+                    {
+                      "properties": {
+                        "data": {
+                          "$ref": "#/components/schemas/api.ChannelItem"
+                        }
+                      },
+                      "type": "object"
+                    }
+                  ]
+                }
+              }
+            },
+            "headers": {}
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/BadRequestEnvelope"
+                    },
+                    {
+                      "properties": {
+                        "data": {
+                          "$ref": "#/components/schemas/EmptyData"
+                        }
+                      },
+                      "type": "object"
+                    }
+                  ]
+                }
+              }
+            },
+            "headers": {}
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/UnauthorizedEnvelope"
+                    },
+                    {
+                      "properties": {
+                        "data": {
+                          "$ref": "#/components/schemas/EmptyData"
+                        }
+                      },
+                      "type": "object"
+                    }
+                  ]
+                }
+              }
+            },
+            "headers": {}
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/NotFoundEnvelope"
                     },
                     {
                       "properties": {
@@ -7670,6 +7830,124 @@
             "BearerAuth": []
           }
         ]
+      },
+      "post": {
+        "summary": "新建合同",
+        "deprecated": false,
+        "description": "从客户或报价上下文创建合同并进入待审批状态",
+        "tags": [
+          "Contract"
+        ],
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/dto.CreateContractRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/ResponseEnvelope"
+                    },
+                    {
+                      "properties": {
+                        "data": {
+                          "$ref": "#/components/schemas/dto.CreateContractResponse"
+                        }
+                      },
+                      "type": "object"
+                    }
+                  ]
+                }
+              }
+            },
+            "headers": {}
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/BadRequestEnvelope"
+                    },
+                    {
+                      "properties": {
+                        "data": {
+                          "$ref": "#/components/schemas/EmptyData"
+                        }
+                      },
+                      "type": "object"
+                    }
+                  ]
+                }
+              }
+            },
+            "headers": {}
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/UnauthorizedEnvelope"
+                    },
+                    {
+                      "properties": {
+                        "data": {
+                          "$ref": "#/components/schemas/EmptyData"
+                        }
+                      },
+                      "type": "object"
+                    }
+                  ]
+                }
+              }
+            },
+            "headers": {}
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/ForbiddenEnvelope"
+                    },
+                    {
+                      "properties": {
+                        "data": {
+                          "$ref": "#/components/schemas/EmptyData"
+                        }
+                      },
+                      "type": "object"
+                    }
+                  ]
+                }
+              }
+            },
+            "headers": {}
+          }
+        },
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ]
       }
     },
     "/api/sales/contracts/export": {
@@ -8202,6 +8480,350 @@
                       "properties": {
                         "data": {
                           "$ref": "#/components/schemas/dto.ContractActionResponse"
+                        }
+                      },
+                      "type": "object"
+                    }
+                  ]
+                }
+              }
+            },
+            "headers": {}
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/BadRequestEnvelope"
+                    },
+                    {
+                      "properties": {
+                        "data": {
+                          "$ref": "#/components/schemas/EmptyData"
+                        }
+                      },
+                      "type": "object"
+                    }
+                  ]
+                }
+              }
+            },
+            "headers": {}
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/UnauthorizedEnvelope"
+                    },
+                    {
+                      "properties": {
+                        "data": {
+                          "$ref": "#/components/schemas/EmptyData"
+                        }
+                      },
+                      "type": "object"
+                    }
+                  ]
+                }
+              }
+            },
+            "headers": {}
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/ForbiddenEnvelope"
+                    },
+                    {
+                      "properties": {
+                        "data": {
+                          "$ref": "#/components/schemas/EmptyData"
+                        }
+                      },
+                      "type": "object"
+                    }
+                  ]
+                }
+              }
+            },
+            "headers": {}
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/NotFoundEnvelope"
+                    },
+                    {
+                      "properties": {
+                        "data": {
+                          "$ref": "#/components/schemas/EmptyData"
+                        }
+                      },
+                      "type": "object"
+                    }
+                  ]
+                }
+              }
+            },
+            "headers": {}
+          },
+          "501": {
+            "description": "Not Implemented",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/NotImplementedEnvelope"
+                    },
+                    {
+                      "properties": {
+                        "data": {
+                          "$ref": "#/components/schemas/EmptyData"
+                        }
+                      },
+                      "type": "object"
+                    }
+                  ]
+                }
+              }
+            },
+            "headers": {}
+          }
+        },
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ]
+      }
+    },
+    "/api/sales/contracts/{id}/sign-back": {
+      "post": {
+        "summary": "上传合同回签",
+        "deprecated": false,
+        "description": "上传回签文件并更新合同状态，同时生成首笔订单",
+        "tags": [
+          "Contract"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "合同 ID",
+            "required": true,
+            "example": 0,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/dto.SignBackContractRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/ResponseEnvelope"
+                    },
+                    {
+                      "properties": {
+                        "data": {
+                          "$ref": "#/components/schemas/dto.SignBackContractResponse"
+                        }
+                      },
+                      "type": "object"
+                    }
+                  ]
+                }
+              }
+            },
+            "headers": {}
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/BadRequestEnvelope"
+                    },
+                    {
+                      "properties": {
+                        "data": {
+                          "$ref": "#/components/schemas/EmptyData"
+                        }
+                      },
+                      "type": "object"
+                    }
+                  ]
+                }
+              }
+            },
+            "headers": {}
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/UnauthorizedEnvelope"
+                    },
+                    {
+                      "properties": {
+                        "data": {
+                          "$ref": "#/components/schemas/EmptyData"
+                        }
+                      },
+                      "type": "object"
+                    }
+                  ]
+                }
+              }
+            },
+            "headers": {}
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/ForbiddenEnvelope"
+                    },
+                    {
+                      "properties": {
+                        "data": {
+                          "$ref": "#/components/schemas/EmptyData"
+                        }
+                      },
+                      "type": "object"
+                    }
+                  ]
+                }
+              }
+            },
+            "headers": {}
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/NotFoundEnvelope"
+                    },
+                    {
+                      "properties": {
+                        "data": {
+                          "$ref": "#/components/schemas/EmptyData"
+                        }
+                      },
+                      "type": "object"
+                    }
+                  ]
+                }
+              }
+            },
+            "headers": {}
+          },
+          "501": {
+            "description": "Not Implemented",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/NotImplementedEnvelope"
+                    },
+                    {
+                      "properties": {
+                        "data": {
+                          "$ref": "#/components/schemas/EmptyData"
+                        }
+                      },
+                      "type": "object"
+                    }
+                  ]
+                }
+              }
+            },
+            "headers": {}
+          }
+        },
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ]
+      }
+    },
+    "/api/sales/contracts/{id}/submit": {
+      "post": {
+        "summary": "提交合同审批",
+        "deprecated": false,
+        "description": "将草稿或已驳回合同提交到公司审批流",
+        "tags": [
+          "Contract"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "合同 ID",
+            "required": true,
+            "example": 0,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/ResponseEnvelope"
+                    },
+                    {
+                      "properties": {
+                        "data": {
+                          "$ref": "#/components/schemas/dto.SubmitContractResponse"
                         }
                       },
                       "type": "object"
@@ -12077,7 +12699,17 @@
         "tags": [
           "System Company"
         ],
-        "parameters": [],
+        "parameters": [
+          {
+            "name": "permissionCode",
+            "in": "query",
+            "description": "目标业务权限码；传入后按该权限对应的数据权限范围过滤可见公司",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
         "responses": {
           "200": {
             "description": "OK",
@@ -12092,6 +12724,29 @@
                       "properties": {
                         "data": {
                           "$ref": "#/components/schemas/dto.CompanyOptionListResponse"
+                        }
+                      },
+                      "type": "object"
+                    }
+                  ]
+                }
+              }
+            },
+            "headers": {}
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/BadRequestEnvelope"
+                    },
+                    {
+                      "properties": {
+                        "data": {
+                          "$ref": "#/components/schemas/EmptyData"
                         }
                       },
                       "type": "object"
@@ -12196,15 +12851,6 @@
             "required": true,
             "schema": {
               "type": "string"
-            }
-          },
-          {
-            "name": "companyId",
-            "in": "query",
-            "description": "公司 ID，不传时返回当前公司及直属子公司",
-            "required": false,
-            "schema": {
-              "type": "integer"
             }
           }
         ],
@@ -18003,6 +18649,438 @@
         ]
       }
     },
+    "/api/customers/import-template": {
+      "get": {
+        "summary": "下载客户导入模板",
+        "deprecated": false,
+        "description": "返回客户批量导入 Excel 模板文件",
+        "tags": [
+          "Customer"
+        ],
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet": {
+                "schema": {
+                  "format": "binary",
+                  "type": "string"
+                }
+              }
+            },
+            "headers": {}
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/UnauthorizedEnvelope"
+                    },
+                    {
+                      "properties": {
+                        "data": {
+                          "$ref": "#/components/schemas/EmptyData"
+                        }
+                      },
+                      "type": "object"
+                    }
+                  ]
+                }
+              }
+            },
+            "headers": {}
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/ForbiddenEnvelope"
+                    },
+                    {
+                      "properties": {
+                        "data": {
+                          "$ref": "#/components/schemas/EmptyData"
+                        }
+                      },
+                      "type": "object"
+                    }
+                  ]
+                }
+              }
+            },
+            "headers": {}
+          },
+          "503": {
+            "description": "Service Unavailable",
+            "content": {
+              "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/ServiceUnavailableEnvelope"
+                    },
+                    {
+                      "properties": {
+                        "data": {
+                          "$ref": "#/components/schemas/EmptyData"
+                        }
+                      },
+                      "type": "object"
+                    }
+                  ]
+                }
+              }
+            },
+            "headers": {}
+          }
+        },
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ]
+      }
+    },
+    "/api/customers/imports": {
+      "post": {
+        "summary": "批量导入客户",
+        "deprecated": false,
+        "description": "上传客户导入文件并逐行创建客户",
+        "tags": [
+          "Customer"
+        ],
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "file": {
+                    "description": "导入文件",
+                    "format": "binary",
+                    "type": "string",
+                    "x-formData-name": "file",
+                    "example": ""
+                  }
+                },
+                "required": [
+                  "file"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/ResponseEnvelope"
+                    },
+                    {
+                      "properties": {
+                        "data": {
+                          "$ref": "#/components/schemas/dto.CustomerImportResult"
+                        }
+                      },
+                      "type": "object"
+                    }
+                  ]
+                }
+              }
+            },
+            "headers": {}
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/BadRequestEnvelope"
+                    },
+                    {
+                      "properties": {
+                        "data": {
+                          "$ref": "#/components/schemas/EmptyData"
+                        }
+                      },
+                      "type": "object"
+                    }
+                  ]
+                }
+              }
+            },
+            "headers": {}
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/UnauthorizedEnvelope"
+                    },
+                    {
+                      "properties": {
+                        "data": {
+                          "$ref": "#/components/schemas/EmptyData"
+                        }
+                      },
+                      "type": "object"
+                    }
+                  ]
+                }
+              }
+            },
+            "headers": {}
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/ForbiddenEnvelope"
+                    },
+                    {
+                      "properties": {
+                        "data": {
+                          "$ref": "#/components/schemas/EmptyData"
+                        }
+                      },
+                      "type": "object"
+                    }
+                  ]
+                }
+              }
+            },
+            "headers": {}
+          },
+          "503": {
+            "description": "Service Unavailable",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/ServiceUnavailableEnvelope"
+                    },
+                    {
+                      "properties": {
+                        "data": {
+                          "$ref": "#/components/schemas/EmptyData"
+                        }
+                      },
+                      "type": "object"
+                    }
+                  ]
+                }
+              }
+            },
+            "headers": {}
+          }
+        },
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ]
+      }
+    },
+    "/api/customers/nearby": {
+      "get": {
+        "summary": "查询附近客户",
+        "deprecated": false,
+        "description": "根据当前位置和半径分页查询当前用户可见的附近客户，按距离从近到远返回",
+        "tags": [
+          "Customer"
+        ],
+        "parameters": [
+          {
+            "name": "latitude",
+            "in": "query",
+            "description": "查询中心点纬度",
+            "required": true,
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "longitude",
+            "in": "query",
+            "description": "查询中心点经度",
+            "required": true,
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "radiusMeters",
+            "in": "query",
+            "description": "查询半径（米），最大 50000",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "description": "页码",
+            "required": false,
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "pageSize",
+            "in": "query",
+            "description": "每页条数",
+            "required": false,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/ResponseEnvelope"
+                    },
+                    {
+                      "properties": {
+                        "data": {
+                          "$ref": "#/components/schemas/dto.NearbyCustomersResponse"
+                        }
+                      },
+                      "type": "object"
+                    }
+                  ]
+                }
+              }
+            },
+            "headers": {}
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/BadRequestEnvelope"
+                    },
+                    {
+                      "properties": {
+                        "data": {
+                          "$ref": "#/components/schemas/EmptyData"
+                        }
+                      },
+                      "type": "object"
+                    }
+                  ]
+                }
+              }
+            },
+            "headers": {}
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/UnauthorizedEnvelope"
+                    },
+                    {
+                      "properties": {
+                        "data": {
+                          "$ref": "#/components/schemas/EmptyData"
+                        }
+                      },
+                      "type": "object"
+                    }
+                  ]
+                }
+              }
+            },
+            "headers": {}
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/ForbiddenEnvelope"
+                    },
+                    {
+                      "properties": {
+                        "data": {
+                          "$ref": "#/components/schemas/EmptyData"
+                        }
+                      },
+                      "type": "object"
+                    }
+                  ]
+                }
+              }
+            },
+            "headers": {}
+          },
+          "503": {
+            "description": "Service Unavailable",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/ServiceUnavailableEnvelope"
+                    },
+                    {
+                      "properties": {
+                        "data": {
+                          "$ref": "#/components/schemas/EmptyData"
+                        }
+                      },
+                      "type": "object"
+                    }
+                  ]
+                }
+              }
+            },
+            "headers": {}
+          }
+        },
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ]
+      }
+    },
     "/api/customers/pools": {
       "get": {
         "summary": "查询客户公海列表",
@@ -19544,7 +20622,7 @@
           {
             "name": "tab",
             "in": "query",
-            "description": "页签；支持 all=全部、pending_followup=待处理跟进、soon_recycle=即将回收",
+            "description": "页签；支持 all=全部、pending_followup=待处理跟进、soon_recycle=即将回收、operation=运营公海、sales=销售公海、development=开发公海、global=全局公海",
             "required": false,
             "schema": {
               "type": "string"
@@ -21124,12 +22202,6 @@
                     "type": "string",
                     "x-formData-name": "file",
                     "example": ""
-                  },
-                  "followerUserId": {
-                    "description": "跟进人用户 ID",
-                    "type": "integer",
-                    "x-formData-name": "followerUserId",
-                    "example": 0
                   },
                   "ownerUserId": {
                     "description": "负责人用户 ID",
@@ -22931,7 +24003,7 @@
       "post": {
         "summary": "新增跟进记录",
         "deprecated": false,
-        "description": "为指定线索新增一条跟进记录，并可同步更新线索状态",
+        "description": "为指定线索新增一条跟进记录，仅需填写跟进内容；线索状态请通过更新状态接口单独维护。",
         "tags": [
           "Lead"
         ],
@@ -26150,19 +27222,19 @@
           {
             "name": "amountMin",
             "in": "query",
-            "description": "最低金额，单位元，最多支持两位小数",
+            "description": "最低金额，单位分",
             "required": false,
             "schema": {
-              "type": "number"
+              "type": "integer"
             }
           },
           {
             "name": "amountMax",
             "in": "query",
-            "description": "最高金额，单位元，最多支持两位小数",
+            "description": "最高金额，单位分",
             "required": false,
             "schema": {
-              "type": "number"
+              "type": "integer"
             }
           },
           {
@@ -31341,7 +32413,7 @@
       "put": {
         "summary": "编辑公海规则",
         "deprecated": false,
-        "description": "按公司、业务类型和公海编码保存规则",
+        "description": "按公司、业务类型和公海编码保存规则；triggerEvent 目前仅支持 no_follow_action=未产生跟进行为",
         "operationId": "systemPublicPoolRuleUpsert",
         "tags": [
           "System Public Pool"
@@ -31635,6 +32707,1269 @@
           }
         ]
       }
+    },
+    "/api/finance/expenses": {
+      "get": {
+        "summary": "查询费用列表",
+        "deprecated": false,
+        "description": "根据筛选条件分页查询费用管理列表，返回金额汇总、审批状态和当前页记录",
+        "tags": [
+          "Finance Expense"
+        ],
+        "parameters": [
+          {
+            "name": "page",
+            "in": "query",
+            "description": "页码",
+            "required": false,
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "pageSize",
+            "in": "query",
+            "description": "每页条数",
+            "required": false,
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "departmentId",
+            "in": "query",
+            "description": "所属部门 ID",
+            "required": false,
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "expenseNo",
+            "in": "query",
+            "description": "费用编号，模糊匹配",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "applicantId",
+            "in": "query",
+            "description": "申请人 ID",
+            "required": false,
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "customerName",
+            "in": "query",
+            "description": "关联客户名称，模糊匹配",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "status",
+            "in": "query",
+            "description": "审批状态；传值：pending_approval=待审批、approval_rejected=审批驳回、approval_passed=审批通过、cancelled=已撤销",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "submittedAtStart",
+            "in": "query",
+            "description": "发起时间开始，支持 RFC3339 或 yyyy-mm-dd",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "submittedAtEnd",
+            "in": "query",
+            "description": "发起时间结束，支持 RFC3339 或 yyyy-mm-dd",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/ResponseEnvelope"
+                    },
+                    {
+                      "properties": {
+                        "data": {
+                          "$ref": "#/components/schemas/dto.ListExpensesResponse"
+                        }
+                      },
+                      "type": "object"
+                    }
+                  ]
+                }
+              }
+            },
+            "headers": {}
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/BadRequestEnvelope"
+                    },
+                    {
+                      "properties": {
+                        "data": {
+                          "$ref": "#/components/schemas/EmptyData"
+                        }
+                      },
+                      "type": "object"
+                    }
+                  ]
+                }
+              }
+            },
+            "headers": {}
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/UnauthorizedEnvelope"
+                    },
+                    {
+                      "properties": {
+                        "data": {
+                          "$ref": "#/components/schemas/EmptyData"
+                        }
+                      },
+                      "type": "object"
+                    }
+                  ]
+                }
+              }
+            },
+            "headers": {}
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/ForbiddenEnvelope"
+                    },
+                    {
+                      "properties": {
+                        "data": {
+                          "$ref": "#/components/schemas/EmptyData"
+                        }
+                      },
+                      "type": "object"
+                    }
+                  ]
+                }
+              }
+            },
+            "headers": {}
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/InternalServerErrorEnvelope"
+                    },
+                    {
+                      "properties": {
+                        "data": {
+                          "$ref": "#/components/schemas/EmptyData"
+                        }
+                      },
+                      "type": "object"
+                    }
+                  ]
+                }
+              }
+            },
+            "headers": {}
+          },
+          "501": {
+            "description": "Not Implemented",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/NotImplementedEnvelope"
+                    },
+                    {
+                      "properties": {
+                        "data": {
+                          "$ref": "#/components/schemas/EmptyData"
+                        }
+                      },
+                      "type": "object"
+                    }
+                  ]
+                }
+              }
+            },
+            "headers": {}
+          }
+        },
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ]
+      },
+      "post": {
+        "summary": "创建费用单",
+        "deprecated": false,
+        "description": "创建一条新的费用申请；expenseItem 传值 travel=差旅费、advertising=广告投流、office=办公费、entertainment=招待费、transport=交通费、communication=通讯费、refreshment=茶水订饮、other=其他、business=业务费；附件类型固定为 payment_voucher=付款凭证",
+        "tags": [
+          "Finance Expense"
+        ],
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/dto.UpsertExpenseRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/ResponseEnvelope"
+                    },
+                    {
+                      "properties": {
+                        "data": {
+                          "$ref": "#/components/schemas/dto.ExpenseDetailResponse"
+                        }
+                      },
+                      "type": "object"
+                    }
+                  ]
+                }
+              }
+            },
+            "headers": {}
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/BadRequestEnvelope"
+                    },
+                    {
+                      "properties": {
+                        "data": {
+                          "$ref": "#/components/schemas/EmptyData"
+                        }
+                      },
+                      "type": "object"
+                    }
+                  ]
+                }
+              }
+            },
+            "headers": {}
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/UnauthorizedEnvelope"
+                    },
+                    {
+                      "properties": {
+                        "data": {
+                          "$ref": "#/components/schemas/EmptyData"
+                        }
+                      },
+                      "type": "object"
+                    }
+                  ]
+                }
+              }
+            },
+            "headers": {}
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/ForbiddenEnvelope"
+                    },
+                    {
+                      "properties": {
+                        "data": {
+                          "$ref": "#/components/schemas/EmptyData"
+                        }
+                      },
+                      "type": "object"
+                    }
+                  ]
+                }
+              }
+            },
+            "headers": {}
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/InternalServerErrorEnvelope"
+                    },
+                    {
+                      "properties": {
+                        "data": {
+                          "$ref": "#/components/schemas/EmptyData"
+                        }
+                      },
+                      "type": "object"
+                    }
+                  ]
+                }
+              }
+            },
+            "headers": {}
+          },
+          "501": {
+            "description": "Not Implemented",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/NotImplementedEnvelope"
+                    },
+                    {
+                      "properties": {
+                        "data": {
+                          "$ref": "#/components/schemas/EmptyData"
+                        }
+                      },
+                      "type": "object"
+                    }
+                  ]
+                }
+              }
+            },
+            "headers": {}
+          }
+        },
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ]
+      }
+    },
+    "/api/finance/expenses/{id}": {
+      "delete": {
+        "summary": "删除费用单",
+        "deprecated": false,
+        "description": "删除一条费用单，仅允许申请人删除处于 pending_approval=待审批 或 approval_rejected=审批驳回 状态的费用单；删除采用逻辑删除",
+        "tags": [
+          "Finance Expense"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "费用单 ID",
+            "required": true,
+            "example": 0,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/ResponseEnvelope"
+                    },
+                    {
+                      "properties": {
+                        "data": {
+                          "$ref": "#/components/schemas/dto.ActionResponse"
+                        }
+                      },
+                      "type": "object"
+                    }
+                  ]
+                }
+              }
+            },
+            "headers": {}
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/BadRequestEnvelope"
+                    },
+                    {
+                      "properties": {
+                        "data": {
+                          "$ref": "#/components/schemas/EmptyData"
+                        }
+                      },
+                      "type": "object"
+                    }
+                  ]
+                }
+              }
+            },
+            "headers": {}
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/UnauthorizedEnvelope"
+                    },
+                    {
+                      "properties": {
+                        "data": {
+                          "$ref": "#/components/schemas/EmptyData"
+                        }
+                      },
+                      "type": "object"
+                    }
+                  ]
+                }
+              }
+            },
+            "headers": {}
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/ForbiddenEnvelope"
+                    },
+                    {
+                      "properties": {
+                        "data": {
+                          "$ref": "#/components/schemas/EmptyData"
+                        }
+                      },
+                      "type": "object"
+                    }
+                  ]
+                }
+              }
+            },
+            "headers": {}
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/NotFoundEnvelope"
+                    },
+                    {
+                      "properties": {
+                        "data": {
+                          "$ref": "#/components/schemas/EmptyData"
+                        }
+                      },
+                      "type": "object"
+                    }
+                  ]
+                }
+              }
+            },
+            "headers": {}
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/InternalServerErrorEnvelope"
+                    },
+                    {
+                      "properties": {
+                        "data": {
+                          "$ref": "#/components/schemas/EmptyData"
+                        }
+                      },
+                      "type": "object"
+                    }
+                  ]
+                }
+              }
+            },
+            "headers": {}
+          },
+          "501": {
+            "description": "Not Implemented",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/NotImplementedEnvelope"
+                    },
+                    {
+                      "properties": {
+                        "data": {
+                          "$ref": "#/components/schemas/EmptyData"
+                        }
+                      },
+                      "type": "object"
+                    }
+                  ]
+                }
+              }
+            },
+            "headers": {}
+          }
+        },
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ]
+      },
+      "get": {
+        "summary": "查询费用详情",
+        "deprecated": false,
+        "description": "根据费用单 ID 查询费用详情，返回基础信息、收款账户、附件列表和审批记录",
+        "tags": [
+          "Finance Expense"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "费用单 ID",
+            "required": true,
+            "example": 0,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/ResponseEnvelope"
+                    },
+                    {
+                      "properties": {
+                        "data": {
+                          "$ref": "#/components/schemas/dto.ExpenseDetailResponse"
+                        }
+                      },
+                      "type": "object"
+                    }
+                  ]
+                }
+              }
+            },
+            "headers": {}
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/BadRequestEnvelope"
+                    },
+                    {
+                      "properties": {
+                        "data": {
+                          "$ref": "#/components/schemas/EmptyData"
+                        }
+                      },
+                      "type": "object"
+                    }
+                  ]
+                }
+              }
+            },
+            "headers": {}
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/UnauthorizedEnvelope"
+                    },
+                    {
+                      "properties": {
+                        "data": {
+                          "$ref": "#/components/schemas/EmptyData"
+                        }
+                      },
+                      "type": "object"
+                    }
+                  ]
+                }
+              }
+            },
+            "headers": {}
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/ForbiddenEnvelope"
+                    },
+                    {
+                      "properties": {
+                        "data": {
+                          "$ref": "#/components/schemas/EmptyData"
+                        }
+                      },
+                      "type": "object"
+                    }
+                  ]
+                }
+              }
+            },
+            "headers": {}
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/NotFoundEnvelope"
+                    },
+                    {
+                      "properties": {
+                        "data": {
+                          "$ref": "#/components/schemas/EmptyData"
+                        }
+                      },
+                      "type": "object"
+                    }
+                  ]
+                }
+              }
+            },
+            "headers": {}
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/InternalServerErrorEnvelope"
+                    },
+                    {
+                      "properties": {
+                        "data": {
+                          "$ref": "#/components/schemas/EmptyData"
+                        }
+                      },
+                      "type": "object"
+                    }
+                  ]
+                }
+              }
+            },
+            "headers": {}
+          },
+          "501": {
+            "description": "Not Implemented",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/NotImplementedEnvelope"
+                    },
+                    {
+                      "properties": {
+                        "data": {
+                          "$ref": "#/components/schemas/EmptyData"
+                        }
+                      },
+                      "type": "object"
+                    }
+                  ]
+                }
+              }
+            },
+            "headers": {}
+          }
+        },
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ]
+      }
+    },
+    "/api/finance/invoices": {
+      "get": {
+        "summary": "查询发票列表",
+        "deprecated": false,
+        "description": "按部门、合同编号、订单编号、发票类型和状态查询发票申请；invoiceType 传值 special=专票、normal=普票；status 传值 pending_issue=待开票、partial_issued=部分开票、issued=已开票",
+        "tags": [
+          "Finance Invoice"
+        ],
+        "parameters": [
+          {
+            "name": "page",
+            "in": "query",
+            "description": "页码",
+            "required": false,
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "pageSize",
+            "in": "query",
+            "description": "每页数量",
+            "required": false,
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "departmentId",
+            "in": "query",
+            "description": "部门 ID",
+            "required": false,
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "contractNo",
+            "in": "query",
+            "description": "合同编号",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "orderNo",
+            "in": "query",
+            "description": "订单编号",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "invoiceType",
+            "in": "query",
+            "description": "发票类型：special=专票, normal=普票",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "status",
+            "in": "query",
+            "description": "状态：pending_issue=待开票, partial_issued=部分开票, issued=已开票",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/ResponseEnvelope"
+                    },
+                    {
+                      "properties": {
+                        "data": {
+                          "$ref": "#/components/schemas/dto.ListInvoicesResponse"
+                        }
+                      },
+                      "type": "object"
+                    }
+                  ]
+                }
+              }
+            },
+            "headers": {}
+          }
+        },
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ]
+      },
+      "post": {
+        "summary": "创建发票申请",
+        "deprecated": false,
+        "description": "创建发票申请；invoiceType 传值 special=专票、normal=普票；applyAmount 为本次申请开票金额，单位分",
+        "tags": [
+          "Finance Invoice"
+        ],
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/dto.ApplyInvoiceRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/ResponseEnvelope"
+                    },
+                    {
+                      "properties": {
+                        "data": {
+                          "$ref": "#/components/schemas/dto.InvoiceDetailResponse"
+                        }
+                      },
+                      "type": "object"
+                    }
+                  ]
+                }
+              }
+            },
+            "headers": {}
+          }
+        },
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ]
+      }
+    },
+    "/api/finance/invoices/export": {
+      "post": {
+        "summary": "导出发票",
+        "deprecated": false,
+        "description": "按发票列表筛选条件导出发票数据，导出字段包含申请金额、已开票金额和待开票金额",
+        "tags": [
+          "Finance Invoice"
+        ],
+        "parameters": [
+          {
+            "name": "page",
+            "in": "query",
+            "description": "页码",
+            "required": false,
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "pageSize",
+            "in": "query",
+            "description": "每页数量",
+            "required": false,
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "departmentId",
+            "in": "query",
+            "description": "部门 ID",
+            "required": false,
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "contractNo",
+            "in": "query",
+            "description": "合同编号",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "orderNo",
+            "in": "query",
+            "description": "订单编号",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "invoiceType",
+            "in": "query",
+            "description": "发票类型：special=专票, normal=普票",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "status",
+            "in": "query",
+            "description": "状态：pending_issue=待开票, partial_issued=部分开票, issued=已开票",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/ResponseEnvelope"
+                    },
+                    {
+                      "properties": {
+                        "data": {
+                          "$ref": "#/components/schemas/dto.ExportResponse"
+                        }
+                      },
+                      "type": "object"
+                    }
+                  ]
+                }
+              }
+            },
+            "headers": {}
+          }
+        },
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ]
+      }
+    },
+    "/api/finance/invoices/{id}": {
+      "delete": {
+        "summary": "删除发票申请",
+        "deprecated": false,
+        "description": "软删除未开票发票申请；已产生开票记录或已开票金额大于 0 的申请不允许删除",
+        "tags": [
+          "Finance Invoice"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "发票申请 ID",
+            "required": true,
+            "example": 0,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/ResponseEnvelope"
+                    },
+                    {
+                      "properties": {
+                        "data": {
+                          "$ref": "#/components/schemas/dto.DeleteInvoiceResponse"
+                        }
+                      },
+                      "type": "object"
+                    }
+                  ]
+                }
+              }
+            },
+            "headers": {}
+          }
+        },
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ]
+      },
+      "get": {
+        "summary": "查询发票详情",
+        "deprecated": false,
+        "description": "查询发票申请基础字段、合同快照、合同正文 renderedHtml/fileUrl、商品明细和开票记录",
+        "tags": [
+          "Finance Invoice"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "发票申请 ID",
+            "required": true,
+            "example": 0,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/ResponseEnvelope"
+                    },
+                    {
+                      "properties": {
+                        "data": {
+                          "$ref": "#/components/schemas/dto.InvoiceDetailResponse"
+                        }
+                      },
+                      "type": "object"
+                    }
+                  ]
+                }
+              }
+            },
+            "headers": {}
+          }
+        },
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ]
+      },
+      "put": {
+        "summary": "编辑发票申请",
+        "deprecated": false,
+        "description": "编辑未开票发票申请；invoiceType 传值 special=专票、normal=普票；已产生开票记录的申请不允许编辑",
+        "tags": [
+          "Finance Invoice"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "发票申请 ID",
+            "required": true,
+            "example": 0,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/dto.UpdateInvoiceRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/ResponseEnvelope"
+                    },
+                    {
+                      "properties": {
+                        "data": {
+                          "$ref": "#/components/schemas/dto.InvoiceDetailResponse"
+                        }
+                      },
+                      "type": "object"
+                    }
+                  ]
+                }
+              }
+            },
+            "headers": {}
+          }
+        },
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ]
+      }
+    },
+    "/api/finance/invoices/{id}/issue": {
+      "post": {
+        "summary": "登记开票",
+        "deprecated": false,
+        "description": "为发票申请登记开票记录并上传凭证，状态流转为 pending_issue/partial_issued/issued",
+        "tags": [
+          "Finance Invoice"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "发票申请 ID",
+            "required": true,
+            "example": 0,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/dto.IssueInvoiceRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/ResponseEnvelope"
+                    },
+                    {
+                      "properties": {
+                        "data": {
+                          "$ref": "#/components/schemas/dto.InvoiceDetailResponse"
+                        }
+                      },
+                      "type": "object"
+                    }
+                  ]
+                }
+              }
+            },
+            "headers": {}
+          }
+        },
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ]
+      }
     }
   },
   "components": {
@@ -31820,6 +34155,14 @@
         },
         "type": "object"
       },
+      "api.UpdateChannelRequest": {
+        "properties": {
+          "name": {
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
       "dto.AccountListResponse": {
         "properties": {
           "items": {
@@ -31950,6 +34293,56 @@
         },
         "type": "object"
       },
+      "dto.ActionResponse": {
+        "properties": {
+          "id": {
+            "description": "ID 表示唯一标识。",
+            "type": "integer"
+          },
+          "message": {
+            "description": "Message 表示提示信息。",
+            "type": "string"
+          },
+          "status": {
+            "description": "Status 表示状态；常见返回值包括 pending_approval=待审批、approval_rejected=审批驳回、approval_passed=审批通过、cancelled=已撤销、deleted=已删除。",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "dto.ApplyInvoiceRequest": {
+        "properties": {
+          "applyAmount": {
+            "description": "ApplyAmount 表示申请开票金额，单位分。",
+            "type": "integer"
+          },
+          "contractId": {
+            "description": "ContractID 表示合同 ID。",
+            "type": "integer"
+          },
+          "invoiceType": {
+            "description": "InvoiceType 表示发票类型；传值：special=专票，normal=普票。",
+            "type": "string"
+          },
+          "orderId": {
+            "description": "OrderID 表示订单 ID。",
+            "type": "integer"
+          },
+          "taxRate": {
+            "description": "TaxRate 表示税率。",
+            "type": "number"
+          },
+          "taxpayerNo": {
+            "description": "TaxpayerNo 表示纳税人识别号。",
+            "type": "string"
+          },
+          "titleName": {
+            "description": "TitleName 表示抬头名称。",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
       "dto.ApplyRefundRequest": {
         "properties": {
           "accountName": {
@@ -31994,6 +34387,39 @@
           },
           "wechatQRCodeUrl": {
             "description": "WechatQRCodeURL 表示微信收款码地址。",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "dto.ApprovalStep": {
+        "properties": {
+          "approvalRule": {
+            "description": "ApprovalRule 表示审批规则；支持 any=任一通过、all=全部通过，兼容历史值 any_one=任一通过。",
+            "type": "string"
+          },
+          "comment": {
+            "description": "Comment 表示备注。",
+            "type": "string"
+          },
+          "nodeName": {
+            "description": "NodeName 表示节点名称。",
+            "type": "string"
+          },
+          "nodeNo": {
+            "description": "NodeNo 表示节点编号。",
+            "type": "integer"
+          },
+          "operatedAt": {
+            "description": "OperatedAt 表示操作时间。",
+            "type": "string"
+          },
+          "operatorName": {
+            "description": "OperatorName 表示操作人名称。",
+            "type": "string"
+          },
+          "status": {
+            "description": "Status 表示审批动作状态；当前审批记录返回 submit=提交、approve=审批通过、reject=审批驳回、cancel=撤销、resubmit=重新提交。",
             "type": "string"
           }
         },
@@ -32109,6 +34535,76 @@
           },
           "toPoolId": {
             "description": "ToPoolID 表示结束公海ID。",
+            "type": "integer"
+          }
+        },
+        "type": "object"
+      },
+      "dto.AttachmentInput": {
+        "properties": {
+          "attachmentType": {
+            "description": "AttachmentType 表示附件类型；支持 payment_voucher=付款凭证、invoice=发票附件、mileage_start=里程起点图、mileage_end=里程终点图、refund_voucher=退款凭证、remittance_voucher=汇款凭证。",
+            "type": "string"
+          },
+          "fileExt": {
+            "description": "FileExt 表示文件扩展名。",
+            "type": "string"
+          },
+          "fileName": {
+            "description": "FileName 表示文件名。",
+            "type": "string"
+          },
+          "fileSize": {
+            "description": "FileSize 表示文件大小。",
+            "type": "integer"
+          },
+          "fileUrl": {
+            "description": "FileURL 表示文件地址。",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "dto.AttachmentItem": {
+        "properties": {
+          "attachmentType": {
+            "description": "AttachmentType 表示附件类型；支持 payment_voucher=付款凭证、invoice=发票附件、mileage_start=里程起点图、mileage_end=里程终点图、refund_voucher=退款凭证、remittance_voucher=汇款凭证。",
+            "type": "string"
+          },
+          "bizId": {
+            "description": "BizID 表示业务 ID。",
+            "type": "integer"
+          },
+          "bizType": {
+            "description": "BizType 表示业务类型。",
+            "type": "string"
+          },
+          "createdAt": {
+            "description": "CreatedAt 表示创建时间。",
+            "type": "string"
+          },
+          "fileExt": {
+            "description": "FileExt 表示文件扩展名。",
+            "type": "string"
+          },
+          "fileName": {
+            "description": "FileName 表示文件名。",
+            "type": "string"
+          },
+          "fileSize": {
+            "description": "FileSize 表示文件大小。",
+            "type": "integer"
+          },
+          "fileUrl": {
+            "description": "FileURL 表示文件地址。",
+            "type": "string"
+          },
+          "id": {
+            "description": "ID 表示唯一标识。",
+            "type": "integer"
+          },
+          "itemId": {
+            "description": "ItemID 表示项ID。",
             "type": "integer"
           }
         },
@@ -32772,6 +35268,72 @@
         },
         "type": "object"
       },
+      "dto.ContractApprovalActor": {
+        "properties": {
+          "account": {
+            "type": "string"
+          },
+          "approvedAt": {
+            "type": "string"
+          },
+          "id": {
+            "type": "integer"
+          },
+          "name": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "dto.ContractApprovalFlowSnapshot": {
+        "properties": {
+          "flowConfigId": {
+            "type": "integer"
+          },
+          "nodes": {
+            "items": {
+              "$ref": "#/components/schemas/dto.ContractApprovalNodeSnapshot"
+            },
+            "type": "array"
+          },
+          "ruleLabel": {
+            "type": "string"
+          },
+          "triggerType": {
+            "type": "string"
+          },
+          "triggerValue": {
+            "type": "integer"
+          }
+        },
+        "type": "object"
+      },
+      "dto.ContractApprovalNodeSnapshot": {
+        "properties": {
+          "approvalRule": {
+            "type": "string"
+          },
+          "approvers": {
+            "items": {
+              "$ref": "#/components/schemas/dto.ContractApprovalActor"
+            },
+            "type": "array"
+          },
+          "nodeName": {
+            "type": "string"
+          },
+          "nodeNo": {
+            "type": "integer"
+          },
+          "status": {
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
       "dto.ContractApprovalStep": {
         "properties": {
           "approvalRule": {
@@ -32807,6 +35369,14 @@
       },
       "dto.ContractDetailResponse": {
         "properties": {
+          "approvalFlow": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/dto.ContractApprovalFlowSnapshot"
+              }
+            ],
+            "description": "ApprovalFlow 表示审批流快照。"
+          },
           "approvalHistory": {
             "description": "ApprovalHistory 表示审批记录。",
             "items": {
@@ -32831,6 +35401,14 @@
           "contractNo": {
             "description": "ContractNo 表示合同编号。",
             "type": "string"
+          },
+          "currentApprovalNode": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/dto.ContractApprovalNodeSnapshot"
+              }
+            ],
+            "description": "CurrentApprovalNode 表示当前审批节点。"
           },
           "currentApproverIds": {
             "description": "CurrentApproverIDs 表示当前审批人ID 列表。",
@@ -32876,6 +35454,14 @@
             "description": "SignStatus 表示签署状态。",
             "type": "string"
           },
+          "signedBackAt": {
+            "description": "SignedBackAt 表示回签时间。",
+            "type": "string"
+          },
+          "signedBackFileUrl": {
+            "description": "SignedBackFileURL 表示回签文件地址。",
+            "type": "string"
+          },
           "summarySnapshot": {
             "additionalProperties": {},
             "description": "SummarySnapshot 表示摘要快照。",
@@ -32899,6 +35485,10 @@
             "description": "CanApprove 表示是否可审批。",
             "type": "boolean"
           },
+          "companyId": {
+            "description": "CompanyID 表示公司 ID。",
+            "type": "integer"
+          },
           "contractNo": {
             "description": "ContractNo 表示合同编号。",
             "type": "string"
@@ -32906,6 +35496,10 @@
           "customerName": {
             "description": "CustomerName 表示客户名称。",
             "type": "string"
+          },
+          "departmentId": {
+            "description": "DepartmentID 表示部门 ID。",
+            "type": "integer"
           },
           "displayStatus": {
             "description": "DisplayStatus 表示展示状态。",
@@ -33034,12 +35628,20 @@
             },
             "type": "array"
           },
+          "companyId": {
+            "description": "CompanyID 表示公司 ID。",
+            "type": "integer"
+          },
           "contentHtml": {
             "description": "ContentHTML 表示HTML 内容。",
             "type": "string"
           },
           "currentVersion": {
             "description": "CurrentVersion 表示当前版本。",
+            "type": "integer"
+          },
+          "departmentId": {
+            "description": "DepartmentID 表示部门 ID。",
             "type": "integer"
           },
           "id": {
@@ -33120,9 +35722,17 @@
             },
             "type": "array"
           },
+          "companyId": {
+            "description": "CompanyID 表示公司 ID。",
+            "type": "integer"
+          },
           "contentHtml": {
             "description": "ContentHTML 表示HTML 内容。",
             "type": "string"
+          },
+          "departmentId": {
+            "description": "DepartmentID 表示部门 ID。",
+            "type": "integer"
           },
           "name": {
             "description": "Name 表示名称。",
@@ -33285,6 +35895,102 @@
         },
         "type": "object"
       },
+      "dto.CreateContractItemInput": {
+        "properties": {
+          "amount": {
+            "type": "integer"
+          },
+          "brandName": {
+            "type": "string"
+          },
+          "model": {
+            "type": "string"
+          },
+          "productId": {
+            "type": "integer"
+          },
+          "productName": {
+            "type": "string"
+          },
+          "quantity": {
+            "type": "number"
+          },
+          "remark": {
+            "type": "string"
+          },
+          "unit": {
+            "type": "string"
+          },
+          "unitPrice": {
+            "type": "integer"
+          }
+        },
+        "type": "object"
+      },
+      "dto.CreateContractRequest": {
+        "properties": {
+          "buyerSnapshot": {
+            "additionalProperties": {},
+            "type": "object",
+            "properties": {}
+          },
+          "contractNo": {
+            "type": "string"
+          },
+          "customerId": {
+            "type": "integer"
+          },
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/dto.CreateContractItemInput"
+            },
+            "type": "array"
+          },
+          "name": {
+            "type": "string"
+          },
+          "opportunityId": {
+            "type": "integer"
+          },
+          "quotationId": {
+            "type": "integer"
+          },
+          "renderedHtml": {
+            "type": "string"
+          },
+          "sellerSnapshot": {
+            "additionalProperties": {},
+            "type": "object",
+            "properties": {}
+          },
+          "summarySnapshot": {
+            "additionalProperties": {},
+            "type": "object",
+            "properties": {}
+          },
+          "templateId": {
+            "type": "integer"
+          }
+        },
+        "type": "object"
+      },
+      "dto.CreateContractResponse": {
+        "properties": {
+          "contractNo": {
+            "type": "string"
+          },
+          "displayStatus": {
+            "type": "string"
+          },
+          "id": {
+            "type": "integer"
+          },
+          "name": {
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
       "dto.CreateCustomerFollowRecordRequest": {
         "properties": {
           "content": {
@@ -33343,7 +36049,7 @@
             "type": "string"
           },
           "category": {
-            "description": "Category 表示客户分类。",
+            "description": "Category 表示客户分类。 客户、设备商、粉末商、行业朋友；固定返回 customer=客户、equipment_supplier=设备商、powder_supplier=粉末商、industry_friend=行业朋友。",
             "type": "string"
           },
           "channelId": {
@@ -33361,33 +36067,36 @@
             },
             "type": "array"
           },
-          "contactName": {
-            "description": "ContactName 表示主联系人姓名。",
-            "type": "string"
-          },
-          "contactPosition": {
-            "description": "ContactPosition 表示主联系人职位。",
-            "type": "string"
+          "contacts": {
+            "description": "Contacts 表示联系人列表。",
+            "items": {
+              "$ref": "#/components/schemas/dto.CustomerContactInput"
+            },
+            "type": "array"
           },
           "customerType": {
-            "description": "CustomerType 表示客户类型。",
+            "description": "CustomerType 表示客户类型。 国内、海外；固定返回 domestic=国内、overseas=海外。",
             "type": "string"
           },
           "districtCode": {
             "description": "DistrictCode 表示区县行政区划编码。",
             "type": "string"
           },
-          "email": {
-            "description": "Email 表示邮箱地址。",
+          "industry": {
+            "description": "Industry 表示所属行业。表示客户行业英文编码；支持 electrical=电气行业、pipeline=管道行业、coil_coating=卷涂行业、home=家居行业、furniture=家具行业、transportation=交通行业、industry_category=行业类别、aluminum=铝材行业、sports_goods=体育用品、hardware=五金行业、fire_equipment=消防器材、new_energy=新能源行业、heavy_industry=重工行业、other=其他行业。",
             "type": "string"
           },
-          "industry": {
-            "description": "Industry 表示所属行业。",
-            "type": "string"
+          "latitude": {
+            "description": "Latitude 表示客户主地址纬度。",
+            "type": "number"
           },
           "level": {
             "description": "Level 表示客户等级。",
             "type": "string"
+          },
+          "longitude": {
+            "description": "Longitude 表示客户主地址经度。",
+            "type": "number"
           },
           "name": {
             "description": "Name 表示客户名称。",
@@ -33409,12 +36118,8 @@
             "description": "OwnerUserID 表示负责人用户 ID。",
             "type": "integer"
           },
-          "phone": {
-            "description": "Phone 表示联系电话。",
-            "type": "string"
-          },
           "projectType": {
-            "description": "ProjectType 表示项目类型。",
+            "description": "ProjectType 表示项目类型。 new_line=新线、old_line=旧线；固定返回 new_line=新线、old_line=旧线。",
             "type": "string"
           },
           "provinceCode": {
@@ -33432,14 +36137,6 @@
           "usesOtherBrandGun": {
             "description": "UsesOtherBrandGun 表示是否使用其他品牌喷枪。",
             "type": "boolean"
-          },
-          "wechat": {
-            "description": "Wechat 表示微信号。",
-            "type": "string"
-          },
-          "whatsapp": {
-            "description": "Whatsapp 表示 WhatsApp 号码。",
-            "type": "string"
           },
           "workpiece": {
             "description": "Workpiece 表示工件信息。",
@@ -33500,37 +36197,11 @@
       "dto.CreateFollowRecordRequest": {
         "properties": {
           "content": {
-            "description": "Content 表示内容。",
-            "type": "string"
-          },
-          "followType": {
-            "description": "FollowType 表示跟进方式。",
+            "description": "Content 表示跟进内容。",
             "type": "string"
           },
           "followedAt": {
-            "description": "FollowedAt 表示跟进时间。",
-            "type": "string"
-          },
-          "invalidReason": {
-            "description": "InvalidReason 表示无效原因。",
-            "type": "string"
-          },
-          "nextFollowAt": {
-            "description": "NextFollowAt 表示下次跟进时间。",
-            "type": "string"
-          },
-          "result": {
-            "description": "Result 表示结果。",
-            "type": "string"
-          },
-          "status": {
-            "description": "Status 表示状态；支持 pending=待处理、valid=有效、invalid=无效、duplicate=重复。",
-            "enum": [
-              "pending",
-              "valid",
-              "invalid",
-              "duplicate"
-            ],
+            "description": "FollowedAt 表示跟进时间；不传时默认当前时间。",
             "type": "string"
           }
         },
@@ -33593,14 +36264,6 @@
             "description": "Email 表示邮箱地址。",
             "type": "string"
           },
-          "externalId": {
-            "description": "ExternalID 表示外部 ID。",
-            "type": "string"
-          },
-          "followerUserId": {
-            "description": "FollowerUserID 表示跟进人用户 ID。",
-            "type": "integer"
-          },
           "leadLevel": {
             "description": "LeadLevel 表示线索等级；支持 A、B、C、D。",
             "enum": [
@@ -33609,10 +36272,6 @@
               "C",
               "D"
             ],
-            "type": "string"
-          },
-          "obtainedAt": {
-            "description": "ObtainedAt 表示获取时间。",
             "type": "string"
           },
           "ownerUserId": {
@@ -33634,16 +36293,6 @@
           "sourceDepartmentId": {
             "description": "SourceDepartmentID 表示来源部门 ID。",
             "type": "integer"
-          },
-          "status": {
-            "description": "Status 表示状态；支持 pending=待处理、valid=有效、invalid=无效、duplicate=重复。",
-            "enum": [
-              "pending",
-              "valid",
-              "invalid",
-              "duplicate"
-            ],
-            "type": "string"
           },
           "wechat": {
             "description": "Wechat 表示微信号。",
@@ -33872,6 +36521,120 @@
         },
         "type": "object"
       },
+      "dto.CustomerContactDetail": {
+        "properties": {
+          "email": {
+            "description": "Email 表示邮箱。",
+            "type": "string"
+          },
+          "id": {
+            "description": "ID 表示联系人 ID。",
+            "type": "integer"
+          },
+          "isPrimary": {
+            "description": "IsPrimary 表示是否主联系人。",
+            "type": "boolean"
+          },
+          "name": {
+            "description": "Name 表示联系人姓名。",
+            "type": "string"
+          },
+          "phones": {
+            "description": "Phones 表示联系电话列表。",
+            "items": {
+              "$ref": "#/components/schemas/dto.CustomerContactPhoneDetail"
+            },
+            "type": "array"
+          },
+          "position": {
+            "description": "Position 表示联系人职位。",
+            "type": "string"
+          },
+          "sortOrder": {
+            "description": "SortOrder 表示排序。",
+            "type": "integer"
+          },
+          "wechat": {
+            "description": "Wechat 表示微信号。",
+            "type": "string"
+          },
+          "whatsapp": {
+            "description": "Whatsapp 表示 WhatsApp。",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "dto.CustomerContactInput": {
+        "properties": {
+          "email": {
+            "description": "Email 表示邮箱。",
+            "type": "string"
+          },
+          "id": {
+            "description": "ID 表示联系人 ID，创建时可为空。",
+            "type": "integer"
+          },
+          "name": {
+            "description": "Name 表示联系人姓名。",
+            "type": "string"
+          },
+          "phones": {
+            "description": "Phones 表示联系电话列表。",
+            "items": {
+              "$ref": "#/components/schemas/dto.CustomerContactPhoneInput"
+            },
+            "type": "array"
+          },
+          "position": {
+            "description": "Position 表示联系人职位。",
+            "type": "string"
+          },
+          "wechat": {
+            "description": "Wechat 表示微信号。",
+            "type": "string"
+          },
+          "whatsapp": {
+            "description": "Whatsapp 表示 WhatsApp。",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "dto.CustomerContactPhoneDetail": {
+        "properties": {
+          "id": {
+            "description": "ID 表示联系电话 ID。",
+            "type": "integer"
+          },
+          "isPrimary": {
+            "description": "IsPrimary 表示是否主联系电话。",
+            "type": "boolean"
+          },
+          "phone": {
+            "description": "Phone 表示联系电话。",
+            "type": "string"
+          },
+          "sortOrder": {
+            "description": "SortOrder 表示排序。",
+            "type": "integer"
+          }
+        },
+        "type": "object"
+      },
+      "dto.CustomerContactPhoneInput": {
+        "properties": {
+          "id": {
+            "description": "ID 表示联系电话 ID，创建时可为空。",
+            "type": "integer"
+          },
+          "phone": {
+            "description": "Phone 表示联系电话。",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
       "dto.CustomerCreateResponse": {
         "properties": {
           "collaboratorUserIds": {
@@ -33964,6 +36727,13 @@
             "description": "ContactPosition 表示联系人职位。",
             "type": "string"
           },
+          "contacts": {
+            "description": "Contacts 表示联系人列表。",
+            "items": {
+              "$ref": "#/components/schemas/dto.CustomerContactDetail"
+            },
+            "type": "array"
+          },
           "createdAt": {
             "description": "CreatedAt 表示创建时间。",
             "type": "string"
@@ -33980,6 +36750,22 @@
             "description": "Email 表示邮箱。",
             "type": "string"
           },
+          "geocodeError": {
+            "description": "GeocodeError 表示最近一次地理编码失败原因。",
+            "type": "string"
+          },
+          "geocodeSource": {
+            "description": "GeocodeSource 表示客户地址坐标来源。",
+            "type": "string"
+          },
+          "geocodeStatus": {
+            "description": "GeocodeStatus 表示客户地址坐标补齐状态。",
+            "type": "string"
+          },
+          "geocodeUpdatedAt": {
+            "description": "GeocodeUpdatedAt 表示最近一次地理编码状态更新时间。",
+            "type": "string"
+          },
           "id": {
             "description": "ID 表示客户 ID。",
             "type": "integer"
@@ -33992,6 +36778,10 @@
             "description": "IndustryLabel 表示客户行业展示文案。",
             "type": "string"
           },
+          "latitude": {
+            "description": "Latitude 表示客户主地址纬度。",
+            "type": "number"
+          },
           "level": {
             "description": "Level 表示客户等级。",
             "type": "string"
@@ -33999,6 +36789,10 @@
           "levelLabel": {
             "description": "LevelLabel 表示客户等级展示文案。",
             "type": "string"
+          },
+          "longitude": {
+            "description": "Longitude 表示客户主地址经度。",
+            "type": "number"
           },
           "name": {
             "description": "Name 表示客户名称。",
@@ -34264,6 +37058,47 @@
         },
         "type": "object"
       },
+      "dto.CustomerImportFailDetail": {
+        "properties": {
+          "customerName": {
+            "description": "CustomerName 表示该行客户名称。",
+            "type": "string"
+          },
+          "reason": {
+            "description": "Reason 表示失败原因。",
+            "type": "string"
+          },
+          "rowNum": {
+            "description": "RowNum 表示 Excel/CSV 中的行号。",
+            "type": "integer"
+          }
+        },
+        "type": "object"
+      },
+      "dto.CustomerImportResult": {
+        "properties": {
+          "failCount": {
+            "description": "FailCount 表示失败数量。",
+            "type": "integer"
+          },
+          "failDetails": {
+            "description": "FailDetails 表示失败明细。",
+            "items": {
+              "$ref": "#/components/schemas/dto.CustomerImportFailDetail"
+            },
+            "type": "array"
+          },
+          "successCount": {
+            "description": "SuccessCount 表示成功导入数量。",
+            "type": "integer"
+          },
+          "totalCount": {
+            "description": "TotalCount 表示有效数据总行数。",
+            "type": "integer"
+          }
+        },
+        "type": "object"
+      },
       "dto.CustomerItem": {
         "properties": {
           "address": {
@@ -34319,6 +37154,10 @@
           "createdAt": {
             "description": "CreatedAt 表示创建时间。",
             "type": "string"
+          },
+          "distanceMeters": {
+            "description": "DistanceMeters 表示距离查询点的米数，仅在附近客户查询中返回。",
+            "type": "number"
           },
           "districtCode": {
             "description": "DistrictCode 表示区县编码。",
@@ -34380,6 +37219,10 @@
             "description": "LatestFollowRecord 表示最近一条跟进内容，仅返回内容文本，不返回完整跟进记录。",
             "type": "string"
           },
+          "latitude": {
+            "description": "Latitude 表示客户主地址纬度。",
+            "type": "number"
+          },
           "level": {
             "description": "Level 表示层级。",
             "type": "string"
@@ -34387,6 +37230,10 @@
           "levelLabel": {
             "description": "LevelLabel 表示客户等级展示文案。",
             "type": "string"
+          },
+          "longitude": {
+            "description": "Longitude 表示客户主地址经度。",
+            "type": "number"
           },
           "name": {
             "description": "Name 表示名称。",
@@ -34986,6 +37833,10 @@
             "description": "Name 表示动作名称。",
             "type": "string"
           },
+          "permissionCode": {
+            "description": "PermissionCode 表示对应的功能权限码。",
+            "type": "string"
+          },
           "sortOrder": {
             "description": "SortOrder 表示排序值。",
             "type": "integer"
@@ -35035,6 +37886,14 @@
             "description": "Name 表示资源名称。",
             "type": "string"
           },
+          "pageCode": {
+            "description": "PageCode 表示页面编码。",
+            "type": "string"
+          },
+          "scopePermissionCode": {
+            "description": "ScopePermissionCode 表示用于查询可见组织范围的权限码。",
+            "type": "string"
+          },
           "sortOrder": {
             "description": "SortOrder 表示排序值。",
             "type": "integer"
@@ -35059,6 +37918,10 @@
           "name": {
             "description": "Name 表示动作名称。",
             "type": "string"
+          },
+          "permissionCode": {
+            "description": "PermissionCode 表示对应的功能权限码。",
+            "type": "string"
           }
         },
         "type": "object"
@@ -35076,6 +37939,16 @@
           "includeChildren": {
             "description": "IncludeChildren 表示是否包含子部门。",
             "type": "boolean"
+          },
+          "scopeRefType": {
+            "description": "ScopeRefType 表示范围引用类型；支持 fixed、current_company、current_department、current_user。",
+            "enum": [
+              "fixed",
+              "current_company",
+              "current_department",
+              "current_user"
+            ],
+            "type": "string"
           },
           "scopeType": {
             "description": "ScopeType 表示范围层级；支持 personal=本人、department=本部门、company=全公司。",
@@ -35097,6 +37970,10 @@
               "type": "string"
             },
             "type": "array"
+          },
+          "pageCode": {
+            "description": "PageCode 表示页面编码。",
+            "type": "string"
           },
           "priority": {
             "description": "Priority 表示优先级。",
@@ -35128,6 +38005,14 @@
           "id": {
             "description": "ID 表示规则 ID。",
             "type": "integer"
+          },
+          "pageCode": {
+            "description": "PageCode 表示页面编码。",
+            "type": "string"
+          },
+          "pageName": {
+            "description": "PageName 表示页面名称。",
+            "type": "string"
           },
           "priority": {
             "description": "Priority 表示优先级。",
@@ -35165,6 +38050,16 @@
             "description": "IncludeChildren 表示是否包含子部门，仅当 scopeType=department 时生效，且会递归包含所有下级部门。",
             "type": "boolean"
           },
+          "scopeRefType": {
+            "description": "ScopeRefType 表示范围引用类型，可选值 fixed、current_company、current_department、current_user。",
+            "enum": [
+              "fixed",
+              "current_company",
+              "current_department",
+              "current_user"
+            ],
+            "type": "string"
+          },
           "scopeType": {
             "description": "ScopeType 表示范围层级，可选值 personal、department、company。",
             "enum": [
@@ -35198,6 +38093,16 @@
           "includeChildren": {
             "description": "IncludeChildren 表示是否包含子部门。",
             "type": "boolean"
+          },
+          "scopeRefType": {
+            "description": "ScopeRefType 表示范围引用类型，可选值 fixed、current_company、current_department、current_user。",
+            "enum": [
+              "fixed",
+              "current_company",
+              "current_department",
+              "current_user"
+            ],
+            "type": "string"
           },
           "scopeType": {
             "description": "ScopeType 表示范围层级，可选值 personal、department、company。",
@@ -35251,6 +38156,23 @@
           "selectable": {
             "description": "Selectable 表示是否可选。",
             "type": "boolean"
+          }
+        },
+        "type": "object"
+      },
+      "dto.DeleteInvoiceResponse": {
+        "properties": {
+          "deleted": {
+            "description": "Deleted 表示是否删除成功。",
+            "type": "boolean"
+          },
+          "deletedAt": {
+            "description": "DeletedAt 表示删除时间。",
+            "type": "string"
+          },
+          "id": {
+            "description": "ID 表示发票申请 ID。",
+            "type": "integer"
           }
         },
         "type": "object"
@@ -35486,6 +38408,276 @@
         },
         "type": "object"
       },
+      "dto.ExpenseApprovalActor": {
+        "properties": {
+          "comment": {
+            "description": "Comment 表示审批意见或驳回原因。",
+            "type": "string"
+          },
+          "id": {
+            "description": "ID 表示审批人 ID。",
+            "type": "integer"
+          },
+          "name": {
+            "description": "Name 表示审批人姓名。",
+            "type": "string"
+          },
+          "operatedAt": {
+            "description": "OperatedAt 表示审批时间。",
+            "type": "string"
+          },
+          "status": {
+            "description": "Status 表示节点内审批状态；pending=待审批、approved=审批通过、rejected=审批驳回。",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "dto.ExpenseApprovalFlowSnapshot": {
+        "properties": {
+          "nodes": {
+            "description": "Nodes 表示审批节点列表（按展示顺序，通常为高节点在前）。",
+            "items": {
+              "$ref": "#/components/schemas/dto.ExpenseApprovalNodeSnapshot"
+            },
+            "type": "array"
+          }
+        },
+        "type": "object"
+      },
+      "dto.ExpenseApprovalNodeSnapshot": {
+        "properties": {
+          "approvalRule": {
+            "description": "ApprovalRule 表示审批规则；any=任一通过、all=全部通过。",
+            "type": "string"
+          },
+          "approvers": {
+            "description": "Approvers 表示可审批人及审批结果。",
+            "items": {
+              "$ref": "#/components/schemas/dto.ExpenseApprovalActor"
+            },
+            "type": "array"
+          },
+          "nodeName": {
+            "description": "NodeName 表示节点名称。",
+            "type": "string"
+          },
+          "nodeNo": {
+            "description": "NodeNo 表示节点编号。",
+            "type": "integer"
+          },
+          "status": {
+            "description": "Status 表示节点状态；pending=待审批、approved=已通过、rejected=已驳回。",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "dto.ExpenseDetailResponse": {
+        "properties": {
+          "amount": {
+            "description": "Amount 表示金额。",
+            "type": "integer"
+          },
+          "applicantId": {
+            "description": "ApplicantID 表示申请人 ID。",
+            "type": "integer"
+          },
+          "applicantName": {
+            "description": "ApplicantName 表示申请人姓名。",
+            "type": "string"
+          },
+          "approvalFlow": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/dto.ExpenseApprovalFlowSnapshot"
+              }
+            ],
+            "description": "ApprovalFlow 表示审批节点快照，用于详情时间线展示。"
+          },
+          "approvalHistory": {
+            "description": "ApprovalHistory 表示审批记录；当前返回动作历史，状态值见 ApprovalStep.Status 注释。",
+            "items": {
+              "$ref": "#/components/schemas/dto.ApprovalStep"
+            },
+            "type": "array"
+          },
+          "attachments": {
+            "description": "Attachments 表示附件列表。",
+            "items": {
+              "$ref": "#/components/schemas/dto.AttachmentItem"
+            },
+            "type": "array"
+          },
+          "canApprove": {
+            "description": "CanApprove 表示是否可审批。",
+            "type": "boolean"
+          },
+          "canCancel": {
+            "description": "CanCancel 表示当前用户是否可撤销。",
+            "type": "boolean"
+          },
+          "canEdit": {
+            "description": "CanEdit 表示当前用户是否可编辑。",
+            "type": "boolean"
+          },
+          "companyId": {
+            "description": "CompanyID 表示公司 ID。",
+            "type": "integer"
+          },
+          "createdAt": {
+            "description": "CreatedAt 表示创建时间。",
+            "type": "string"
+          },
+          "customerId": {
+            "description": "CustomerID 表示客户 ID。",
+            "type": "integer"
+          },
+          "customerName": {
+            "description": "CustomerName 表示客户名称。",
+            "type": "string"
+          },
+          "departmentId": {
+            "description": "DepartmentID 表示部门 ID。",
+            "type": "integer"
+          },
+          "description": {
+            "description": "Description 表示说明。",
+            "type": "string"
+          },
+          "expenseDepartmentId": {
+            "description": "ExpenseDepartmentID 表示费用归属部门 ID。",
+            "type": "integer"
+          },
+          "expenseDepartmentName": {
+            "description": "ExpenseDepartmentName 表示费用承担部门路径名称。",
+            "type": "string"
+          },
+          "expenseItem": {
+            "description": "ExpenseItem 表示费用项目；传值：travel=差旅费、advertising=广告投流、office=办公费、entertainment=招待费、transport=交通费、communication=通讯费、procurement=采购付款、other=其他、business=业务费。",
+            "type": "string"
+          },
+          "expenseNo": {
+            "description": "ExpenseNo 表示费用单编号。",
+            "type": "string"
+          },
+          "id": {
+            "description": "ID 表示唯一标识。",
+            "type": "integer"
+          },
+          "latestRejectReason": {
+            "description": "LatestRejectReason 表示最近驳回原因。",
+            "type": "string"
+          },
+          "payeeAccount": {
+            "description": "PayeeAccount 表示收款账户。",
+            "type": "string"
+          },
+          "status": {
+            "description": "Status 表示审批状态；传值：pending_approval=待审批、approval_rejected=审批驳回、approval_passed=审批通过、cancelled=已撤销。",
+            "type": "string"
+          },
+          "submittedAt": {
+            "description": "SubmittedAt 表示提交时间。",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "dto.ExpenseListItem": {
+        "properties": {
+          "amount": {
+            "description": "Amount 表示金额。",
+            "type": "integer"
+          },
+          "applicantId": {
+            "description": "ApplicantID 表示申请人 ID。",
+            "type": "integer"
+          },
+          "applicantName": {
+            "description": "ApplicantName 表示申请人姓名。",
+            "type": "string"
+          },
+          "canApprove": {
+            "description": "CanApprove 表示是否可审批。",
+            "type": "boolean"
+          },
+          "canCancel": {
+            "description": "CanCancel 表示当前用户是否可撤销。",
+            "type": "boolean"
+          },
+          "canEdit": {
+            "description": "CanEdit 表示当前用户是否可编辑。",
+            "type": "boolean"
+          },
+          "companyId": {
+            "description": "CompanyID 表示公司 ID。",
+            "type": "integer"
+          },
+          "createdAt": {
+            "description": "CreatedAt 表示创建时间。",
+            "type": "string"
+          },
+          "customerId": {
+            "description": "CustomerID 表示客户 ID。",
+            "type": "integer"
+          },
+          "customerName": {
+            "description": "CustomerName 表示客户名称。",
+            "type": "string"
+          },
+          "departmentId": {
+            "description": "DepartmentID 表示部门 ID。",
+            "type": "integer"
+          },
+          "description": {
+            "description": "Description 表示说明。",
+            "type": "string"
+          },
+          "expenseDepartmentId": {
+            "description": "ExpenseDepartmentID 表示费用归属部门 ID。",
+            "type": "integer"
+          },
+          "expenseDepartmentName": {
+            "description": "ExpenseDepartmentName 表示费用承担部门路径名称。",
+            "type": "string"
+          },
+          "expenseItem": {
+            "description": "ExpenseItem 表示费用项目；传值：travel=差旅费、advertising=广告投流、office=办公费、entertainment=招待费、transport=交通费、communication=通讯费、procurement=采购付款、other=其他、business=业务费。",
+            "type": "string"
+          },
+          "expenseNo": {
+            "description": "ExpenseNo 表示费用单编号。",
+            "type": "string"
+          },
+          "id": {
+            "description": "ID 表示唯一标识。",
+            "type": "integer"
+          },
+          "status": {
+            "description": "Status 表示审批状态；传值：pending_approval=待审批、approval_rejected=审批驳回、approval_passed=审批通过、cancelled=已撤销。",
+            "type": "string"
+          },
+          "submittedAt": {
+            "description": "SubmittedAt 表示提交时间。",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "dto.ExpenseSummary": {
+        "properties": {
+          "totalAmount": {
+            "description": "TotalAmount 表示总数金额。",
+            "type": "integer"
+          },
+          "totalCount": {
+            "description": "TotalCount 表示总数量。",
+            "type": "integer"
+          }
+        },
+        "type": "object"
+      },
       "dto.ExportContractsRequest": {
         "properties": {
           "contractIds": {
@@ -35601,6 +38793,39 @@
         "type": "object"
       },
       "dto.ExportQuotationsResponse": {
+        "properties": {
+          "exportId": {
+            "description": "ExportID 表示导出 ID。",
+            "type": "integer"
+          },
+          "failedCount": {
+            "description": "FailedCount 表示失败数量。",
+            "type": "integer"
+          },
+          "failureReason": {
+            "description": "FailureReason 表示失败原因。",
+            "type": "string"
+          },
+          "fileUrl": {
+            "description": "FileURL 表示文件地址。",
+            "type": "string"
+          },
+          "status": {
+            "description": "Status 表示状态。",
+            "type": "string"
+          },
+          "successCount": {
+            "description": "SuccessCount 表示成功数量。",
+            "type": "integer"
+          },
+          "totalCount": {
+            "description": "TotalCount 表示总数量。",
+            "type": "integer"
+          }
+        },
+        "type": "object"
+      },
+      "dto.ExportResponse": {
         "properties": {
           "exportId": {
             "description": "ExportID 表示导出 ID。",
@@ -35862,6 +39087,266 @@
         },
         "type": "object"
       },
+      "dto.InvoiceDetailResponse": {
+        "properties": {
+          "applyAmount": {
+            "description": "ApplyAmount 表示本次申请开票金额，单位分。",
+            "type": "integer"
+          },
+          "buyerSnapshot": {
+            "additionalProperties": {},
+            "description": "BuyerSnapshot 表示需方快照。",
+            "type": "object",
+            "properties": {}
+          },
+          "contractAmount": {
+            "description": "ContractAmount 表示合同金额。",
+            "type": "integer"
+          },
+          "contractId": {
+            "description": "ContractID 表示合同 ID。",
+            "type": "integer"
+          },
+          "contractItems": {
+            "description": "ContractItems 表示合同商品明细。",
+            "items": {
+              "$ref": "#/components/schemas/dto.SalesReportLineItem"
+            },
+            "type": "array"
+          },
+          "contractName": {
+            "description": "ContractName 表示合同名称。",
+            "type": "string"
+          },
+          "contractNo": {
+            "description": "ContractNo 表示合同编号。",
+            "type": "string"
+          },
+          "createdAt": {
+            "description": "CreatedAt 表示创建时间。",
+            "type": "string"
+          },
+          "customerName": {
+            "description": "CustomerName 表示客户名称。",
+            "type": "string"
+          },
+          "fileUrl": {
+            "description": "FileURL 表示合同文件地址。",
+            "type": "string"
+          },
+          "id": {
+            "description": "ID 表示唯一标识。",
+            "type": "integer"
+          },
+          "invoiceNo": {
+            "description": "InvoiceNo 表示发票编号。",
+            "type": "string"
+          },
+          "invoiceType": {
+            "description": "InvoiceType 表示发票类型；传值：special=专票，normal=普票。",
+            "type": "string"
+          },
+          "invoicedAmount": {
+            "description": "InvoicedAmount 表示该申请单已开票金额。",
+            "type": "integer"
+          },
+          "issues": {
+            "description": "Issues 表示开票记录列表。",
+            "items": {
+              "$ref": "#/components/schemas/dto.InvoiceIssueRecord"
+            },
+            "type": "array"
+          },
+          "latestIssueDate": {
+            "description": "LatestIssueDate 表示最近开票日期。",
+            "type": "string"
+          },
+          "orderId": {
+            "description": "OrderID 表示订单 ID。",
+            "type": "integer"
+          },
+          "orderNo": {
+            "description": "OrderNo 表示订单编号。",
+            "type": "string"
+          },
+          "pendingAmount": {
+            "description": "PendingAmount 表示该申请单剩余待开票金额。",
+            "type": "integer"
+          },
+          "renderedHtml": {
+            "description": "RenderedHTML 表示已渲染 HTML 合同正文。",
+            "type": "string"
+          },
+          "sellerSnapshot": {
+            "additionalProperties": {},
+            "description": "SellerSnapshot 表示供方快照。",
+            "type": "object",
+            "properties": {}
+          },
+          "status": {
+            "description": "Status 表示发票状态；传值：pending_issue=待开票，partial_issued=部分开票，issued=已开票。",
+            "type": "string"
+          },
+          "summarySnapshot": {
+            "additionalProperties": {},
+            "description": "SummarySnapshot 表示合同摘要快照。",
+            "type": "object",
+            "properties": {}
+          },
+          "taxRate": {
+            "description": "TaxRate 表示税率。",
+            "type": "number"
+          },
+          "taxpayerNo": {
+            "description": "TaxpayerNo 表示纳税人识别号。",
+            "type": "string"
+          },
+          "titleName": {
+            "description": "TitleName 表示抬头名称。",
+            "type": "string"
+          },
+          "updatedAt": {
+            "description": "UpdatedAt 表示更新时间。",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "dto.InvoiceIssueRecord": {
+        "properties": {
+          "id": {
+            "description": "ID 表示唯一标识。",
+            "type": "integer"
+          },
+          "issueAmount": {
+            "description": "IssueAmount 表示开具金额。",
+            "type": "integer"
+          },
+          "issueDate": {
+            "description": "IssueDate 表示开具日期。",
+            "type": "string"
+          },
+          "remark": {
+            "description": "Remark 表示备注。",
+            "type": "string"
+          },
+          "voucher": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/dto.AttachmentItem"
+              }
+            ],
+            "description": "Voucher 表示凭证。"
+          },
+          "voucherAttachmentId": {
+            "description": "VoucherAttachmentID 表示凭证附件 ID。",
+            "type": "integer"
+          }
+        },
+        "type": "object"
+      },
+      "dto.InvoiceListItem": {
+        "properties": {
+          "applyAmount": {
+            "description": "ApplyAmount 表示本次申请开票金额，单位分。",
+            "type": "integer"
+          },
+          "contractAmount": {
+            "description": "ContractAmount 表示合同金额。",
+            "type": "integer"
+          },
+          "contractId": {
+            "description": "ContractID 表示合同 ID。",
+            "type": "integer"
+          },
+          "contractName": {
+            "description": "ContractName 表示合同名称。",
+            "type": "string"
+          },
+          "contractNo": {
+            "description": "ContractNo 表示合同编号。",
+            "type": "string"
+          },
+          "id": {
+            "description": "ID 表示唯一标识。",
+            "type": "integer"
+          },
+          "invoiceNo": {
+            "description": "InvoiceNo 表示发票编号。",
+            "type": "string"
+          },
+          "invoiceType": {
+            "description": "InvoiceType 表示发票类型；传值：special=专票，normal=普票。",
+            "type": "string"
+          },
+          "invoicedAmount": {
+            "description": "InvoicedAmount 表示该申请单已开票金额。",
+            "type": "integer"
+          },
+          "latestIssueDate": {
+            "description": "LatestIssueDate 表示最近开票日期。",
+            "type": "string"
+          },
+          "orderId": {
+            "description": "OrderID 表示订单 ID。",
+            "type": "integer"
+          },
+          "orderNo": {
+            "description": "OrderNo 表示订单编号。",
+            "type": "string"
+          },
+          "pendingAmount": {
+            "description": "PendingAmount 表示该申请单剩余待开票金额。",
+            "type": "integer"
+          },
+          "status": {
+            "description": "Status 表示发票状态；传值：pending_issue=待开票，partial_issued=部分开票，issued=已开票。",
+            "type": "string"
+          },
+          "taxRate": {
+            "description": "TaxRate 表示税率。",
+            "type": "number"
+          },
+          "taxpayerNo": {
+            "description": "TaxpayerNo 表示纳税人识别号。",
+            "type": "string"
+          },
+          "titleName": {
+            "description": "TitleName 表示抬头名称。",
+            "type": "string"
+          },
+          "updatedAt": {
+            "description": "UpdatedAt 表示更新时间。",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "dto.IssueInvoiceRequest": {
+        "properties": {
+          "issueAmount": {
+            "description": "IssueAmount 表示开具金额。",
+            "type": "integer"
+          },
+          "issueDate": {
+            "description": "IssueDate 表示开具日期。",
+            "type": "string"
+          },
+          "remark": {
+            "description": "Remark 表示备注。",
+            "type": "string"
+          },
+          "voucher": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/dto.AttachmentInput"
+              }
+            ],
+            "description": "Voucher 表示凭证。"
+          }
+        },
+        "type": "object"
+      },
       "dto.LeadFieldMetadata": {
         "properties": {
           "code": {
@@ -35976,10 +39461,6 @@
           "leadId": {
             "description": "LeadID 表示线索 ID。",
             "type": "integer"
-          },
-          "nextFollowAt": {
-            "description": "NextFollowAt 表示下次跟进时间。",
-            "type": "string"
           },
           "result": {
             "description": "Result 表示结果。",
@@ -36330,12 +39811,68 @@
         },
         "type": "object"
       },
+      "dto.ListExpensesResponse": {
+        "properties": {
+          "items": {
+            "description": "Items 表示列表项。",
+            "items": {
+              "$ref": "#/components/schemas/dto.ExpenseListItem"
+            },
+            "type": "array"
+          },
+          "page": {
+            "description": "Page 表示页码。",
+            "type": "integer"
+          },
+          "pageSize": {
+            "description": "PageSize 表示每页数量。",
+            "type": "integer"
+          },
+          "summary": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/dto.ExpenseSummary"
+              }
+            ],
+            "description": "Summary 表示汇总信息。"
+          },
+          "total": {
+            "description": "Total 表示总数。",
+            "type": "integer"
+          }
+        },
+        "type": "object"
+      },
       "dto.ListImportRowsResponse": {
         "properties": {
           "items": {
             "description": "Items 表示列表项。",
             "items": {
               "$ref": "#/components/schemas/dto.ImportRowItem"
+            },
+            "type": "array"
+          },
+          "page": {
+            "description": "Page 表示页码。",
+            "type": "integer"
+          },
+          "pageSize": {
+            "description": "PageSize 表示每页数量。",
+            "type": "integer"
+          },
+          "total": {
+            "description": "Total 表示总数。",
+            "type": "integer"
+          }
+        },
+        "type": "object"
+      },
+      "dto.ListInvoicesResponse": {
+        "properties": {
+          "items": {
+            "description": "Items 表示列表项。",
+            "items": {
+              "$ref": "#/components/schemas/dto.InvoiceListItem"
             },
             "type": "array"
           },
@@ -36845,6 +40382,30 @@
         },
         "type": "object"
       },
+      "dto.NearbyCustomersResponse": {
+        "properties": {
+          "items": {
+            "description": "Items 表示列表项。",
+            "items": {
+              "$ref": "#/components/schemas/dto.CustomerItem"
+            },
+            "type": "array"
+          },
+          "page": {
+            "description": "Page 表示页码。",
+            "type": "integer"
+          },
+          "pageSize": {
+            "description": "PageSize 表示每页数量。",
+            "type": "integer"
+          },
+          "total": {
+            "description": "Total 表示总数。",
+            "type": "integer"
+          }
+        },
+        "type": "object"
+      },
       "dto.NotificationActionResponse": {
         "properties": {
           "message": {
@@ -37232,6 +40793,10 @@
             "description": "Code 表示编码。",
             "type": "string"
           },
+          "id": {
+            "description": "ID 表示权限节点 ID。",
+            "type": "integer"
+          },
           "module": {
             "description": "Module 表示模块。",
             "type": "string"
@@ -37239,6 +40804,10 @@
           "name": {
             "description": "Name 表示名称。",
             "type": "string"
+          },
+          "parentId": {
+            "description": "ParentID 表示父节点 ID。",
+            "type": "integer"
           },
           "resource": {
             "description": "Resource 表示资源。",
@@ -37751,12 +41320,19 @@
       "dto.PublicPoolRuleFieldItem": {
         "properties": {
           "code": {
+            "description": "Code 表示字段编码。",
             "type": "string"
           },
           "name": {
+            "description": "Name 表示字段名称。",
+            "type": "string"
+          },
+          "optionsSource": {
+            "description": "OptionsSource 表示候选值来源；支持 static=前端静态值、api=通过接口获取、special=特殊组件/数据源。",
             "type": "string"
           },
           "valueType": {
+            "description": "ValueType 表示值类型；支持 enum=静态枚举、department=部门、user=用户、channel=渠道、region=地区。",
             "type": "string"
           }
         },
@@ -37829,6 +41405,10 @@
             "type": "integer"
           },
           "triggerEvent": {
+            "description": "TriggerEvent 表示触发事件；目前仅支持 no_follow_action=未产生跟进行为。",
+            "enum": [
+              "no_follow_action"
+            ],
             "type": "string"
           },
           "updatedAt": {
@@ -38301,12 +41881,20 @@
             },
             "type": "array"
           },
+          "companyId": {
+            "description": "CompanyID 表示公司 ID。",
+            "type": "integer"
+          },
           "contentHtml": {
             "description": "ContentHTML 表示HTML 内容。",
             "type": "string"
           },
           "currentVersion": {
             "description": "CurrentVersion 表示当前版本。",
+            "type": "integer"
+          },
+          "departmentId": {
+            "description": "DepartmentID 表示部门 ID。",
             "type": "integer"
           },
           "id": {
@@ -38387,9 +41975,17 @@
             },
             "type": "array"
           },
+          "companyId": {
+            "description": "CompanyID 表示公司 ID。",
+            "type": "integer"
+          },
           "contentHtml": {
             "description": "ContentHTML 表示HTML 内容。",
             "type": "string"
+          },
+          "departmentId": {
+            "description": "DepartmentID 表示部门 ID。",
+            "type": "integer"
           },
           "name": {
             "description": "Name 表示名称。",
@@ -38672,8 +42268,48 @@
         },
         "type": "object"
       },
+      "dto.SalesReportLineItem": {
+        "properties": {
+          "amount": {
+            "description": "Amount 表示金额。",
+            "type": "integer"
+          },
+          "brandName": {
+            "description": "BrandName 表示品牌名称。",
+            "type": "string"
+          },
+          "lineNo": {
+            "description": "LineNo 表示行号。",
+            "type": "integer"
+          },
+          "model": {
+            "description": "Model 表示型号。",
+            "type": "string"
+          },
+          "productName": {
+            "description": "ProductName 表示产品名称。",
+            "type": "string"
+          },
+          "quantity": {
+            "description": "Quantity 表示数量。",
+            "type": "number"
+          },
+          "unit": {
+            "description": "Unit 表示单位。",
+            "type": "string"
+          },
+          "unitPrice": {
+            "description": "UnitPrice 表示单价。",
+            "type": "integer"
+          }
+        },
+        "type": "object"
+      },
       "dto.SaveQuotationApprovalConfigRequest": {
         "properties": {
+          "approvalType": {
+            "type": "string"
+          },
           "companyId": {
             "type": "integer"
           },
@@ -38796,6 +42432,64 @@
               "$ref": "#/components/schemas/dto.ShipmentTrack"
             },
             "type": "array"
+          }
+        },
+        "type": "object"
+      },
+      "dto.SignBackContractRequest": {
+        "properties": {
+          "fileName": {
+            "type": "string"
+          },
+          "fileSize": {
+            "type": "integer"
+          },
+          "fileUrl": {
+            "type": "string"
+          },
+          "mimeType": {
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "dto.SignBackContractResponse": {
+        "properties": {
+          "displayStatus": {
+            "type": "string"
+          },
+          "message": {
+            "type": "string"
+          },
+          "orderId": {
+            "type": "integer"
+          },
+          "orderNo": {
+            "type": "string"
+          },
+          "signStatus": {
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "dto.SubmitContractResponse": {
+        "properties": {
+          "approvalStatus": {
+            "description": "ApprovalStatus 表示审批状态。",
+            "type": "string"
+          },
+          "displayStatus": {
+            "description": "DisplayStatus 表示展示状态。",
+            "type": "string"
+          },
+          "message": {
+            "description": "Message 表示提示信息。",
+            "type": "string"
+          },
+          "signStatus": {
+            "description": "SignStatus 表示签署状态。",
+            "type": "string"
           }
         },
         "type": "object"
@@ -39224,13 +42918,12 @@
             },
             "type": "array"
           },
-          "contactName": {
-            "description": "ContactName 表示主联系人姓名。",
-            "type": "string"
-          },
-          "contactPosition": {
-            "description": "ContactPosition 表示主联系人职位。",
-            "type": "string"
+          "contacts": {
+            "description": "Contacts 表示联系人列表。",
+            "items": {
+              "$ref": "#/components/schemas/dto.CustomerContactInput"
+            },
+            "type": "array"
           },
           "customerType": {
             "description": "CustomerType 表示客户类型。",
@@ -39240,17 +42933,21 @@
             "description": "DistrictCode 表示区县行政区划编码。",
             "type": "string"
           },
-          "email": {
-            "description": "Email 表示邮箱地址。",
-            "type": "string"
-          },
           "industry": {
             "description": "Industry 表示所属行业。",
             "type": "string"
           },
+          "latitude": {
+            "description": "Latitude 表示客户主地址纬度。",
+            "type": "number"
+          },
           "level": {
             "description": "Level 表示客户等级。",
             "type": "string"
+          },
+          "longitude": {
+            "description": "Longitude 表示客户主地址经度。",
+            "type": "number"
           },
           "name": {
             "description": "Name 表示客户名称。",
@@ -39272,10 +42969,6 @@
             "description": "OwnerUserID 表示负责人用户 ID。",
             "type": "integer"
           },
-          "phone": {
-            "description": "Phone 表示联系电话。",
-            "type": "string"
-          },
           "projectType": {
             "description": "ProjectType 表示项目类型。",
             "type": "string"
@@ -39291,14 +42984,6 @@
           "usesOtherBrandGun": {
             "description": "UsesOtherBrandGun 表示是否使用其他品牌喷枪。",
             "type": "boolean"
-          },
-          "wechat": {
-            "description": "Wechat 表示微信号。",
-            "type": "string"
-          },
-          "whatsapp": {
-            "description": "Whatsapp 表示 WhatsApp 号码。",
-            "type": "string"
           },
           "workpiece": {
             "description": "Workpiece 表示工件信息。",
@@ -39375,12 +43060,37 @@
             "description": "FollowedAt 表示跟进时间；不传时保持原值。",
             "type": "string"
           },
-          "nextFollowAt": {
-            "description": "NextFollowAt 表示下次跟进时间。",
-            "type": "string"
-          },
           "result": {
             "description": "Result 表示结果。",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "dto.UpdateInvoiceRequest": {
+        "properties": {
+          "applyAmount": {
+            "description": "ApplyAmount 表示申请开票金额，单位分。",
+            "type": "integer"
+          },
+          "invoiceType": {
+            "description": "InvoiceType 表示发票类型；传值：special=专票，normal=普票。",
+            "type": "string"
+          },
+          "orderId": {
+            "description": "OrderID 表示订单 ID。",
+            "type": "integer"
+          },
+          "taxRate": {
+            "description": "TaxRate 表示税率。",
+            "type": "number"
+          },
+          "taxpayerNo": {
+            "description": "TaxpayerNo 表示纳税人识别号。",
+            "type": "string"
+          },
+          "titleName": {
+            "description": "TitleName 表示抬头名称。",
             "type": "string"
           }
         },
@@ -39567,6 +43277,46 @@
         },
         "type": "object"
       },
+      "dto.UpsertExpenseRequest": {
+        "properties": {
+          "amount": {
+            "description": "Amount 表示金额；单位为分，必须大于 0。",
+            "type": "integer"
+          },
+          "attachments": {
+            "description": "Attachments 表示附件列表。",
+            "items": {
+              "$ref": "#/components/schemas/dto.AttachmentInput"
+            },
+            "type": "array"
+          },
+          "customerId": {
+            "description": "CustomerID 表示客户 ID。",
+            "type": "integer"
+          },
+          "customerName": {
+            "description": "CustomerName 表示客户名称。",
+            "type": "string"
+          },
+          "description": {
+            "description": "Description 表示说明；必填。",
+            "type": "string"
+          },
+          "expenseDepartmentId": {
+            "description": "ExpenseDepartmentID 表示费用归属部门 ID；必填。",
+            "type": "integer"
+          },
+          "expenseItem": {
+            "description": "ExpenseItem 表示费用项目；传值：travel=差旅费、advertising=广告投流、office=办公费、entertainment=招待费、transport=交通费、communication=通讯费、procurement=采购付款、other=其他、business=业务费。",
+            "type": "string"
+          },
+          "payeeAccount": {
+            "description": "PayeeAccount 表示收款账户；必填，自由录入文本。",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
       "dto.UpsertFolderRequest": {
         "properties": {
           "companyId": {
@@ -39727,6 +43477,10 @@
             "type": "integer"
           },
           "triggerEvent": {
+            "description": "TriggerEvent 表示触发事件；目前仅支持 no_follow_action=未产生跟进行为。",
+            "enum": [
+              "no_follow_action"
+            ],
             "type": "string"
           }
         },
@@ -40101,8 +43855,16 @@
       },
       "internal_quotation_dto.TemplateItem": {
         "properties": {
+          "companyId": {
+            "description": "CompanyID 表示公司 ID。",
+            "type": "integer"
+          },
           "currentVersion": {
             "description": "CurrentVersion 表示当前版本。",
+            "type": "integer"
+          },
+          "departmentId": {
+            "description": "DepartmentID 表示部门 ID。",
             "type": "integer"
           },
           "id": {
@@ -40176,8 +43938,16 @@
       },
       "internal_sales_dto.TemplateItem": {
         "properties": {
+          "companyId": {
+            "description": "CompanyID 表示公司 ID。",
+            "type": "integer"
+          },
           "currentVersion": {
             "description": "CurrentVersion 表示当前版本。",
+            "type": "integer"
+          },
+          "departmentId": {
+            "description": "DepartmentID 表示部门 ID。",
             "type": "integer"
           },
           "id": {

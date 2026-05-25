@@ -15,7 +15,8 @@
         <view class="ac-field">
           <text class="ac-label">客户名称</text>
           <text class="ac-required">*</text>
-          <input class="ac-input" v-model="form.customerName" placeholder="请输入" placeholder-style="color:#BBBEC2;font-size:28rpx" />
+          <input class="ac-input" v-model="form.customerName" placeholder="请输入"
+            placeholder-style="color:#BBBEC2;font-size:28rpx" />
         </view>
         <view class="ac-dept-row" @tap="showDuplicatePopup = true">
           <view class="ac-dept-input">
@@ -34,7 +35,6 @@
         <view class="ac-divider" />
         <view class="ac-field" @tap="openPicker('product')">
           <text class="ac-label">客户工件</text>
-          <text class="ac-required">*</text>
           <view class="ac-value-row">
             <text class="ac-value" :class="{ 'ac-value--set': form.product }">{{ form.product || '请选择' }}</text>
             <image class="ac-arrow" :src="rightArrow" mode="aspectFit" />
@@ -78,18 +78,18 @@
         <view class="ac-divider" />
         <view class="ac-field">
           <text class="ac-label">品牌</text>
-          <text class="ac-required">*</text>
-          <input class="ac-input" v-model="form.brand" placeholder="请输入" placeholder-style="color:#BBBEC2;font-size:28rpx" />
+          <input class="ac-input" v-model="form.brand" placeholder="请输入"
+            placeholder-style="color:#BBBEC2;font-size:28rpx" />
         </view>
         <view class="ac-divider" />
         <view class="ac-field">
           <text class="ac-label">数量</text>
-          <input class="ac-input" v-model="form.quantity" placeholder="请输入" placeholder-style="color:#BBBEC2;font-size:28rpx" />
+          <input class="ac-input" v-model="form.quantity" placeholder="请输入"
+            placeholder-style="color:#BBBEC2;font-size:28rpx" />
         </view>
         <view class="ac-divider" />
         <view class="ac-field" @tap="showTypePopup = true">
           <text class="ac-label">类型</text>
-          <text class="ac-required">*</text>
           <view class="ac-value-row">
             <text class="ac-value" :class="{ 'ac-value--set': form.type }">{{ form.type || '请选择' }}</text>
             <image class="ac-arrow" :src="rightArrow" mode="aspectFit" />
@@ -115,26 +115,52 @@
             </view>
           </view>
         </view>
+        <template v-for="(contact, ci) in form.contacts" :key="contact.id">
+          <view v-if="ci > 0" class="ac-divider" />
+          <view class="ac-contact-title-row">
+            <text class="ac-contact-group-title">联系人{{ ci + 1 }}</text>
+            <image v-if="form.contacts.length > 1" class="ac-delete-icon" :src="iconDelete" mode="aspectFit" @tap="removeContact(ci)" />
+          </view>
+          <view class="ac-field">
+            <text class="ac-label">联系人</text>
+            <input class="ac-input" v-model="contact.name" placeholder="请输入" placeholder-style="color:#BBBEC2;font-size:28rpx" />
+          </view>
+          <view class="ac-field">
+            <text class="ac-label">联系人职位</text>
+            <input class="ac-input" v-model="contact.position" placeholder="请输入" placeholder-style="color:#BBBEC2;font-size:28rpx" />
+          </view>
+          <view class="ac-phone-wrapper">
+            <view v-for="(phone, pi) in contact.phones" :key="pi">
+              <view v-if="pi > 0" class="ac-divider" />
+              <view class="ac-field">
+                <text class="ac-label">联系电话{{ pi + 1 }}</text>
+                <input class="ac-input" v-model="contact.phones[pi]" placeholder="请输入" placeholder-style="color:#BBBEC2;font-size:28rpx" type="number" />
+                <image v-if="contact.phones.length > 2" class="ac-delete-icon" :src="iconDelete" mode="aspectFit" @tap="removePhone(ci, pi)" />
+              </view>
+            </view>
+            <view class="ac-add-row" @tap="addPhone(ci)">
+              <image class="ac-add-icon" :src="iconPlus" mode="aspectFit" />
+              <text class="ac-add-text">添加联系电话</text>
+            </view>
+          </view>
+          <view class="ac-field">
+            <text class="ac-label">微信号</text>
+            <input class="ac-input" v-model="contact.wechat" placeholder="请输入" placeholder-style="color:#BBBEC2;font-size:28rpx" />
+          </view>
+          <view class="ac-field">
+            <text class="ac-label">WhatsApp</text>
+            <input class="ac-input" v-model="contact.whatsapp" placeholder="请输入" placeholder-style="color:#BBBEC2;font-size:28rpx" />
+          </view>
+          <view class="ac-field">
+            <text class="ac-label">邮箱</text>
+            <input class="ac-input" v-model="contact.email" placeholder="请输入" placeholder-style="color:#BBBEC2;font-size:28rpx" />
+          </view>
+        </template>
+
         <view class="ac-divider" />
-        <view class="ac-field">
-          <text class="ac-label">联系电话</text>
-          <text class="ac-required">*</text>
-          <input class="ac-input" v-model="form.phone" placeholder="请输入" placeholder-style="color:#BBBEC2;font-size:28rpx" type="number" />
-        </view>
-        <view class="ac-divider" />
-        <view class="ac-field">
-          <text class="ac-label">微信号</text>
-          <input class="ac-input" v-model="form.wechat" placeholder="请输入" placeholder-style="color:#BBBEC2;font-size:28rpx" />
-        </view>
-        <view class="ac-divider" />
-        <view class="ac-field">
-          <text class="ac-label">WhatsApp</text>
-          <input class="ac-input" v-model="form.whatsapp" placeholder="请输入" placeholder-style="color:#BBBEC2;font-size:28rpx" />
-        </view>
-        <view class="ac-divider" />
-        <view class="ac-field">
-          <text class="ac-label">邮箱</text>
-          <input class="ac-input" v-model="form.email" placeholder="请输入" placeholder-style="color:#BBBEC2;font-size:28rpx" />
+        <view class="ac-add-row" @tap="addContact">
+          <image class="ac-add-icon" :src="iconPlus" mode="aspectFit" />
+          <text class="ac-add-text">添加联系人</text>
         </view>
         <view class="ac-divider" />
         <view class="ac-field" @tap="openPicker('region')">
@@ -149,52 +175,52 @@
         <view class="ac-field">
           <text class="ac-label">地址</text>
           <text class="ac-required">*</text>
-          <input class="ac-input" v-model="form.address" placeholder="请输入" placeholder-style="color:#BBBEC2;font-size:28rpx" />
+          <input class="ac-input" v-model="form.address" placeholder="请输入"
+            placeholder-style="color:#BBBEC2;font-size:28rpx" />
         </view>
       </view>
 
       <view class="ac-card">
         <text class="ac-card-title">系统信息</text>
         <view class="ac-divider" />
-        <view class="ac-field" @tap="openPicker('company')">
-          <text class="ac-label">公司</text>
-          <text class="ac-required">*</text>
-          <view class="ac-value-row">
-            <text class="ac-value" :class="{ 'ac-value--set': form.company }">{{ form.company || '请选择' }}</text>
-            <image class="ac-arrow" :src="rightArrow" mode="aspectFit" />
-          </view>
-        </view>
-        <view class="ac-divider" />
-        <view class="ac-field" @tap="openPicker('dept')">
-          <text class="ac-label">来源部门</text>
-          <text class="ac-required">*</text>
-          <view class="ac-value-row">
-            <text class="ac-value" :class="{ 'ac-value--set': form.dept }">{{ form.dept || '请选择' }}</text>
-            <image class="ac-arrow" :src="rightArrow" mode="aspectFit" />
-          </view>
-        </view>
-        <view class="ac-divider" />
-        <view class="ac-field" @tap="showCollaboratorPopup = true">
+        <view class="ac-field" @tap="openPicker('collaborator')">
           <text class="ac-label">协作人</text>
-          <text class="ac-required">*</text>
           <view class="ac-value-row">
-            <text class="ac-value" :class="{ 'ac-value--set': form.collaborator }">{{ form.collaborator || '请选择' }}</text>
+            <text class="ac-value" :class="{ 'ac-value--set': form.collaboratorUserName }">{{ form.collaboratorUserName || '请选择' }}</text>
+            <image class="ac-arrow" :src="rightArrow" mode="aspectFit" />
+          </view>
+        </view>
+      </view>
+      
+      <view class="ac-card">
+        <text class="ac-card-title">商机信息</text>
+        <view class="ac-divider" />
+        <view class="ac-field" @tap="openPicker('expectedDealDate')">
+          <text class="ac-label">预计成交日期</text>
+          <view class="ac-value-row">
+            <text class="ac-value" :class="{ 'ac-value--set': form.expectedDealDate }">{{ form.expectedDealDate || '请选择' }}</text>
             <image class="ac-arrow" :src="rightArrow" mode="aspectFit" />
           </view>
         </view>
         <view class="ac-divider" />
-        <view class="ac-field" @tap="openPicker('owner')">
-          <text class="ac-label">负责人</text>
-          <text class="ac-required">*</text>
+        <view class="ac-field">
+          <text class="ac-label">预计销售金额</text>
+          <input class="ac-input" v-model="form.expectedAmount" placeholder="请选择" placeholder-style="color:#BBBEC2;font-size:28rpx" type="digit" />
+          <text class="ac-label">元</text>
+        </view>
+        <view class="ac-divider" />
+        <view class="ac-field" @tap="openPicker('requiredProduct')">
+          <text class="ac-label">需求产品</text>
           <view class="ac-value-row">
-            <text class="ac-value" :class="{ 'ac-value--set': form.owner }">{{ form.owner || '请选择' }}</text>
+            <text class="ac-value" :class="{ 'ac-value--set': form.requiredProduct }">{{ form.requiredProduct || '请选择' }}</text>
             <image class="ac-arrow" :src="rightArrow" mode="aspectFit" />
           </view>
         </view>
       </view>
     </scroll-view>
 
-    <nut-popup v-model:visible="showLevelPopup" position="bottom" :style="{ borderRadius: '24rpx 24rpx 0 0' }" :z-index="2000">
+    <nut-popup v-model:visible="showLevelPopup" position="bottom" :style="{ borderRadius: '24rpx 24rpx 0 0' }"
+      :z-index="2000">
       <view class="ac-popup">
         <view class="ac-popup-header">
           <text class="ac-popup-cancel" @tap="showLevelPopup = false">取消</text>
@@ -212,7 +238,8 @@
       </view>
     </nut-popup>
 
-    <nut-popup v-model:visible="showCategoryPopup" position="bottom" :style="{ borderRadius: '24rpx 24rpx 0 0' }" :z-index="2000">
+    <nut-popup v-model:visible="showCategoryPopup" position="bottom" :style="{ borderRadius: '24rpx 24rpx 0 0' }"
+      :z-index="2000">
       <view class="ac-popup">
         <view class="ac-popup-header">
           <text class="ac-popup-cancel" @tap="showCategoryPopup = false">取消</text>
@@ -230,7 +257,8 @@
       </view>
     </nut-popup>
 
-    <nut-popup v-model:visible="showProjectTypePopup" position="bottom" :style="{ borderRadius: '24rpx 24rpx 0 0' }" :z-index="2000">
+    <nut-popup v-model:visible="showProjectTypePopup" position="bottom" :style="{ borderRadius: '24rpx 24rpx 0 0' }"
+      :z-index="2000">
       <view class="ac-popup">
         <view class="ac-popup-header">
           <text class="ac-popup-cancel" @tap="showProjectTypePopup = false">取消</text>
@@ -238,8 +266,10 @@
           <text class="ac-popup-confirm" @tap="confirmProjectType">确认</text>
         </view>
         <view class="ac-popup-body">
-          <view v-for="item in projectTypeOptions" :key="item" class="ac-popup-row" @tap="toggleSelect('projectType', item)">
-            <text class="ac-popup-label" :class="{ 'ac-popup-label--set': selectedProjectType === item }">{{ item }}</text>
+          <view v-for="item in projectTypeOptions" :key="item" class="ac-popup-row"
+            @tap="toggleSelect('projectType', item)">
+            <text class="ac-popup-label" :class="{ 'ac-popup-label--set': selectedProjectType === item }">{{ item
+            }}</text>
             <view class="ac-checkbox" :class="{ 'ac-checkbox--checked': selectedProjectType === item }">
               <view v-if="selectedProjectType === item" class="ac-checkbox-dot" />
             </view>
@@ -248,7 +278,8 @@
       </view>
     </nut-popup>
 
-    <nut-popup v-model:visible="showTypePopup" position="bottom" :style="{ borderRadius: '24rpx 24rpx 0 0' }" :z-index="2000">
+    <nut-popup v-model:visible="showTypePopup" position="bottom" :style="{ borderRadius: '24rpx 24rpx 0 0' }"
+      :z-index="2000">
       <view class="ac-popup">
         <view class="ac-popup-header">
           <text class="ac-popup-cancel" @tap="showTypePopup = false">取消</text>
@@ -266,60 +297,28 @@
       </view>
     </nut-popup>
 
-    <nut-popup v-model:visible="showCollaboratorPopup" position="bottom" :style="{ borderRadius: '24rpx 24rpx 0 0', height: '1022rpx' }" :z-index="2000">
-      <view class="ac-org-popup">
+    <nut-popup v-model:visible="showOtherBrandPopup" position="bottom" :style="{ borderRadius: '24rpx 24rpx 0 0' }"
+      :z-index="2000">
+      <view class="ac-popup">
         <view class="ac-popup-header">
-          <text class="ac-popup-cancel" @tap="showCollaboratorPopup = false">取消</text>
-          <text class="ac-popup-title">协作人</text>
-          <text class="ac-popup-confirm" @tap="confirmCollaborator">确认</text>
+          <text class="ac-popup-cancel" @tap="showOtherBrandPopup = false">取消</text>
+          <text class="ac-popup-title">是否使用其他品牌喷粉枪</text>
+          <text class="ac-popup-confirm" @tap="confirmOtherBrand">确认</text>
         </view>
-        <view class="ac-org-body">
-          <view class="ac-org-sidebar">
-            <view class="ac-org-sidebar-item ac-org-sidebar-item--active">
-              <text class="ac-org-sidebar-text ac-org-sidebar-text--active">公司/部门/员工</text>
+        <view class="ac-popup-body">
+          <view v-for="item in otherBrandOptions" :key="item" class="ac-popup-row" @tap="toggleSelect('otherBrand', item)">
+            <text class="ac-popup-label" :class="{ 'ac-popup-label--set': selectedOtherBrand === item }">{{ item }}</text>
+            <view class="ac-checkbox" :class="{ 'ac-checkbox--checked': selectedOtherBrand === item }">
+              <view v-if="selectedOtherBrand === item" class="ac-checkbox-dot" />
             </view>
-          </view>
-          <view class="ac-org-content">
-            <scroll-view scroll-y :enhanced="true" :show-scrollbar="false" class="ac-org-scroll">
-              <text class="ac-org-section-title">公司</text>
-              <view class="ac-org-tag-row">
-                <view v-for="c in orgData.companies" :key="c.name" class="ac-org-tag" :class="{ 'ac-org-tag--active': orgSelected.includes(c.name) }" @tap="toggleOrg(c.name)">
-                  <text class="ac-org-tag-text" :class="{ 'ac-org-tag-text--active': orgSelected.includes(c.name) }">{{ c.name }}</text>
-                </view>
-              </view>
-              <text class="ac-org-section-title">部门</text>
-              <view class="ac-org-tag-row">
-                <view v-for="d in orgData.depts" :key="d.name" class="ac-org-tag" :class="{ 'ac-org-tag--active': orgSelected.includes(d.name) }" @tap="toggleOrg(d.name)">
-                  <text class="ac-org-tag-text" :class="{ 'ac-org-tag-text--active': orgSelected.includes(d.name) }">{{ d.name }}</text>
-                </view>
-              </view>
-              <text class="ac-org-section-title">子部门</text>
-              <view class="ac-org-tag-row">
-                <view v-for="s in orgData.subDepts" :key="s.name" class="ac-org-tag" :class="{ 'ac-org-tag--active': orgSelected.includes(s.name) }" @tap="toggleOrg(s.name)">
-                  <text class="ac-org-tag-text" :class="{ 'ac-org-tag-text--active': orgSelected.includes(s.name) }">{{ s.name }}</text>
-                </view>
-              </view>
-              <text class="ac-org-section-title">员工</text>
-              <view class="ac-org-tag-row">
-                <view v-for="e in orgData.employees" :key="e.name" class="ac-org-tag" :class="{ 'ac-org-tag--active': orgSelected.includes(e.name) }" @tap="toggleOrg(e.name)">
-                  <text class="ac-org-tag-text" :class="{ 'ac-org-tag-text--active': orgSelected.includes(e.name) }">{{ e.name }}</text>
-                </view>
-              </view>
-            </scroll-view>
-          </view>
-        </view>
-        <view class="ac-org-footer">
-          <view class="ac-org-footer-btn ac-org-footer-btn--clear" @tap="clearOrgSelected">
-            <text class="ac-org-footer-clear-text">清空选择</text>
-          </view>
-          <view class="ac-org-footer-btn ac-org-footer-btn--confirm" @tap="confirmOrg">
-            <text class="ac-org-footer-confirm-text">确认</text>
           </view>
         </view>
       </view>
     </nut-popup>
 
-    <DuplicateCheckPopup v-model="showDuplicatePopup" />
+    <DuplicateCheckPopup v-model="showDuplicatePopup" :customer-name="form.customerName" />
+
+    <FilterPopup v-model="showFilterPopup" :simple="true" :active-type="activeFilterType" :title="activeFilterTitle" :multiple="false" :initial-selected="activeFilterInitial" @confirm="onFilterConfirm" />
 
     <view class="ac-actions">
       <view class="ac-btn ac-btn--cancel" @tap="goBack">取消</view>
@@ -333,7 +332,16 @@ import { ref, reactive } from 'vue'
 import Taro from '@tarojs/taro'
 import iconBack from '@/assets/dev/icon-back.png'
 import rightArrow from '@/assets/dev/rightArror.png'
+import iconDelete from '@/assets/dev/delete.png'
+import iconPlus from '@/assets/dev/plus.png'
+import FilterPopup from '../components/FilterPopup.vue'
 import DuplicateCheckPopup from '../components/DuplicateCheckPopup.vue'
+import { createCustomer } from '@/api/customer'
+
+const instance = Taro.getCurrentInstance()
+const sourceLeadId = instance.router?.params?.id ? parseInt(String(instance.router.params.id)) : undefined
+
+let contactIdSeq = 3
 
 const form = reactive({
   customerName: '',
@@ -347,66 +355,47 @@ const form = reactive({
   quantity: '',
   type: '',
   customerType: 'domestic',
-  phone: '',
-  wechat: '',
-  whatsapp: '',
-  email: '',
+  contacts: [
+    { id: 1, name: '', position: '', phones: ['', ''], wechat: '', whatsapp: '', email: '' },
+    { id: 2, name: '', position: '', phones: ['', ''], wechat: '', whatsapp: '', email: '' },
+  ],
   region: '',
+  regionProvinceCode: '',
+  regionCityCode: '',
+  regionDistrictCode: '',
   address: '',
-  company: '',
-  dept: '',
-  owner: '',
-  collaborator: '',
+  expectedDealDate: '',
+  expectedAmount: '',
+  requiredProduct: '',
+  collaboratorUserName: '',
+  collaboratorUserId: undefined,
 })
 
 const showLevelPopup = ref(false)
 const showCategoryPopup = ref(false)
 const showProjectTypePopup = ref(false)
 const showTypePopup = ref(false)
-const showCollaboratorPopup = ref(false)
+const showOtherBrandPopup = ref(false)
 const showDuplicatePopup = ref(false)
+const showFilterPopup = ref(false)
+const activeFilterType = ref('')
+const activeFilterTitle = ref('')
+const activeFilterInitial = ref([])
 
 const selectedLevel = ref('')
 const selectedCategory = ref('')
 const selectedProjectType = ref('')
 const selectedType = ref('')
+const selectedOtherBrand = ref('')
 
 const levelOptions = ['A级客户', 'B级客户', 'C级客户', 'D级客户']
 const categoryOptions = ['客户', '设备商', '粉末商', '行业朋友']
 const projectTypeOptions = ['新线', '旧线']
 const typeOptions = ['自动喷粉枪', '手动喷粉枪']
-
-const orgData = {
-  companies: [
-    { name: '德贝尔总公司' },
-    { name: '江苏扬州办事处' },
-    { name: '江苏苏州办事处' },
-    { name: '江苏徐州办事处' },
-  ],
-  depts: [
-    { name: '销售总部' },
-    { name: '开发总部' },
-    { name: '财务总部' },
-    { name: '外贸总部' },
-  ],
-  subDepts: [
-    { name: '销售一部' },
-    { name: '销售二部' },
-  ],
-  employees: [
-    { name: '张传送' },
-    { name: '李治廷' },
-    { name: '仇茂茂' },
-    { name: '李聪' },
-    { name: '屈伊' },
-    { name: '陈子奕' },
-  ],
-}
-
-const orgSelected = ref(['德贝尔总公司', '销售总部', '销售一部', '张传送'])
+const otherBrandOptions = ['是', '否']
 
 const toggleSelect = (field, value) => {
-  const refMap = { level: selectedLevel, category: selectedCategory, projectType: selectedProjectType, type: selectedType }
+  const refMap = { level: selectedLevel, category: selectedCategory, projectType: selectedProjectType, type: selectedType, otherBrand: selectedOtherBrand }
   const sel = refMap[field]
   sel.value = sel.value === value ? '' : value
 }
@@ -431,39 +420,137 @@ const confirmType = () => {
   showTypePopup.value = false
 }
 
-const toggleOrg = (name) => {
-  const idx = orgSelected.value.indexOf(name)
-  if (idx >= 0) {
-    orgSelected.value.splice(idx, 1)
-  } else {
-    orgSelected.value.push(name)
-  }
+const confirmOtherBrand = () => {
+  form.otherBrand = selectedOtherBrand.value
+  showOtherBrandPopup.value = false
 }
 
-const clearOrgSelected = () => {
-  orgSelected.value = []
+const addPhone = (ci) => {
+  form.contacts[ci].phones.push('')
 }
 
-const confirmOrg = () => {
-  form.collaborator = orgSelected.value.join('、')
-  showCollaboratorPopup.value = false
+const addContact = () => {
+  form.contacts.push({
+    id: contactIdSeq++,
+    name: '',
+    position: '',
+    phones: ['', ''],
+    wechat: '',
+    whatsapp: '',
+    email: '',
+  })
 }
 
-const confirmCollaborator = () => {
-  form.collaborator = orgSelected.value.join('、')
-  showCollaboratorPopup.value = false
+const removePhone = (ci, pi) => {
+  if (form.contacts[ci].phones.length <= 2) return
+  form.contacts[ci].phones.splice(pi, 1)
+}
+
+const removeContact = (ci) => {
+  if (form.contacts.length <= 1) return
+  form.contacts.splice(ci, 1)
 }
 
 const openPicker = (field) => {
+  if (field === 'region') {
+    activeFilterType.value = 'region'
+    activeFilterTitle.value = '省/市/区'
+    activeFilterInitial.value = form.regionDistrictCode ? [form.regionDistrictCode] : []
+    showFilterPopup.value = true
+  } else if (field === 'industry') {
+    activeFilterType.value = 'industry'
+    activeFilterTitle.value = '客户行业'
+    activeFilterInitial.value = form.industry ? [form.industry] : []
+    showFilterPopup.value = true
+  } else if (field === 'collaborator') {
+    activeFilterType.value = 'userCascader'
+    activeFilterTitle.value = '协作人'
+    activeFilterInitial.value = form.collaboratorUserId ? [String(form.collaboratorUserId)] : []
+    showFilterPopup.value = true
+  } else if (field === 'otherBrand') {
+    selectedOtherBrand.value = form.otherBrand
+    showOtherBrandPopup.value = true
+  }
+}
+
+const onFilterConfirm = (result) => {
+  if (result.type === 'region') {
+    form.region = result.regionPath || ''
+    if (result.regionCodes) {
+      form.regionProvinceCode = result.regionCodes.provinceCode
+      form.regionCityCode = result.regionCodes.cityCode
+      form.regionDistrictCode = result.regionCodes.districtCode
+    }
+  } else if (result.type === 'industry') {
+    form.industry = result.selected.length > 0 ? result.selected[0] : ''
+  } else if (result.type === 'userCascader') {
+    form.collaboratorUserName = result.userName || ''
+    form.collaboratorUserId = result.userId
+  }
+  showFilterPopup.value = false
 }
 
 const goBack = () => {
   Taro.navigateBack()
 }
 
-const onSave = () => {
-  Taro.showToast({ title: '保存成功', icon: 'none' })
-  Taro.navigateBack()
+const categoryMap = { '客户': 'customer', '设备商': 'equipment_supplier', '粉末商': 'powder_supplier', '行业朋友': 'industry_friend' }
+const projectTypeMap = { '新线': 'new_line', '旧线': 'old_line' }
+const levelMap = { 'A级客户': 'A', 'B级客户': 'B', 'C级客户': 'C', 'D级客户': 'D' }
+const industryMap = { '电气行业': 'electrical', '管道行业': 'pipeline', '卷涂行业': 'coil_coating', '家居行业': 'home', '家具行业': 'furniture', '交通行业': 'transportation', '行业类别': 'industry_category', '铝材行业': 'aluminum', '体育用品': 'sports_goods', '五金行业': 'hardware', '消防器材': 'fire_equipment', '新能源行业': 'new_energy', '重工行业': 'heavy_industry', '其他行业': 'other' }
+
+const onSave = async () => {
+  if (!form.customerName) {
+    Taro.showToast({ title: '请输入客户名称', icon: 'none' })
+    return
+  }
+
+  const body = {}
+  body.name = form.customerName
+  if (form.industry) body.industry = industryMap[form.industry] || form.industry
+  if (form.product) body.workpiece = form.product
+  if (form.category) body.category = categoryMap[form.category] || form.category
+  if (form.projectType) body.projectType = projectTypeMap[form.projectType] || form.projectType
+  if (form.level) body.level = levelMap[form.level] || form.level
+  if (form.otherBrand === '是') {
+    body.usesOtherBrandGun = true
+  } else if (form.otherBrand === '否') {
+    body.usesOtherBrandGun = false
+  }
+  if (form.brand) body.otherBrandGunBrand = form.brand
+  if (form.quantity) body.otherBrandGunQty = parseInt(form.quantity)
+  if (form.type) body.otherBrandGunType = form.type
+  if (form.customerType) body.customerType = form.customerType
+
+  const contacts = form.contacts
+    .filter(c => c.name || c.phones.some(p => p))
+    .map(c => {
+      const contact = {}
+      if (c.name) contact.name = c.name
+      if (c.position) contact.position = c.position
+      const phones = c.phones.filter(p => p).map(p => ({ phone: String(p) }))
+      if (phones.length) contact.phones = phones
+      if (c.wechat) contact.wechat = c.wechat
+      if (c.whatsapp) contact.whatsapp = c.whatsapp
+      if (c.email) contact.email = c.email
+      return contact
+    })
+  if (contacts.length) body.contacts = contacts
+
+  if (form.regionProvinceCode) body.provinceCode = form.regionProvinceCode
+  if (form.regionCityCode) body.cityCode = form.regionCityCode
+  if (form.regionDistrictCode) body.districtCode = form.regionDistrictCode
+  if (form.address) body.address = form.address
+  if (sourceLeadId) body.sourceLeadId = sourceLeadId
+  if (form.collaboratorUserId) body.collaboratorUserIds = [form.collaboratorUserId]
+
+  try {
+    await createCustomer(body)
+    Taro.showToast({ title: '保存成功', icon: 'success' })
+    setTimeout(() => Taro.navigateBack(), 1500)
+  } catch (e) {
+    Taro.showToast({ title: e.message || '保存失败', icon: 'none' })
+  }
 }
 </script>
 
@@ -613,6 +700,43 @@ const onSave = () => {
   justify-content: space-between;
 }
 
+.ac-contact-group-title {
+  font-size: 28rpx;
+  font-weight: 500;
+  color: #1A1D24;
+}
+
+.ac-contact-title-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.ac-delete-icon {
+  width: 32rpx;
+  height: 32rpx;
+  flex-shrink: 0;
+}
+
+.ac-add-icon {
+  width: 28rpx;
+  height: 28rpx;
+  flex-shrink: 0;
+}
+
+.ac-add-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8rpx;
+  padding: 8rpx 0;
+}
+
+.ac-add-text {
+  font-size: 24rpx;
+  color: #37AE7E;
+}
+
 .ac-radio-group {
   display: flex;
   align-items: center;
@@ -741,131 +865,6 @@ const onSave = () => {
   margin-top: -4rpx;
 }
 
-.ac-org-popup {
-  display: flex;
-  flex-direction: column;
-  height: 100%;
-  background: #FFFFFF;
-  border-radius: 24rpx 24rpx 0 0;
-  padding: 40rpx 0 0;
-}
-
-.ac-org-body {
-  display: flex;
-  flex: 1;
-  overflow: hidden;
-}
-
-.ac-org-sidebar {
-  width: 200rpx;
-  flex-shrink: 0;
-  background: #F6F7FB;
-}
-
-.ac-org-sidebar-item {
-  display: flex;
-  align-items: center;
-  padding: 12rpx 40rpx;
-}
-
-.ac-org-sidebar-item--active {
-  background: #FFFFFF;
-}
-
-.ac-org-sidebar-text {
-  font-size: 26rpx;
-  font-weight: 500;
-  color: #62687D;
-}
-
-.ac-org-sidebar-text--active {
-  color: #37AE7E;
-}
-
-.ac-org-content {
-  flex: 1;
-  padding: 24rpx;
-}
-
-.ac-org-scroll {
-  height: 100%;
-}
-
-.ac-org-section-title {
-  font-size: 28rpx;
-  font-weight: 500;
-  color: #1A1D24;
-  display: block;
-  margin-bottom: 16rpx;
-}
-
-.ac-org-tag-row {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 16rpx;
-  margin-bottom: 32rpx;
-}
-
-.ac-org-tag {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 12rpx 20rpx;
-  background: #F6F7FB;
-  border-radius: 6rpx;
-  height: 60rpx;
-}
-
-.ac-org-tag--active {
-  background: #EDFAF5;
-}
-
-.ac-org-tag-text {
-  font-size: 26rpx;
-  color: #62687D;
-}
-
-.ac-org-tag-text--active {
-  color: #37AE7E;
-}
-
-.ac-org-footer {
-  display: flex;
-  gap: 28rpx;
-  padding: 20rpx 40rpx 48rpx;
-  flex-shrink: 0;
-}
-
-.ac-org-footer-btn {
-  flex: 1;
-  height: 76rpx;
-  border-radius: 8rpx;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.ac-org-footer-btn--clear {
-  background: #EFFDF7;
-  border: 2rpx solid #5CC79C;
-}
-
-.ac-org-footer-btn--confirm {
-  background: linear-gradient(270deg, rgba(102,220,166,1) 0%, rgba(88,188,150,1) 100%);
-}
-
-.ac-org-footer-clear-text {
-  font-size: 32rpx;
-  font-weight: 500;
-  color: #5CC79C;
-}
-
-.ac-org-footer-confirm-text {
-  font-size: 32rpx;
-  font-weight: 500;
-  color: #FFFFFF;
-}
-
 .ac-actions {
   display: flex;
   align-items: center;
@@ -892,7 +891,17 @@ const onSave = () => {
 }
 
 .ac-btn--save {
-  background: linear-gradient(270deg, rgba(102,220,166,1) 0%, rgba(88,188,150,1) 100%);
+  background: linear-gradient(270deg, rgba(102, 220, 166, 1) 0%, rgba(88, 188, 150, 1) 100%);
   color: #FFFFFF;
+}
+
+.ac-phone-wrapper {
+  background: #FFFFFF;
+  border: 1rpx solid #ECEBEB;
+  border-radius: 8rpx;
+  padding: 24rpx;
+  display: flex;
+  flex-direction: column;
+  gap: 24rpx;
 }
 </style>

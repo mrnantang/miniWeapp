@@ -66,6 +66,7 @@
 
 <script setup>
 import { ref, watch } from 'vue'
+import { duplicateCheck } from '@/api/customer'
 import iconClose from '@/assets/dev/icon-close.png'
 import iconSearch from '@/assets/dev/icon-search.png'
 import iconEmptySearch from '@/assets/dev/icon-empty-search.png'
@@ -73,6 +74,7 @@ import iconTooMany from '@/assets/dev/icon-too-many.png'
 
 const props = defineProps({
   modelValue: { type: Boolean, default: false },
+  customerName: { type: String, default: '' },
 })
 
 const emit = defineEmits(['update:modelValue'])
@@ -81,9 +83,12 @@ const visible = ref(false)
 watch(() => props.modelValue, (v) => {
   visible.value = v
   if (v) {
-    keyword.value = ''
+    keyword.value = props.customerName || ''
     state.value = 'empty'
     results.value = []
+    if (keyword.value) {
+      onSearch()
+    }
   }
 })
 watch(visible, (v) => emit('update:modelValue', v))
@@ -92,39 +97,38 @@ const keyword = ref('')
 const state = ref('empty')
 const results = ref([])
 
-const mockSearchData = [
-  { id: 1, name: '金山重工股份有限公司', manager: '张松', phone: '15899209987', createTime: '2024/01/23 10:12' },
-  { id: 2, name: '金山重工有限公司', manager: '张松', phone: '15899209987', createTime: '2024/01/23 10:12' },
-  { id: 3, name: '金山集团', manager: '张松', phone: '15899209987', createTime: '2024/01/23 10:12' },
-]
-
-const onSearch = () => {
+const onSearch = async () => {
   const kw = keyword.value.trim()
   if (!kw) {
     state.value = 'empty'
     results.value = []
     return
   }
-  if (kw.length < 4) {
-    state.value = 'tooMany'
-    results.value = []
-    return
-  }
-  const filtered = mockSearchData.filter((item) => item.name.includes(kw))
-  if (filtered.length === 0) {
+  try {
+    const res = await duplicateCheck({ customerName: kw })
+    const items = res.items || []
+    if (!items.length) {
+      state.value = 'empty'
+      results.value = []
+      return
+    }
+    results.value = items.map((item) => {
+      const idx = item.name.indexOf(kw)
+      return {
+        id: item.id,
+        name: item.name,
+        before: idx > 0 ? item.name.slice(0, idx) : '',
+        after: idx > -1 ? item.name.slice(idx + kw.length) : '',
+        manager: item.ownerUserName || '-',
+        phone: item.phone || '-',
+        createTime: item.createdAt || '-',
+      }
+    })
+    state.value = 'results'
+  } catch {
     state.value = 'empty'
     results.value = []
-    return
   }
-  results.value = filtered.map((item) => {
-    const idx = item.name.indexOf(kw)
-    return {
-      ...item,
-      before: idx > 0 ? item.name.slice(0, idx) : '',
-      after: item.name.slice(idx + kw.length),
-    }
-  })
-  state.value = 'results'
 }
 
 const close = () => {

@@ -1,4 +1,4 @@
-import { get } from '@/utils/request'
+import { get, post } from '@/utils/request'
 
 export interface CustomerItem {
   id: number
@@ -56,4 +56,28 @@ export function getCustomerList(params?: CustomerListParams): Promise<CustomerLi
 /** 查询客户详情 */
 export function getCustomerDetail(id: number): Promise<CustomerItem> {
   return get<CustomerItem>(`/customers/${id}`)
+}
+
+/** 客户查重 */
+export interface DuplicateCheckParams {
+  customerName?: string
+  phone?: string
+  page?: number
+  pageSize?: number
+}
+
+export interface DuplicateCheckResponse {
+  items: CustomerItem[]
+  page: number
+  pageSize: number
+  total: number
+}
+
+export function duplicateCheck(params: DuplicateCheckParams): Promise<DuplicateCheckResponse> {
+  return get<DuplicateCheckResponse>('/customers/duplicate-check', params as Record<string, unknown>)
+}
+
+/** 新增客户 */
+export function createCustomer(data: Record<string, unknown>): Promise<{ id: number }> {
+  return post<{ id: number }>('/customers', data)
 }
