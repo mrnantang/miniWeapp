@@ -81,3 +81,27 @@ export function duplicateCheck(params: DuplicateCheckParams): Promise<DuplicateC
 export function createCustomer(data: Record<string, unknown>): Promise<{ id: number }> {
   return post<{ id: number }>('/customers', data)
 }
+
+/** 商机列表项 */
+export interface CustomerOpportunityItem {
+  id: number
+  customerId: number
+  leadId: number
+  requiredProduct: string
+  requiredProductLabel: string
+  expectedDealPeriod: string
+  expectedDealPeriodLabel: string
+  expectedSalesAmountBand: string
+  expectedSalesAmountBandLabel: string
+  status: 'contacting' | 'won' | 'conversion_failed'
+  statusLabel: string
+  lastFollowedAt: string
+  latestFollowRecord: string
+  createdAt: string
+  updatedAt: string
+}
+
+/** 查询客户下的商机列表 */
+export function getCustomerOpportunities(customerId: number): Promise<CustomerOpportunityItem[]> {
+  return get<CustomerOpportunityItem[]>(`/customers/${customerId}/opportunities`)
+}

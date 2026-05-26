@@ -336,8 +336,9 @@
 
 <script setup>
 import NavBar from '@/components/NavBar.vue'
-import { ref, reactive } from 'vue'
+import { ref, reactive, onMounted, watch } from 'vue'
 import Taro from '@tarojs/taro'
+import { getOpportunityFollowRecords, getOpportunityVisitRecords, createOpportunityFollowRecord } from '@/api/opportunity'
 import iconEdit from '@/assets/dev/edit.png'
 import iconDelete from '@/assets/dev/delete.png'
 import rightArrowIcon from '@/assets/dev/rightArror.png'
@@ -347,9 +348,24 @@ import iconCheckinPlus from '@/assets/dev/icon-checkin-plus.svg'
 import iconCheckinRoute from '@/assets/dev/icon-checkin-route.svg'
 import iconWarning from '@/assets/dev/icon-warning.svg'
 
+function formatTime(val) {
+  if (!val) return ''
+  return val.replace('T', ' ').slice(0, 19)
+}
+
 const isEditing = ref(false)
 const followTab = ref('follow')
 const showEditOppPopup = ref(false)
+
+const opportunityId = ref(0)
+
+// 跟进方式: 中文 ↔ 英文映射
+const followTypeCnToEn = {
+  '电话': 'phone', '微信': 'wechat', '公司面谈': 'visit', '其他': 'other',
+}
+const followTypeEnToCn = {
+  phone: '电话', wechat: '微信', visit: '公司面谈', email: '邮件', other: '其他',
+}
 
 const editForm = reactive({
   amount: '128102.91',
@@ -359,40 +375,60 @@ const editForm = reactive({
 })
 
 const detail = reactive({
-  name: '金石科技高端机采购书',
-  oppNo: 'XJ-281782',
-  customer: '金石科技',
-  amount: '128102.91',
-  signDate: '2024/01/23',
-  status: '接触中',
-  product: '自动喷粉枪',
-  owner: '张文',
+  name: '',
+  oppNo: '',
+  customer: '',
+  amount: '',
+  signDate: '',
+  status: '',
+  product: '',
+  owner: '-',
 })
 
-const followRecords = ref([
-  { time: '2025.01.23 12:00:59', tag: '签约中', follower: '孙大星', method: '电话', content: '客户有意向，但未表明哪款产品' },
-  { time: '2025.01.21 12:00:59', tag: '商务谈判', follower: '孙大星', method: '电话', content: '客户有意向，但未表明哪款产品' },
-  { time: '2025.01.15 12:00:59', tag: '方案/报价', follower: '孙大星', method: '电话', content: '客户有意向，但未表明哪款产品' },
-])
+const followRecords = ref([])
+const followLoading = ref(false)
 
-const visitRecords = ref([
-  {
-    checkInTime: '2025.01.22 12:00:59',
-    checkOutTime: '2025.01.22 18:00:59',
-    location: '广东省深圳市南山区晟成智慧制造有限公司',
-    purpose: '生意洽谈',
-    images: [],
-    result: '洽谈很成功，客户很满意，进入下一步流程',
-  },
-  {
-    checkInTime: '2025.01.20 10:30:00',
-    checkOutTime: '',
-    location: '广东省深圳市南山区晟成智慧制造有限公司',
-    purpose: '生意洽谈',
-    images: [],
-    result: '洽谈很成功，客户很满意，进入下一步流程',
-  },
-])
+async function fetchFollowRecords() {
+  if (followLoading.value) return
+  followLoading.value = true
+  try {
+    const list = await getOpportunityFollowRecords(opportunityId.value)
+    followRecords.value = list.map(item => ({
+      time: formatTime(item.followedAt),
+      tag: followTypeEnToCn[item.followType] || item.followType || '-',
+      follower: item.followerUserName || '-',
+      method: followTypeEnToCn[item.followType] || item.followType || '-',
+      content: item.content || '-',
+    }))
+  } catch {
+    followRecords.value = []
+  } finally {
+    followLoading.value = false
+  }
+}
+
+const visitRecords = ref([])
+const visitLoading = ref(false)
+
+async function fetchVisitRecords() {
+  if (visitLoading.value) return
+  visitLoading.value = true
+  try {
+    const list = await getOpportunityVisitRecords(opportunityId.value)
+    visitRecords.value = list.map(item => ({
+      checkInTime: formatTime(item.checkInAt),
+      checkOutTime: formatTime(item.checkOutAt),
+      location: item.checkInAddress || '-',
+      purpose: item.checkInPurpose || '-',
+      images: (item.photos || []).map(p => p.fileUrl),
+      result: item.checkOutSummary || '-',
+    }))
+  } catch {
+    visitRecords.value = []
+  } finally {
+    visitLoading.value = false
+  }
+}
 
 const toggleEdit = () => {
   isEditing.value = !isEditing.value
@@ -440,22 +476,24 @@ const selectFollowMethod = (method) => {
   showFollowMethodPopup.value = false
 }
 
-const onAddFollowConfirm = () => {
+const onAddFollowConfirm = async () => {
   if (!followForm.method) {
     Taro.showToast({ title: '请选择跟进方式', icon: 'none' })
     return
   }
-  followRecords.value.unshift({
-    time: new Date().toISOString().replace('T', ' ').slice(0, 19),
-    tag: followForm.method,
-    follower: '当前用户',
-    method: followForm.method,
-    content: followForm.content || '暂无内容',
-  })
-  showAddFollowPopup.value = false
-  followForm.method = ''
-  followForm.content = ''
-  Taro.showToast({ title: '添加成功', icon: 'none' })
+  try {
+    await createOpportunityFollowRecord(opportunityId.value, {
+      content: followForm.content || undefined,
+      followType: followTypeCnToEn[followForm.method] || 'other',
+    })
+    showAddFollowPopup.value = false
+    followForm.method = ''
+    followForm.content = ''
+    Taro.showToast({ title: '添加成功', icon: 'success' })
+    await fetchFollowRecords()
+  } catch (e) {
+    Taro.showToast({ title: e.message || '添加失败', icon: 'none' })
+  }
 }
 
 const deleteRecord = (idx) => {
@@ -547,6 +585,31 @@ const onCheckIn = () => {
   checkinDistance.value = 89
   showCheckinPopup.value = true
 }
+
+watch(followTab, (tab) => {
+  if (tab === 'follow') {
+    fetchFollowRecords()
+  } else if (tab === 'visit') {
+    fetchVisitRecords()
+  }
+})
+
+onMounted(() => {
+  const pages = Taro.getCurrentPages()
+  const current = pages[pages.length - 1]
+  const opts = current?.options || {}
+  if (opts.id) {
+    opportunityId.value = Number(opts.id)
+    detail.name = decodeURIComponent(opts.name || '') || '-'
+    detail.oppNo = decodeURIComponent(opts.oppNo || '') || '-'
+    detail.customer = decodeURIComponent(opts.customer || '') || '-'
+    detail.amount = decodeURIComponent(opts.amount || '') || '-'
+    detail.signDate = decodeURIComponent(opts.signDate || '') || '-'
+    detail.status = decodeURIComponent(opts.status || '') || '-'
+    detail.product = decodeURIComponent(opts.product || '') || '-'
+    fetchFollowRecords()
+  }
+})
 </script>
 
 <style>

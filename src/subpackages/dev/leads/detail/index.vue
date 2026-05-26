@@ -234,6 +234,11 @@ import { getLeadDetail, getFollowRecords, updateLeadStatus, addFollowRecord, get
 import { getUserCascader, type UserCascaderNode } from '@/api/system'
 import iconEdit from '@/assets/dev/edit.png'
 
+function formatTime(val?: string) {
+  if (!val) return ''
+  return val.replace('T', ' ').slice(0, 19)
+}
+
 // ====== 常量 ======
 const STATUS_LABEL: Record<string, string> = {
   pending: '待定',
@@ -347,7 +352,7 @@ const fieldLabels = computed(() => {
 function mapFollowToTimeline(item: FollowRecordItem): TimelineRecord {
   return {
     id: item.id,
-    time: item.followedAt || item.createdAt || '',
+    time: formatTime(item.followedAt || item.createdAt),
     operator: item.followerUserName || '',
     method: item.followType || '',
     content: item.content || '',
@@ -368,7 +373,7 @@ async function fetchAssignRecords(leadId: number): Promise<TimelineRecord[]> {
     const records = await getAssignmentLogs(leadId)
     return records.map((r): TimelineRecord => ({
       id: r.id,
-      time: r.createdAt || '',
+      time: formatTime(r.createdAt),
       tag: `(${r.action || '线索分配'})`,
       operator: r.operatorUserName || '',
       extraLabel: '被分配销售',

@@ -332,6 +332,7 @@ useDidShow(() => {
   display: flex;
   flex-direction: column;
   gap: 20rpx;
+  margin-bottom: 32rpx;
 }
 .cc-card:last-child {
   margin-bottom: 0;

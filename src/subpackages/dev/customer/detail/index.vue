@@ -37,7 +37,7 @@
         </view>
         <view class="cd-field">
           <text class="cd-label">客户创建时间</text>
-          <text class="cd-value">{{ (customer as any).createdAt || '-' }}</text>
+          <text class="cd-value">{{ formatTime((customer as any).createdAt) }}</text>
         </view>
         <view class="cd-field">
           <text class="cd-label">关联线索</text>
@@ -108,17 +108,17 @@
         </view>
         <view class="cd-divider" />
         <view v-if="infoTab === 'basic'" class="cd-subtag-row">
-          <view class="cd-subtag cd-subtag--active">
-            <text class="cd-subtag-text cd-subtag-text--active">基础信息</text>
+          <view class="cd-subtag" :class="{ 'cd-subtag--active': basicSubTab === 'basic' }" @tap="basicSubTab = 'basic'">
+            <text class="cd-subtag-text" :class="{ 'cd-subtag-text--active': basicSubTab === 'basic' }">基础信息</text>
           </view>
-          <view class="cd-subtag">
-            <text class="cd-subtag-text">联系方式</text>
+          <view class="cd-subtag" :class="{ 'cd-subtag--active': basicSubTab === 'contact' }" @tap="basicSubTab = 'contact'">
+            <text class="cd-subtag-text" :class="{ 'cd-subtag-text--active': basicSubTab === 'contact' }">联系方式</text>
           </view>
-          <view class="cd-subtag">
-            <text class="cd-subtag-text">系统信息</text>
+          <view class="cd-subtag" :class="{ 'cd-subtag--active': basicSubTab === 'system' }" @tap="basicSubTab = 'system'">
+            <text class="cd-subtag-text" :class="{ 'cd-subtag-text--active': basicSubTab === 'system' }">系统信息</text>
           </view>
         </view>
-        <view v-if="infoTab === 'basic'" class="cd-info-card">
+        <view v-if="infoTab === 'basic' && basicSubTab === 'basic'" class="cd-info-card">
           <view class="cd-info-row">
             <text class="cd-info-label">客户名称</text>
             <text class="cd-info-value">{{ customer.name || '-' }}</text>
@@ -177,6 +177,53 @@
           <view class="cd-info-row">
             <text class="cd-info-label">类型</text>
             <text class="cd-info-value">-</text>
+          </view>
+        </view>
+        <view v-if="infoTab === 'basic' && basicSubTab === 'contact'" class="cd-info-card">
+          <view class="cd-info-row">
+            <text class="cd-info-label">联系电话</text>
+            <text class="cd-info-value">{{ customer.phone || '-' }}</text>
+          </view>
+          <view class="cd-info-divider" />
+          <view class="cd-info-row">
+            <text class="cd-info-label">微信号</text>
+            <text class="cd-info-value">-</text>
+          </view>
+          <view class="cd-info-divider" />
+          <view class="cd-info-row">
+            <text class="cd-info-label">WhatsApp</text>
+            <text class="cd-info-value">-</text>
+          </view>
+          <view class="cd-info-divider" />
+          <view class="cd-info-row">
+            <text class="cd-info-label">省/市/区</text>
+            <text class="cd-info-value">{{ [customer.provinceName, customer.cityName, customer.districtName].filter(Boolean).join('') || '-' }}</text>
+          </view>
+          <view class="cd-info-divider" />
+          <view class="cd-info-row">
+            <text class="cd-info-label">地址</text>
+            <text class="cd-info-value">{{ customer.address || '-' }}</text>
+          </view>
+        </view>
+        <view v-if="infoTab === 'basic' && basicSubTab === 'system'" class="cd-info-card">
+          <view class="cd-info-row">
+            <text class="cd-info-label">公司</text>
+            <text class="cd-info-value">{{ customer.companyName || '-' }}</text>
+          </view>
+          <view class="cd-info-divider" />
+          <view class="cd-info-row">
+            <text class="cd-info-label">来源部门</text>
+            <text class="cd-info-value">{{ customer.channelName || '-' }}</text>
+          </view>
+          <view class="cd-info-divider" />
+          <view class="cd-info-row">
+            <text class="cd-info-label">负责人</text>
+            <text class="cd-info-value">{{ customer.ownerUserName || '-' }}</text>
+          </view>
+          <view class="cd-info-divider" />
+          <view class="cd-info-row">
+            <text class="cd-info-label">协作人</text>
+            <text class="cd-info-value">{{ (customer.ownedUserNames || []).join(' | ') || '-' }}</text>
           </view>
         </view>
         <view v-if="infoTab === 'opportunity'" class="cd-opp-list">
@@ -372,7 +419,8 @@
         </view>
       </nut-popup>
 
-      <view class="cd-card">
+      <view class="cd-card cd-card--dynamic">
+        <view class="cd-dynamic-body">
         <view class="cd-dynamic-head">
           <text class="cd-dynamic-title">客户动态</text>
           <view class="cd-dynamic-tabs">
@@ -382,12 +430,59 @@
           </view>
         </view>
         <view class="cd-divider" />
-        <view class="cd-opp-tag-row">
-          <view class="cd-opp-tag cd-opp-tag--active">
-            <text class="cd-opp-tag-text">金石科技高端机采购书</text>
+        <view v-if="oppCards.length > 0" class="cd-opp-tag-row">
+          <view
+            v-for="(card, idx) in oppCards"
+            :key="card.id"
+            class="cd-opp-tag"
+            :class="{ 'cd-opp-tag--active': activeOppIdx === idx }"
+            @tap="activeOppIdx = idx"
+          >
+            <text class="cd-opp-tag-text">{{ card.name }}</text>
           </view>
-          <view class="cd-opp-tag">
-            <text class="cd-opp-tag-text">金石科技智能设备采购书</text>
+        </view>
+        <view v-if="activeOpp" class="cd-opp-detail-card">
+          <view class="cd-opp-detail-head">
+            <text class="cd-opp-detail-name">{{ activeOpp.name }}</text>
+            <view class="cd-opp-detail-edit" @tap="goOppDetail(activeOpp)">
+              <image class="cd-opp-detail-edit-icon" :src="iconEdit" mode="aspectFit" />
+              <text class="cd-opp-detail-edit-text">编辑</text>
+            </view>
+          </view>
+          <view class="cd-divider" />
+          <view class="cd-opp-detail-row">
+            <text class="cd-opp-detail-label">商机编号</text>
+            <text class="cd-opp-detail-value">{{ activeOpp.oppNo }}</text>
+          </view>
+          <view class="cd-divider" />
+          <view class="cd-opp-detail-row">
+            <text class="cd-opp-detail-label">预计销售金额</text>
+            <text class="cd-opp-detail-value">{{ activeOpp.amount }}</text>
+          </view>
+          <view class="cd-divider" />
+          <view class="cd-opp-detail-row">
+            <text class="cd-opp-detail-label">预计成交日期</text>
+            <text class="cd-opp-detail-value">{{ activeOpp.signDate }}</text>
+          </view>
+          <view class="cd-divider" />
+          <view class="cd-opp-detail-row">
+            <text class="cd-opp-detail-label">商机状态</text>
+            <text class="cd-opp-detail-value">{{ activeOpp.badge }}</text>
+          </view>
+          <view class="cd-divider" />
+          <view class="cd-opp-detail-row">
+            <text class="cd-opp-detail-label">需求产品</text>
+            <text class="cd-opp-detail-value">{{ activeOpp.product }}</text>
+          </view>
+          <view class="cd-divider" />
+          <view class="cd-opp-detail-row">
+            <text class="cd-opp-detail-label">负责人</text>
+            <text class="cd-opp-detail-value">{{ (activeOpp as any).owner || '-' }}</text>
+          </view>
+          <view class="cd-divider" />
+          <view class="cd-opp-detail-row">
+            <text class="cd-opp-detail-label">协作人</text>
+            <text class="cd-opp-detail-value">{{ (activeOpp as any).collaborator || '-' }}</text>
           </view>
         </view>
         <view v-if="followTab === 'follow'" class="cd-timeline">
@@ -458,6 +553,7 @@
             </view>
           </view>
         </view>
+        </view>
       </view>
 
       <view class="cd-bottom-spacer" />
@@ -478,14 +574,20 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import { ref, computed, onMounted, watch } from 'vue'
 import Taro from '@tarojs/taro'
 import NavBar from '@/components/NavBar.vue'
-import { getCustomerDetail, type CustomerItem } from '@/api/customer'
+import { getCustomerDetail, getCustomerOpportunities, type CustomerItem } from '@/api/customer'
+import { getOpportunityFollowRecords, getOpportunityVisitRecords } from '@/api/opportunity'
 import iconEdit from '@/assets/dev/edit.png'
 import iconDelete from '@/assets/dev/delete.png'
 import iconClose from '@/assets/dev/icon-close.png'
 import rightArrow from '@/assets/dev/rightArror.png'
+
+function formatTime(val?: string) {
+  if (!val) return '-'
+  return val.replace('T', ' ').slice(0, 19)
+}
 
 const customerId = ref(0)
 const customer = ref<CustomerItem | null>(null)
@@ -500,11 +602,37 @@ const publicSeaSelected = ref('运营客户公海')
 
 const publicSeaOptions = ['运营客户公海', '开发客户公海', '销售客户公海', '客户大公海']
 
-const oppCards = [
-  { name: '超凡实业技术有限公司', badge: '接触中', badgeStyle: 'yellow', oppNo: 'XJ-281782', product: '自动喷粉枪', amount: '128102.91', signDate: '2024/01/23', note: '客户有意向，但未表明哪款产品' },
-  { name: '金石信息科技有限公司', badge: '方案报价', badgeStyle: 'blue', oppNo: 'XJ-281782', product: '自动喷粉枪', amount: '128102.91', signDate: '2024/01/23', note: '客户有意向，但未表明哪款产品' },
-  { name: '及时设计文化传媒有限公司', badge: '商务谈判', badgeStyle: 'green', oppNo: 'XJ-281782', product: '自动喷粉枪', amount: '128102.91', signDate: '2024/01/23', note: '客户有意向，但未表明哪款产品' },
-]
+const oppCards = ref<{ name: string; badge: string; badgeStyle: string; oppNo: string; product: string; amount: string; signDate: string; note: string; id: number }[]>([])
+const oppLoading = ref(false)
+
+const statusBadgeMap: Record<string, string> = {
+  contacting: 'yellow',
+  won: 'green',
+  conversion_failed: 'red',
+}
+
+async function fetchOpportunities() {
+  if (oppLoading.value || oppCards.value.length > 0) return
+  oppLoading.value = true
+  try {
+    const list = await getCustomerOpportunities(customerId.value)
+    oppCards.value = list.map(item => ({
+      id: item.id,
+      name: item.requiredProductLabel || '-',
+      badge: item.statusLabel || '-',
+      badgeStyle: statusBadgeMap[item.status] || 'yellow',
+      oppNo: `XJ-${item.id}`,
+      product: item.requiredProductLabel || '-',
+      amount: item.expectedSalesAmountBandLabel || '-',
+      signDate: item.expectedDealPeriodLabel || '-',
+      note: item.latestFollowRecord || '-',
+    }))
+  } catch {
+    oppCards.value = []
+  } finally {
+    oppLoading.value = false
+  }
+}
 
 const quoteCards = [
   { name: '金石科技手动枪报价书', badge: '待审核', badgeStyle: 'yellow', no: 'XS-101289021', amount: '￥1280.00', time: '2024/01/23 10:12' },
@@ -583,7 +711,17 @@ const onEdit = () => {
 }
 
 const goOppDetail = (card) => {
-  Taro.navigateTo({ url: '/subpackages/dev/opportunity/detail/index' })
+  const params = [
+    `id=${card.id}`,
+    `name=${encodeURIComponent(card.name)}`,
+    `oppNo=${encodeURIComponent(card.oppNo)}`,
+    `amount=${encodeURIComponent(card.amount)}`,
+    `signDate=${encodeURIComponent(card.signDate)}`,
+    `status=${encodeURIComponent(card.badge)}`,
+    `product=${encodeURIComponent(card.product)}`,
+    `customer=${encodeURIComponent(customer.value?.name || '')}`,
+  ].join('&')
+  Taro.navigateTo({ url: `/subpackages/dev/opportunity/detail/index?${params}` })
 }
 
 const onAddQuote = () => {
@@ -624,32 +762,80 @@ const goPerfDetail = (card) => {
 }
 
 const infoTab = ref('basic')
+const basicSubTab = ref('basic')
 const followTab = ref('follow')
+const activeOppIdx = ref(0)
+const activeOpp = computed(() => oppCards.value[activeOppIdx.value] || null)
 
-const followRecords = ref([
-  { time: '2025.01.23 12:00:59', tag: '签约中', follower: '孙大星', method: '电话', content: '客户有意向，但未表明哪款产品' },
-  { time: '2025.01.21 12:00:59', tag: '商务谈判', follower: '孙大星', method: '电话', content: '客户有意向，但未表明哪款产品' },
-  { time: '2025.01.15 12:00:59', tag: '方案/报价', follower: '孙大星', method: '电话', content: '客户有意向，但未表明哪款产品' },
-])
+watch(infoTab, (tab) => {
+  if (tab === 'opportunity') {
+    fetchOpportunities()
+  }
+})
 
-const visitRecords = ref([
-  {
-    checkInTime: '2025.01.22 12:00:59',
-    checkOutTime: '2025.01.22 18:00:59',
-    location: '广东省深圳市南山区晟成智慧制造有限公司',
-    purpose: '生意洽谈',
-    images: [],
-    result: '洽谈很成功，客户很满意，进入下一步流程',
-  },
-  {
-    checkInTime: '2025.01.20 10:30:00',
-    checkOutTime: '',
-    location: '广东省深圳市南山区晟成智慧制造有限公司',
-    purpose: '生意洽谈',
-    images: [],
-    result: '洽谈很成功，客户很满意，进入下一步流程',
-  },
-])
+const followTypeEnToCn = {
+  phone: '电话', wechat: '微信', visit: '公司面谈', email: '邮件', other: '其他',
+}
+
+const followRecords = ref<{ time: string; tag: string; follower: string; method: string; content: string }[]>([])
+const followLoading = ref(false)
+
+async function fetchFollowRecords() {
+  if (!activeOpp.value || followLoading.value) return
+  followLoading.value = true
+  try {
+    const list = await getOpportunityFollowRecords(activeOpp.value.id)
+    followRecords.value = list.map(item => ({
+      time: formatTime(item.followedAt),
+      tag: followTypeEnToCn[item.followType] || item.followType || '-',
+      follower: item.followerUserName || '-',
+      method: followTypeEnToCn[item.followType] || item.followType || '-',
+      content: item.content || '-',
+    }))
+  } catch {
+    followRecords.value = []
+  } finally {
+    followLoading.value = false
+  }
+}
+
+const visitRecords = ref<{ checkInTime: string; checkOutTime: string; location: string; purpose: string; images: string[]; result: string }[]>([])
+const visitLoading = ref(false)
+
+async function fetchVisitRecords() {
+  if (!activeOpp.value || visitLoading.value) return
+  visitLoading.value = true
+  try {
+    const list = await getOpportunityVisitRecords(activeOpp.value.id)
+    visitRecords.value = list.map(item => ({
+      checkInTime: formatTime(item.checkInAt),
+      checkOutTime: formatTime(item.checkOutAt),
+      location: item.checkInAddress || '-',
+      purpose: item.checkInPurpose || '-',
+      images: (item.photos || []).map(p => p.fileUrl),
+      result: item.checkOutSummary || '-',
+    }))
+  } catch {
+    visitRecords.value = []
+  } finally {
+    visitLoading.value = false
+  }
+}
+
+watch(activeOpp, (opp) => {
+  followRecords.value = []
+  visitRecords.value = []
+  if (opp) {
+    if (followTab.value === 'follow') fetchFollowRecords()
+    else fetchVisitRecords()
+  }
+})
+
+watch(followTab, (tab) => {
+  if (!activeOpp.value) return
+  if (tab === 'follow' && followRecords.value.length === 0) fetchFollowRecords()
+  else if (tab === 'visit' && visitRecords.value.length === 0) fetchVisitRecords()
+})
 
 const editRecord = (idx) => {
   Taro.showToast({ title: '编辑跟进记录', icon: 'none' })
@@ -686,6 +872,7 @@ onMounted(() => {
   if (id) {
     customerId.value = Number(id)
     fetchDetail()
+    fetchOpportunities()
   } else {
     loading.value = false
   }
@@ -723,6 +910,12 @@ onMounted(() => {
   border-radius: 16rpx;
   padding: 28rpx;
   margin-bottom: 32rpx;
+}
+
+.cd-dynamic-body {
+  display: flex;
+  flex-direction: column;
+  gap: 28rpx;
 }
 
 .cd-divider {
@@ -1617,19 +1810,76 @@ onMounted(() => {
   padding: 10rpx 16rpx;
   background: #FBFBFB;
   border: 1rpx solid #E8EAF3;
-  border-radius: 6rpx;
-  height: 56rpx;
+  border-radius: 8rpx;
 }
 
 .cd-opp-tag--active {
   background: #EDFAF5;
   border-color: #B1E9D3;
 }
+.cd-opp-tag--active .cd-opp-tag-text {
+  color: #37AE7E;
+}
 
 .cd-opp-tag-text {
   font-size: 28rpx;
   font-weight: 500;
   color: #9292A5;
+}
+
+.cd-opp-detail-card {
+  display: flex;
+  flex-direction: column;
+  gap: 24rpx;
+  padding: 24rpx;
+  background: #FBFBFB;
+  border: 1rpx solid #ECEBEB;
+  border-radius: 8rpx;
+}
+
+.cd-opp-detail-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.cd-opp-detail-name {
+  font-size: 28rpx;
+  font-weight: 500;
+  color: #1A1D24;
+}
+
+.cd-opp-detail-edit {
+  display: flex;
+  align-items: center;
+  gap: 4rpx;
+}
+
+.cd-opp-detail-edit-icon {
+  width: 32rpx;
+  height: 32rpx;
+}
+
+.cd-opp-detail-edit-text {
+  font-size: 28rpx;
+  color: #37AE7E;
+}
+
+.cd-opp-detail-row {
+  display: flex;
+  align-items: center;
+  gap: 8rpx;
+  justify-content: space-between;
+}
+
+.cd-opp-detail-label {
+  font-size: 28rpx;
+  color: #62687D;
+}
+
+.cd-opp-detail-value {
+  font-size: 28rpx;
+  color: #1A1D24;
 }
 
 .cd-timeline {
@@ -1652,8 +1902,8 @@ onMounted(() => {
 }
 
 .cd-timeline-dot {
-  width: 18rpx;
-  height: 18rpx;
+  width: 12rpx;
+  height: 12rpx;
   border-radius: 50%;
   background: #37AE7E;
   flex-shrink: 0;
@@ -1670,7 +1920,7 @@ onMounted(() => {
   flex: 1;
   display: flex;
   flex-direction: column;
-  gap: 10rpx;
+  gap: 20rpx;
   padding-bottom: 40rpx;
 }
 
@@ -1687,23 +1937,24 @@ onMounted(() => {
 .cd-timeline-head-left {
   display: flex;
   align-items: center;
-  gap: 8rpx;
+  gap: 12rpx;
 }
 
 .cd-timeline-date {
-  font-size: 26rpx;
-  color: #9292A5;
+  font-size: 30rpx;
+  font-weight: 600;
+  color: #1A1D24;
 }
 
 .cd-timeline-tag {
-  font-size: 26rpx;
-  color: #37AE7E;
+  font-size: 30rpx;
+  color: #62687D;
 }
 
 .cd-timeline-actions {
   display: flex;
   align-items: center;
-  gap: 12rpx;
+  gap: 24rpx;
 }
 
 .cd-timeline-action-icon {
@@ -1717,21 +1968,21 @@ onMounted(() => {
 }
 
 .cd-timeline-info-label {
-  font-size: 26rpx;
+  font-size: 28rpx;
   color: #62687D;
   flex-shrink: 0;
 }
 
 .cd-timeline-info-text {
-  font-size: 26rpx;
-  color: #1A1D24;
+  font-size: 28rpx;
+  color: #62687D;
 }
 
 .cd-visit-content {
   flex: 1;
   display: flex;
   flex-direction: column;
-  gap: 10rpx;
+  gap: 20rpx;
   padding-bottom: 40rpx;
 }
 
@@ -1745,13 +1996,13 @@ onMounted(() => {
 }
 
 .cd-visit-label {
-  font-size: 26rpx;
+  font-size: 28rpx;
   color: #62687D;
   flex-shrink: 0;
 }
 
 .cd-visit-value {
-  font-size: 26rpx;
+  font-size: 28rpx;
   color: #1A1D24;
 }
 
@@ -1800,7 +2051,7 @@ onMounted(() => {
 }
 
 .cd-bottom-btn-text {
-  font-size: 32rpx;
+  font-size: 30rpx;
   font-weight: 500;
 }
 

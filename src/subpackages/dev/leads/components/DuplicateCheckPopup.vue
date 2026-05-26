@@ -72,6 +72,11 @@ import iconSearch from '@/assets/dev/icon-search.png'
 import iconEmptySearch from '@/assets/dev/icon-empty-search.png'
 import iconTooMany from '@/assets/dev/icon-too-many.png'
 
+function formatTime(val) {
+  if (!val) return '-'
+  return val.replace('T', ' ').slice(0, 19)
+}
+
 const props = defineProps({
   modelValue: { type: Boolean, default: false },
   customerName: { type: String, default: '' },
@@ -121,7 +126,7 @@ const onSearch = async () => {
         after: idx > -1 ? item.name.slice(idx + kw.length) : '',
         manager: item.ownerUserName || '-',
         phone: item.phone || '-',
-        createTime: item.createdAt || '-',
+        createTime: formatTime(item.createdAt),
       }
     })
     state.value = 'results'
