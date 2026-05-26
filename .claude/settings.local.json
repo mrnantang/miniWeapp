@@ -19,9 +19,7 @@
       "Bash(npm run *)",
       "Bash(pnpm run *)",
       "Bash(node -e ' *)",
-      "Bash(mkdir -p .firecrawl)",
-      "Bash(curl -s -H \"X-Figma-Token: REDACTED\" \"https://api.figma.com/v1/files/PWUboIJVP9DmSXR7OFtls9/nodes?ids=9327-18900\" -o .firecrawl/figma-contact-tab.json)",
-      "Bash(curl -s -H \"X-Figma-Token: REDACTED\" \"https://api.figma.com/v1/files/PWUboIJVP9DmSXR7OFtls9/nodes?ids=9327-18995\" -o .firecrawl/figma-system-tab.json)"
-    ]
+      "Bash(mkdir -p .firecrawl)"
+       ]
   }
 }
