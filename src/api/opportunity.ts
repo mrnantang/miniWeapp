@@ -69,3 +69,38 @@ export function getOpportunityVisitRecords(opportunityId: number): Promise<Visit
 export function createOpportunityFollowRecord(opportunityId: number, data: CreateFollowRecordRequest): Promise<FollowRecordItem> {
   return post<FollowRecordItem>(`/opportunities/${opportunityId}/follow-records`, data as Record<string, unknown>)
 }
+
+/** 商机分页列表项 */
+export interface OpportunityPageItem {
+  id: number
+  opportunityName: string
+  opportunityNo: string
+  followStatus: string
+  followStatusLabel: string
+  requiredProduct: string
+  requiredProductLabel: string
+  expectedSalesAmountBand: string
+  expectedSalesAmountBandLabel: string
+  expectedDealDate: string
+  latestFollowRecord: string
+  lastFollowedAt: string
+  createdAt: string
+}
+
+/** 商机分页列表响应 */
+export interface OpportunityPageResponse {
+  items: OpportunityPageItem[]
+  page: number
+  pageSize: number
+  total: number
+}
+
+/** 查询商机分页列表 */
+export function queryOpportunityPage(params?: {
+  page?: number
+  pageSize?: number
+  followStatus?: string
+  keyword?: string
+}): Promise<OpportunityPageResponse> {
+  return get<OpportunityPageResponse>('/opportunities/query-page', params as Record<string, unknown>)
+}

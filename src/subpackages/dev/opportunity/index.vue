@@ -3,7 +3,7 @@
     <view class="opp-wrap">
       <view class="opp-search-row">
         <view class="opp-search-box">
-          <input class="opp-search-input" placeholder="请输入搜索" placeholder-style="color:#9292A5;font-size:30rpx" />
+          <input class="opp-search-input" v-model="searchKeyword" placeholder="请输入搜索" placeholder-style="color:#9292A5;font-size:30rpx" @input="onSearchInput" @confirm="onSearchConfirm" />
           <image class="opp-search-icon" :src="iconSearch" mode="aspectFit" />
         </view>
         <view class="opp-btn" @tap="showFilter = true">
@@ -21,47 +21,71 @@
             :key="tab"
             class="opp-tab"
             :class="{ 'opp-tab--active': activeOppTab === tab }"
-            @tap="activeOppTab = tab"
+            @tap="onTabChange(tab)"
           >
             <text class="opp-tab-text" :class="{ 'opp-tab-text--active': activeOppTab === tab }">{{ tab }}</text>
           </view>
         </view>
       </scroll-view>
 
-      <view v-for="card in oppCards" :key="card.name" class="oc-card" @tap="goDetail(card)">
-        <view class="oc-head">
-          <text class="oc-name">{{ card.name }}</text>
-          <view class="oc-badge" :class="'oc-badge--' + card.badgeStyle">
-            <text class="oc-badge-text" :class="'oc-badge-text--' + card.badgeStyle">{{ card.badge }}</text>
-          </view>
+      <scroll-view
+        class="opp-list-scroll"
+        scroll-y="true"
+        :enhanced="true"
+        :show-scrollbar="false"
+        @scrolltolower="onLoadMore"
+      >
+        <view v-if="loading && list.length === 0" class="opp-empty">
+          <text class="opp-empty-text">加载中...</text>
         </view>
-        <view class="oc-info">
-          <view class="oc-info-row">
-            <view class="oc-info-col">
-              <text class="oc-info-label">商机编号</text>
-              <text class="oc-info-value">{{ card.oppNo }}</text>
-            </view>
-            <view class="oc-info-col">
-              <text class="oc-info-label">需求产品</text>
-              <text class="oc-info-value">{{ card.product }}</text>
-            </view>
-          </view>
-          <view class="oc-info-row">
-            <view class="oc-info-col">
-              <text class="oc-info-label">预计销售金额</text>
-              <text class="oc-info-value oc-info-value--price">￥{{ card.amount }}</text>
-            </view>
-            <view class="oc-info-col">
-              <text class="oc-info-label">预计签单日期</text>
-              <text class="oc-info-value">{{ card.signDate }}</text>
+
+        <view v-for="card in list" :key="card.id" class="oc-card" @tap="goDetail(card)">
+          <view class="oc-head">
+            <text class="oc-name">{{ card.opportunityName }}</text>
+            <view class="oc-badge" :class="'oc-badge--' + (statusBadgeMap[card.followStatus] || 'yellow')">
+              <text class="oc-badge-text" :class="'oc-badge-text--' + (statusBadgeMap[card.followStatus] || 'yellow')">{{ card.followStatusLabel }}</text>
             </view>
           </view>
+          <view class="oc-info">
+            <view class="oc-info-row">
+              <view class="oc-info-col">
+                <text class="oc-info-label">商机编号</text>
+                <text class="oc-info-value">{{ card.opportunityNo }}</text>
+              </view>
+              <view class="oc-info-col">
+                <text class="oc-info-label">需求产品</text>
+                <text class="oc-info-value">{{ card.requiredProductLabel || '-' }}</text>
+              </view>
+            </view>
+            <view class="oc-info-row">
+              <view class="oc-info-col">
+                <text class="oc-info-label">预计销售金额</text>
+                <text class="oc-info-value oc-info-value--price">{{ card.expectedSalesAmountBandLabel || '-' }}</text>
+              </view>
+              <view class="oc-info-col">
+                <text class="oc-info-label">预计签单日期</text>
+                <text class="oc-info-value">{{ formatTime(card.expectedDealDate) }}</text>
+              </view>
+            </view>
+          </view>
+          <view class="oc-note">
+            <text class="oc-note-label">最新跟进：</text>
+            <text class="oc-note-text">{{ card.latestFollowRecord || '-' }}</text>
+          </view>
         </view>
-        <view class="oc-note">
-          <text class="oc-note-label">最新跟进：</text>
-          <text class="oc-note-text">{{ card.note }}</text>
+
+        <view v-if="loading && list.length > 0" class="opp-loading-more">
+          <text class="opp-empty-text">加载更多...</text>
         </view>
-      </view>
+
+        <view v-if="!loading && list.length === 0" class="opp-empty">
+          <text class="opp-empty-text">暂无数据</text>
+        </view>
+
+        <view v-if="!hasMore && list.length > 0" class="opp-empty">
+          <text class="opp-empty-text">没有更多了</text>
+        </view>
+      </scroll-view>
     </view>
 
     <FilterPopup v-model="showFilter" :sidebar-items="filterSidebarItems" @confirm="onFilterPopupConfirm" />
@@ -70,25 +94,106 @@
   </view>
 </template>
 
-<script setup>
-import { ref } from 'vue'
+<script setup lang="ts">
+import { ref, onMounted } from 'vue'
+import { useDidShow } from '@tarojs/taro'
+import Taro from '@tarojs/taro'
 import TabBar from '../tabs/index.vue'
 import FilterPopup from './components/FilterPopup.vue'
+import { queryOpportunityPage, type OpportunityPageItem } from '@/api/opportunity'
 import iconSearch from '@/assets/dev/icon-search.png'
 import iconFilter from '@/assets/dev/icon-filter.png'
 import iconAdd from '@/assets/dev/icon-add.png'
-import Taro from '@tarojs/taro'
-const oppTabs = ['全部', '待跟进', '接触中', '已拜访', '已报价', '签约', '大公海']
+
+const tabStatusMap: Record<string, string> = {
+  '全部': 'all',
+  '待跟进': 'pending_follow',
+  '接触中': 'contacting',
+  '已拜访': 'visited',
+  '已报价': 'quoted',
+  '签约': 'signing'
+}
+
+const statusBadgeMap: Record<string, string> = {
+  pending_follow: 'yellow',
+  contacting: 'yellow',
+  visited: 'green',
+  quoted: 'green',
+  signing: 'green',
+  won: 'green',
+}
+
+function formatTime(val?: string) {
+  if (!val) return '-'
+  return val.replace('T', ' ').slice(0, 10)
+}
+
+const oppTabs = ['全部', '待跟进', '接触中', '已拜访', '已报价', '签约']
 const activeOppTab = ref('全部')
 
-const oppCards = [
-  { name: '金石科技高端采购书', badge: '待跟进', badgeStyle: 'yellow', oppNo: 'XS-101289021', product: '自动喷粉枪', amount: '1280.00', signDate: '2025/02/01', note: '客户有意向，但未表明哪款产品' },
-  { name: '金剑制造实业控股', badge: '待跟进', badgeStyle: 'yellow', oppNo: 'XS-101289022', product: '静电粉末喷涂设备', amount: '2560.00', signDate: '2025/03/15', note: '客户有意向，但未表明哪款产品' },
-  { name: '及时设计文化传媒有限公司', badge: '已报价', badgeStyle: 'green', oppNo: 'XS-101289023', product: '全自动涂装产线', amount: '8800.00', signDate: '2025/04/20', note: '客户有意向，但未表明哪款产品' },
-]
+const list = ref<OpportunityPageItem[]>([])
+const loading = ref(false)
+const page = ref(1)
+const pageSize = 10
+const hasMore = ref(true)
+const searchKeyword = ref('')
+let searchTimer: ReturnType<typeof setTimeout> | null = null
+
+const fetchList = async (reset = false) => {
+  if (loading.value) return
+  if (reset) {
+    page.value = 1
+    list.value = []
+    hasMore.value = true
+  }
+  if (!hasMore.value && !reset) return
+  loading.value = true
+  try {
+    const res = await queryOpportunityPage({
+      page: page.value,
+      pageSize,
+      followStatus: tabStatusMap[activeOppTab.value] || 'all',
+      keyword: searchKeyword.value || undefined,
+    })
+    if (reset) {
+      list.value = res.items || []
+    } else {
+      list.value = [...list.value, ...(res.items || [])]
+    }
+    hasMore.value = list.value.length < res.total
+  } catch {
+    // 保持当前数据
+  } finally {
+    loading.value = false
+  }
+}
+
+const onLoadMore = () => {
+  if (loading.value || !hasMore.value) return
+  page.value++
+  fetchList(false)
+}
+
+const onSearchInput = () => {
+  if (searchTimer) clearTimeout(searchTimer)
+  searchTimer = setTimeout(() => {
+    fetchList(true)
+  }, 300)
+}
+
+const onSearchConfirm = () => {
+  if (searchTimer) clearTimeout(searchTimer)
+  fetchList(true)
+}
+
+const onTabChange = (tab: string) => {
+  if (activeOppTab.value === tab) return
+  activeOppTab.value = tab
+  fetchList(true)
+}
 
 const showFilter = ref(false)
-const selectedTags = ref([])
+const selectedTags = ref<string[]>([])
 
 const filterSidebarItems = [
   { label: '公司名称', type: 'org' },
@@ -102,7 +207,7 @@ const filterSidebarItems = [
   { label: '分配时间', type: 'time' },
 ]
 
-const onFilterPopupConfirm = (result) => {
+const onFilterPopupConfirm = (result: any) => {
   selectedTags.value = result.selected
   showFilter.value = false
 }
@@ -111,9 +216,27 @@ const goAddOpp = () => {
   Taro.navigateTo({ url: '/subpackages/dev/opportunity/add-opportunity/index' })
 }
 
-const goDetail = (card) => {
-  Taro.navigateTo({ url: '/subpackages/dev/opportunity/detail/index' })
+const goDetail = (card: OpportunityPageItem) => {
+  const params = [
+    `id=${card.id}`,
+    `name=${encodeURIComponent(card.opportunityName)}`,
+    `oppNo=${encodeURIComponent(card.opportunityNo)}`,
+    `customer=${encodeURIComponent('-')}`,
+    `amount=${encodeURIComponent(card.expectedSalesAmountBandLabel || '-')}`,
+    `signDate=${encodeURIComponent(formatTime(card.expectedDealDate))}`,
+    `status=${encodeURIComponent(card.followStatusLabel || '-')}`,
+    `product=${encodeURIComponent(card.requiredProductLabel || '-')}`,
+  ].join('&')
+  Taro.navigateTo({ url: `/subpackages/dev/opportunity/detail/index?${params}` })
 }
+
+onMounted(() => {
+  fetchList(true)
+})
+
+useDidShow(() => {
+  fetchList(true)
+})
 </script>
 
 <style>
@@ -301,5 +424,28 @@ const goDetail = (card) => {
 .oc-note-text {
   font-size: 24rpx;
   color: #1A1D24;
+}
+
+.opp-list-scroll {
+  height: calc(100vh - 360rpx);
+}
+
+.opp-empty {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 80rpx 0;
+}
+
+.opp-empty-text {
+  font-size: 28rpx;
+  color: #9292A5;
+}
+
+.opp-loading-more {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 32rpx 0;
 }
 </style>

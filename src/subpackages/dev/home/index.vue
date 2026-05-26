@@ -300,7 +300,8 @@ const taskLoading = ref(false)
 
 const metrics = ref([])
 const leads = ref([])
-const customers = ref([])
+const pendingCustomers = ref([])
+const focusCustomers = ref([])
 
 const STAT_KEY_MAP = {
   total_customers: 0,
@@ -350,31 +351,47 @@ const tabIdxFocus = computed(() => role === 'sales' ? 1 : 2)
 const isLeadTab = computed(() => role !== 'sales' && activeTaskTab.value === 0)
 const isFocusTab = computed(() => activeTaskTab.value === tabIdxFocus.value)
 
+const leadStatusLabelMap = {
+  pending: '待处理',
+  valid: '有效',
+  invalid: '无效',
+  duplicate: '重复',
+}
+
 function mapBadge(status) {
   if (!status) return { badge: '待定', badgeStyle: 'cyan' }
   const s = String(status)
+  if (s.includes('待定')) return { badge: '待定', badgeStyle: 'cyan' }
   if (s.includes('待')) return { badge: s, badgeStyle: 'yellow' }
   if (s.includes('已')) return { badge: s, badgeStyle: 'cyan' }
   return { badge: s, badgeStyle: 'blue' }
 }
 
+function formatAddress(province, city, district) {
+  const parts = [province, city, district].filter(Boolean)
+  return parts.length > 0 ? parts.join('') : '-'
+}
+
 const leadCards = computed(() => leads.value.map(item => {
-  const { badge, badgeStyle } = mapBadge(item.followStatusLabel)
+  const statusText = '待定'
+  console.log("qqq",statusText);
+  
+  const { badge, badgeStyle } = mapBadge(statusText)
   return {
     name: item.customerName || item.contactName || '-',
     badge,
     badgeStyle,
     icon2: wechatIcon,
     label2: item.followerUserName || '-',
-    industry: item.customerIndustry || '-',
+    industry: item.customerIndustryLabel || '-',
     icon4: locationIcon,
-    label4: `${item.provinceName || ''}/${item.cityName || ''}/${item.districtName || ''}`,
+    label4: formatAddress(item.provinceName, item.cityName, item.districtName),
     phone: item.phone || '-',
     note: '',
   }
 }))
 
-const customerCards = computed(() => customers.value.map(item => {
+const customerCards = computed(() => pendingCustomers.value.map(item => {
   const { badge, badgeStyle } = mapBadge(item.followStatusLabel)
   return {
     name: item.name || '-',
@@ -390,7 +407,7 @@ const customerCards = computed(() => customers.value.map(item => {
   }
 }))
 
-const focusCards = computed(() => customers.value.map(item => {
+const focusCards = computed(() => focusCustomers.value.map(item => {
   const { badge, badgeStyle } = mapBadge(item.followStatusLabel)
   return {
     name: item.name || '-',
@@ -413,10 +430,10 @@ const currentCards = computed(() => {
 })
 
 const leadCount = computed(() => leads.value.length)
-const customerCount = computed(() => customers.value.length)
+const customerCount = computed(() => pendingCustomers.value.length)
 const taskCount = computed(() => {
   if (isLeadTab.value) return leadCount.value
-  if (isFocusTab.value) return focusCards.value.length
+  if (isFocusTab.value) return focusCustomers.value.length
   return customerCount.value
 })
 
@@ -519,17 +536,20 @@ const onPickerChange = (e) => {
 }
 
 onMounted(async () => {
+  taskLoading.value = true
   try {
-    const [metricsRes, leadRes, customerRes] = await Promise.all([
-      getOperationsOverview(),
-      getLeadList({ tab: 'pending_followup' }),
-      getCustomerList({ tab: 'my_owned' }),
+    const [ leadRes, customerRes, focusRes] = await Promise.all([
+      getLeadList({ statuses: ['pending'] }),
+      getCustomerList({ followStatuses: ['pending_follow'] }),
+      getCustomerList({ level: 'A' }),
     ])
-    metrics.value = metricsRes.metrics || []
     leads.value = leadRes.items || []
-    customers.value = customerRes.items || []
-  } catch {
-    // 接口失败时使用空数据
+    pendingCustomers.value = customerRes.items || []
+    focusCustomers.value = focusRes.items || []
+  } catch (e) {
+    console.error('[待处理任务] 接口异常', e)
+  } finally {
+    taskLoading.value = false
   }
 
   try {
@@ -880,6 +900,9 @@ onMounted(async () => {
 .tc-badge--yellow {
   background: #FFF8E1;
 }
+.tc-badge--cyan {
+  background: #D8F8FF;
+}
 .tc-badge--blue {
   background: #D8E8FF;
 }
@@ -889,6 +912,9 @@ onMounted(async () => {
 }
 .tc-badge-text--yellow {
   color: #C79100;
+}
+.tc-badge-text--cyan {
+  color: #15C2E9;
 }
 .tc-badge-text--blue {
   color: #4A8FE2;

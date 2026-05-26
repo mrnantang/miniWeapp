@@ -42,6 +42,7 @@ export interface CustomerListParams {
   pageSize?: number
   customerName?: string
   level?: string
+  followStatuses?: string[]
   projectType?: string
   industry?: string
   category?: string

@@ -16,6 +16,7 @@ export interface LeadItem {
   customerIndustryLabel: string
   leadLevel: string
   status: string
+  statusLabel: string
   channelCode: string
   channelName: string
   ownerUserId: number
