@@ -17,7 +17,9 @@
       "Bash(sed -i '/const rolePathMap = {/,/^$/{ *)",
       "Bash(sed -n '80,110p' src/pages/login/index.vue)",
       "Bash(npm run *)",
-      "Bash(pnpm run *)"
-    ]
+      "Bash(pnpm run *)",
+      "Bash(node -e ' *)",
+      "Bash(mkdir -p .firecrawl)"
+       ]
   }
 }
