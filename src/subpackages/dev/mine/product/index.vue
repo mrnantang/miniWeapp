@@ -4,7 +4,7 @@
 
     <view class="product-search-row">
       <view class="product-search-box">
-        <input class="product-search-input" placeholder="请输入产品名称/产品编号" placeholder-style="color:#9292A5;font-size:26rpx" />
+        <input class="product-search-input" v-model="searchKeyword" placeholder="请输入产品名称/产品编号" placeholder-style="color:#9292A5;font-size:26rpx" @input="onSearchInput" />
         <image class="product-search-icon" :src="iconSearchProduct" mode="aspectFit" />
       </view>
       <view class="product-filter-btn" @tap="onFilter">
@@ -114,40 +114,92 @@
       </view>
     </nut-popup>
 
-    <scroll-view class="product-scroll" scroll-y :enhanced="true" :show-scrollbar="false">
-      <view class="product-list">
-        <view v-for="(item, idx) in productList" :key="idx" class="product-card" @tap="onProductTap(item)">
+    <scroll-view class="product-scroll" scroll-y :enhanced="true" :show-scrollbar="false" @scrolltolower="onLoadMore">
+      <view v-if="loading && list.length === 0" class="product-empty">
+        <text class="product-empty-text">加载中...</text>
+      </view>
+      <view v-else class="product-list">
+        <view v-for="item in list" :key="item.id" class="product-card" @tap="onProductTap(item)">
           <view class="product-img-wrap">
-            <image class="product-img" :src="item.img" mode="aspectFill" />
+            <image class="product-img" :src="item.coverImageUrl" mode="aspectFill" />
           </view>
           <view class="product-info">
             <text class="product-name">{{ item.name }}</text>
-            <text class="product-desc">{{ item.desc }}</text>
-            <text class="product-price">￥<text class="product-price-int">{{ item.priceInt }}</text><text class="product-price-dec">.{{ item.priceDec }}</text></text>
+            <text class="product-desc">{{ item.summary || '-' }}</text>
+            <text class="product-price">￥<text class="product-price-int">{{ formatPrice(item.priceAmount).int }}</text><text class="product-price-dec">.{{ formatPrice(item.priceAmount).dec }}</text></text>
           </view>
         </view>
       </view>
+      <view v-if="loading && list.length > 0" class="product-empty">
+        <text class="product-empty-text">加载更多...</text>
+      </view>
+      <view v-if="!loading && list.length === 0" class="product-empty">
+        <text class="product-empty-text">暂无产品</text>
+      </view>
+      <text v-if="!hasMore && list.length > 0" class="product-more">没有更多了</text>
     </scroll-view>
   </view>
 </template>
 
-<script setup>
-import { ref, reactive } from 'vue'
+<script setup lang="ts">
+import { ref, reactive, onMounted } from 'vue'
 import Taro from '@tarojs/taro'
-import { Popup } from '@nutui/nutui-taro'
 import NavBar from '@/components/NavBar.vue'
+import { getProductList, type ProductItem } from '@/api/product'
 import iconSearchProduct from '@/assets/dev/icon-search-product.svg'
 import iconFilterProduct from '@/assets/dev/icon-filter-product.svg'
 
-const productList = ref([
-  { name: 'V12智能数控喷粉枪', desc: '这部分是产品简介，这是文本', priceInt: '2888', priceDec: '00', img: '' },
-  { name: 'E7静电自动喷粉枪/自动喷粉机', desc: '这部分是产品简介，这是文本', priceInt: '2888', priceDec: '00', img: '' },
-  { name: 'V16高端定制喷粉枪', desc: '这部分是产品简介，这是文本', priceInt: '2888', priceDec: '00', img: '' },
-  { name: 'E7静电自动喷粉枪/自动喷粉机', desc: '这部分是产品简介，这是文本', priceInt: '2888', priceDec: '00', img: '' },
-  { name: 'V16高端定制喷粉枪', desc: '这部分是产品简介，这是文本', priceInt: '2888', priceDec: '00', img: '' },
-  { name: 'E7静电自动喷粉枪/自动喷粉机', desc: '这部分是产品简介，这是文本', priceInt: '2888', priceDec: '00', img: '' },
-  { name: 'E7静电自动喷粉枪/自动喷粉机', desc: '这部分是产品简介，这是文本', priceInt: '2888', priceDec: '00', img: '' },
-])
+const list = ref<ProductItem[]>([])
+const loading = ref(false)
+const page = ref(1)
+const pageSize = 10
+const hasMore = ref(true)
+const searchKeyword = ref('')
+let searchTimer: ReturnType<typeof setTimeout> | null = null
+
+function formatPrice(amount?: number) {
+  if (!amount && amount !== 0) return { int: '-', dec: '00' }
+  const yuan = (amount / 100).toFixed(2)
+  const [int, dec] = yuan.split('.')
+  return { int, dec }
+}
+
+const fetchList = async (reset = false) => {
+  if (loading.value) return
+  if (reset) {
+    page.value = 1
+    list.value = []
+    hasMore.value = true
+  }
+  if (!hasMore.value && !reset) return
+  loading.value = true
+  try {
+    const res = await getProductList({ page: page.value, pageSize, name: searchKeyword.value || undefined })
+    if (reset) {
+      list.value = res.items || []
+    } else {
+      list.value = [...list.value, ...(res.items || [])]
+    }
+    hasMore.value = list.value.length < res.total
+  } catch {
+    // 保持当前数据
+  } finally {
+    loading.value = false
+  }
+}
+
+const onLoadMore = () => {
+  if (loading.value || !hasMore.value) return
+  page.value++
+  fetchList(false)
+}
+
+const onSearchInput = () => {
+  if (searchTimer) clearTimeout(searchTimer)
+  searchTimer = setTimeout(() => {
+    fetchList(true)
+  }, 300)
+}
 
 const showFilter = ref(false)
 const filterIdx = ref(0)
@@ -163,19 +215,19 @@ const priceRange = reactive({
   max: '',
 })
 
-const toggleFilterTag = (key, tag) => {
-  const arr = filterTags[key]
+const toggleFilterTag = (key: string, tag: string) => {
+  const arr = filterTags[key as keyof typeof filterTags]
   if (tag === '全部') {
-    filterTags[key] = ['全部']
+    (filterTags as Record<string, string[]>)[key] = ['全部']
     return
   }
   const idx = arr.indexOf(tag)
   if (arr.includes('全部')) {
-    filterTags[key] = [tag]
+    (filterTags as Record<string, string[]>)[key] = [tag]
   } else if (idx >= 0) {
     arr.splice(idx, 1)
     if (arr.length === 0) {
-      filterTags[key] = ['全部']
+      (filterTags as Record<string, string[]>)[key] = ['全部']
     }
   } else {
     arr.push(tag)
@@ -187,16 +239,32 @@ const onFilter = () => {
 }
 
 const clearFilter = () => {
+  filterTags.prodCat1 = ['全部']
+  filterTags.prodCat2 = ['全部']
+  filterTags.brand = ['全部']
+  filterTags.status = ['全部']
+  priceRange.min = ''
+  priceRange.max = ''
   showFilter.value = false
+}
+
+const STATUS_MAP: Record<string, string> = {
+  '已上架': 'published',
+  '已下架': 'unpublished',
 }
 
 const onFilterConfirm = () => {
   showFilter.value = false
+  fetchList(true)
 }
 
-const onProductTap = (item) => {
-  Taro.navigateTo({ url: '/subpackages/dev/mine/product/detail/index' })
+const onProductTap = (item: ProductItem) => {
+  Taro.navigateTo({ url: `/subpackages/dev/mine/product/detail/index?id=${item.id}` })
 }
+
+onMounted(() => {
+  fetchList(true)
+})
 </script>
 
 <style>
@@ -311,6 +379,26 @@ const onProductTap = (item) => {
 
 .product-price-dec {
   font-size: 22rpx;
+}
+
+.product-empty {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 80rpx 0;
+}
+
+.product-empty-text {
+  font-size: 28rpx;
+  color: #9292A5;
+}
+
+.product-more {
+  display: block;
+  text-align: center;
+  font-size: 24rpx;
+  color: #9292A5;
+  padding: 40rpx 0 80rpx;
 }
 
 .filter-popup {

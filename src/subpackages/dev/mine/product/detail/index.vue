@@ -2,95 +2,64 @@
   <view class="prod-detail-page">
     <NavBar title="商品详情" />
 
-    <scroll-view class="prod-detail-scroll" scroll-y :enhanced="true" :show-scrollbar="false">
+    <scroll-view class="prod-detail-scroll" scroll-y="true" :enhanced="true" :show-scrollbar="false">
+      <view v-if="loading" class="prod-detail-empty">
+        <text class="prod-detail-empty-text">加载中...</text>
+      </view>
+      <view v-else-if="!product" class="prod-detail-empty">
+        <text class="prod-detail-empty-text">产品不存在</text>
+      </view>
+      <template v-else>
       <view class="prod-detail-banner">
-        <image class="prod-detail-banner-img" :src="product.img" mode="aspectFill" />
+        <image class="prod-detail-banner-img" :src="product.coverImageUrl" mode="aspectFill" />
       </view>
 
       <view class="prod-detail-card">
         <view class="prod-detail-name-row">
           <text class="prod-detail-name">{{ product.name }}</text>
-          <text class="prod-detail-price"><text class="prod-detail-price-symbol">￥</text><text class="prod-detail-price-int">{{ product.priceInt }}</text><text class="prod-detail-price-dec">.{{ product.priceDec }}</text></text>
+          <text class="prod-detail-price"><text class="prod-detail-price-symbol">￥</text><text class="prod-detail-price-int">{{ formatPrice(product.priceAmount).int }}</text><text class="prod-detail-price-dec">.{{ formatPrice(product.priceAmount).dec }}</text></text>
         </view>
         <view class="prod-detail-divider" />
-        <text class="prod-detail-desc">永不停产的方案，多台主机，多支自动单枪可实现分离、独立控制</text>
+        <text class="prod-detail-desc">{{ product.summary || '-' }}</text>
         <view class="prod-detail-divider" />
         <view class="prod-detail-attr-row">
           <text class="prod-detail-attr-label">产品编号</text>
-          <text class="prod-detail-attr-value">bB9991902001</text>
+          <text class="prod-detail-attr-value">{{ product.productNo || '-' }}</text>
         </view>
         <view class="prod-detail-divider" />
         <view class="prod-detail-attr-row">
           <text class="prod-detail-attr-label">产品分类</text>
-          <text class="prod-detail-attr-value">E7 手动喷枪</text>
+          <text class="prod-detail-attr-value">{{ product.categoryName || '-' }}</text>
         </view>
         <view class="prod-detail-divider" />
         <view class="prod-detail-attr-row">
           <text class="prod-detail-attr-label">型号</text>
-          <text class="prod-detail-attr-value">E7</text>
+          <text class="prod-detail-attr-value">{{ product.model || '-' }}</text>
         </view>
         <view class="prod-detail-divider" />
         <view class="prod-detail-attr-row">
           <text class="prod-detail-attr-label">品牌</text>
-          <text class="prod-detail-attr-value">德贝尔</text>
+          <text class="prod-detail-attr-value">{{ product.brandName || '-' }}</text>
         </view>
         <view class="prod-detail-divider" />
         <view class="prod-detail-attr-row">
           <text class="prod-detail-attr-label">单位</text>
-          <text class="prod-detail-attr-value">套</text>
+          <text class="prod-detail-attr-value">{{ product.unit || '-' }}</text>
         </view>
       </view>
 
-      <view class="prod-detail-card">
+      <view v-if="product.parameters && product.parameters.length > 0" class="prod-detail-card">
         <text class="prod-detail-section-title">产品参数</text>
-        <view class="prod-detail-divider" />
-        <view class="prod-detail-param-row">
-          <text class="prod-detail-param-label">输入电压</text>
-          <text class="prod-detail-param-value">12VDC</text>
-        </view>
-        <view class="prod-detail-divider" />
-        <view class="prod-detail-param-row">
-          <text class="prod-detail-param-label">输出电压</text>
-          <text class="prod-detail-param-value">0-100KV可调</text>
-        </view>
-        <view class="prod-detail-divider" />
-        <view class="prod-detail-param-row">
-          <text class="prod-detail-param-label">输出电流</text>
-          <text class="prod-detail-param-value">0-120uA可调</text>
-        </view>
-        <view class="prod-detail-divider" />
-        <view class="prod-detail-param-row">
-          <text class="prod-detail-param-label">防护等级</text>
-          <text class="prod-detail-param-value">防水级</text>
-        </view>
-        <view class="prod-detail-divider" />
-        <view class="prod-detail-param-row">
-          <text class="prod-detail-param-label">重量</text>
-          <text class="prod-detail-param-value">610克/支</text>
-        </view>
-        <view class="prod-detail-divider" />
-        <view class="prod-detail-param-row">
-          <text class="prod-detail-param-label">尺寸</text>
-          <text class="prod-detail-param-value">440*60*42mm</text>
-        </view>
-        <view class="prod-detail-divider" />
-        <view class="prod-detail-param-row">
-          <text class="prod-detail-param-label">静电线长度</text>
-          <text class="prod-detail-param-value">15米/条</text>
-        </view>
-        <view class="prod-detail-divider" />
-        <view class="prod-detail-param-row">
-          <text class="prod-detail-param-label">一次上粉率</text>
-          <text class="prod-detail-param-value">平板工件出粉量每分钟为750g，一次上粉率可达85%</text>
-        </view>
-        <view class="prod-detail-divider" />
-        <view class="prod-detail-param-row">
-          <text class="prod-detail-param-label">扁喷嘴选配</text>
-          <text class="prod-detail-param-value">扁嘴4.0mm</text>
-        </view>
+        <template v-for="(p, pi) in product.parameters" :key="p.id">
+          <view class="prod-detail-divider" />
+          <view class="prod-detail-param-row">
+            <text class="prod-detail-param-label">{{ p.name }}</text>
+            <text class="prod-detail-param-value">{{ p.value }}</text>
+          </view>
+        </template>
       </view>
 
-      <view class="prod-detail-card">
+      <view v-if="caseList.length > 0" class="prod-detail-card">
         <view class="prod-detail-tabs">
           <text class="prod-detail-tab prod-detail-tab--active">应用案例</text>
           <text class="prod-detail-tab-sep" />
@@ -100,7 +69,7 @@
         </view>
         <view class="prod-detail-divider" />
         <view class="prod-detail-case-list">
-          <view v-for="(item, idx) in caseList" :key="idx" class="prod-detail-case-item">
+          <view v-for="(item, ci) in caseList" :key="ci" class="prod-detail-case-item">
             <image class="prod-detail-case-img" :src="item.img" mode="aspectFill" />
             <view class="prod-detail-case-info">
               <text class="prod-detail-case-name">{{ item.name }}</text>
@@ -111,26 +80,56 @@
       </view>
 
       <view class="prod-detail-bottom-spacer" />
+      </template>
     </scroll-view>
   </view>
 </template>
 
-<script setup>
-import { ref } from 'vue'
+<script setup lang="ts">
+import { ref, onMounted } from 'vue'
+import Taro from '@tarojs/taro'
 import NavBar from '@/components/NavBar.vue'
+import { getProductDetail, type ProductDetailResponse } from '@/api/product'
 
-const product = ref({
-  name: 'V12智能数控喷粉枪',
-  priceInt: '2888',
-  priceDec: '00',
-  img: '',
+const loading = ref(false)
+const product = ref<ProductDetailResponse | null>(null)
+
+function formatPrice(amount?: number) {
+  if (!amount && amount !== 0) return { int: '-', dec: '00' }
+  const yuan = (amount / 100).toFixed(2)
+  const [int, dec] = yuan.split('.')
+  return { int, dec }
+}
+
+const caseList = ref<{ name: string; desc: string; img: string }[]>([])
+
+async function fetchDetail(id: number) {
+  loading.value = true
+  try {
+    const data = await getProductDetail(id)
+    product.value = data
+    caseList.value = (data.mediaAssets || []).map(a => ({
+      name: a.fileName || '',
+      desc: '',
+      img: a.fileUrl || '',
+    }))
+  } catch {
+    product.value = null
+  } finally {
+    loading.value = false
+  }
+}
+
+onMounted(() => {
+  const pages = Taro.getCurrentPages()
+  const current = pages[pages.length - 1]
+  const id = current?.options?.id
+  if (id) {
+    fetchDetail(Number(id))
+  } else {
+    loading.value = false
+  }
 })
-
-const caseList = ref([
-  { name: 'E7手动基本操作说明', desc: '2018年10月德贝尔开始进入佛山市场，在佛山南海', img: '' },
-  { name: 'E7手动基本操作说明', desc: '2018年10月德贝尔开始进入佛山市场，在佛山南海', img: '' },
-  { name: 'E7手动基本操作说明', desc: '2018年10月德贝尔开始进入佛山市场，在佛山南海', img: '' },
-])
 </script>
 
 <style>
@@ -320,6 +319,18 @@ const caseList = ref([
   font-size: 24rpx;
   color: #62687D;
   line-height: 36rpx;
+}
+
+.prod-detail-empty {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 200rpx 0;
+}
+
+.prod-detail-empty-text {
+  font-size: 28rpx;
+  color: #9292A5;
 }
 
 .prod-detail-bottom-spacer {
