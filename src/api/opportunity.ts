@@ -95,6 +95,23 @@ export interface OpportunityPageResponse {
   total: number
 }
 
+/** 签退打卡请求 */
+export interface CheckOutRequest {
+  checkOutSummary?: string
+}
+
+/** 签退打卡 */
+export function checkOutVisitRecord(
+  opportunityId: number,
+  visitRecordId: number,
+  data: CheckOutRequest
+): Promise<VisitRecordItem> {
+  return post<VisitRecordItem>(
+    `/opportunities/${opportunityId}/visit-records/${visitRecordId}/check-out`,
+    data as Record<string, unknown>
+  )
+}
+
 /** 查询商机分页列表 */
 export function queryOpportunityPage(params?: {
   page?: number

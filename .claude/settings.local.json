@@ -20,7 +20,11 @@
       "Bash(pnpm run *)",
       "Bash(node -e ' *)",
       "Bash(mkdir -p .firecrawl)",
-      "Bash(git filter-branch *)"
+      "Bash(git filter-branch *)",
+      "Bash(mkdir -p c:/tangwei/miniWeapp/.firecrawl)"
+    ],
+    "additionalDirectories": [
+      "c:\\tangwei\\miniWeapp"
     ]
   }
 }

@@ -87,7 +87,7 @@
           <view v-else-if="currentCards.length === 0" class="task-loading">
             <text class="task-loading-text">暂无数据</text>
           </view>
-          <view v-for="card in currentCards" :key="card.name" class="task-card">
+          <view v-for="card in currentCards" :key="card.id" class="task-card" @tap="goTaskDetail(card)">
             <view class="tc-head">
               <text class="tc-name">{{ card.name }}</text>
               <view class="tc-badge" :class="'tc-badge--' + card.badgeStyle">
@@ -271,6 +271,7 @@
 
 <script setup>
 import { ref, computed, onMounted } from 'vue'
+import Taro from '@tarojs/taro'
 import TabBar from '../tabs/index.vue'
 import DuplicateCheckPopup from '@/subpackages/dev/customer/components/DuplicateCheckPopup.vue'
 import { getOperationsOverview } from '@/api/reporting'
@@ -373,11 +374,10 @@ function formatAddress(province, city, district) {
 }
 
 const leadCards = computed(() => leads.value.map(item => {
-  const statusText = '待定'
-  console.log("qqq",statusText);
-  
+  const statusText = item.statusLabel || leadStatusLabelMap[item.status] || item.status
   const { badge, badgeStyle } = mapBadge(statusText)
   return {
+    id: item.id,
     name: item.customerName || item.contactName || '-',
     badge,
     badgeStyle,
@@ -394,6 +394,7 @@ const leadCards = computed(() => leads.value.map(item => {
 const customerCards = computed(() => pendingCustomers.value.map(item => {
   const { badge, badgeStyle } = mapBadge(item.followStatusLabel)
   return {
+    id: item.id,
     name: item.name || '-',
     badge,
     badgeStyle,
@@ -410,6 +411,7 @@ const customerCards = computed(() => pendingCustomers.value.map(item => {
 const focusCards = computed(() => focusCustomers.value.map(item => {
   const { badge, badgeStyle } = mapBadge(item.followStatusLabel)
   return {
+    id: item.id,
     name: item.name || '-',
     badge,
     badgeStyle,
@@ -422,6 +424,14 @@ const focusCards = computed(() => focusCustomers.value.map(item => {
     note: item.latestFollowRecord || '暂无跟进记录',
   }
 }))
+
+const goTaskDetail = (card) => {
+  if (isLeadTab.value) {
+    Taro.navigateTo({ url: `/subpackages/dev/leads/detail/index?id=${card.id}` })
+  } else if (!isFocusTab.value) {
+    Taro.navigateTo({ url: `/subpackages/dev/customer/detail/index?id=${card.id}` })
+  }
+}
 
 const currentCards = computed(() => {
   if (isLeadTab.value) return leadCards.value

@@ -103,7 +103,7 @@
           <text class="cd-tab" :class="{ 'cd-tab--active': infoTab === 'quote' }" @tap="infoTab = 'quote'">报价</text>
           <text class="cd-tab" :class="{ 'cd-tab--active': infoTab === 'contract' }" @tap="infoTab = 'contract'">合同</text>
           <text class="cd-tab" :class="{ 'cd-tab--active': infoTab === 'expense' }" @tap="infoTab = 'expense'">关联费用</text>
-          <text class="cd-tab" :class="{ 'cd-tab--active': infoTab === 'product' }" @tap="infoTab = 'product'">物流记录</text>
+          <!-- <text class="cd-tab" :class="{ 'cd-tab--active': infoTab === 'product' }" @tap="infoTab = 'product'">物流记录</text> -->
           <text class="cd-tab" :class="{ 'cd-tab--active': infoTab === 'record' }" @tap="infoTab = 'record'">业绩分配</text>
         </view>
         <view class="cd-divider" />
@@ -570,6 +570,27 @@
         <text class="cd-bottom-btn-text cd-bottom-btn-text--primary">签退打卡</text>
       </view>
     </view>
+
+    <nut-popup v-model:visible="showCheckOutPopup" position="center" :style="{ borderRadius: '24rpx' }" :z-index="2100">
+      <view class="checkout-card">
+        <text class="checkout-title">签退打卡</text>
+        <view class="checkout-textarea-box">
+          <textarea class="checkout-textarea" v-model="checkOutSummary" placeholder="请输入拜访结果" placeholder-style="color:#9292A5;font-size:30rpx" />
+        </view>
+        <view class="checkout-voice-btn">
+          <image class="checkout-voice-icon" :src="iconVoice" mode="aspectFit" />
+          <text class="checkout-voice-text">按住开始录音</text>
+        </view>
+        <view class="checkout-btns">
+          <view class="checkout-btn checkout-btn--cancel" @tap="showCheckOutPopup = false">
+            <text class="checkout-btn-text checkout-btn-text--cancel">取消</text>
+          </view>
+          <view class="checkout-btn" :class="{ 'checkout-btn--confirm': checkOutSummary, 'checkout-btn--disabled': !checkOutSummary }" @tap="onCheckOutConfirm">
+            <text class="checkout-btn-text" :class="{ 'checkout-btn-text--confirm': checkOutSummary, 'checkout-btn-text--disabled': !checkOutSummary }">确认打卡</text>
+          </view>
+        </view>
+      </view>
+    </nut-popup>
   </view>
 </template>
 
@@ -578,11 +599,12 @@ import { ref, computed, onMounted, watch } from 'vue'
 import Taro from '@tarojs/taro'
 import NavBar from '@/components/NavBar.vue'
 import { getCustomerDetail, getCustomerOpportunities, type CustomerItem } from '@/api/customer'
-import { getOpportunityFollowRecords, getOpportunityVisitRecords } from '@/api/opportunity'
+import { getOpportunityFollowRecords, getOpportunityVisitRecords, checkOutVisitRecord, type VisitRecordItem } from '@/api/opportunity'
 import iconEdit from '@/assets/dev/edit.png'
 import iconDelete from '@/assets/dev/delete.png'
 import iconClose from '@/assets/dev/icon-close.png'
 import rightArrow from '@/assets/dev/rightArror.png'
+import iconVoice from '@/assets/dev/icon-voice.svg'
 
 function formatTime(val?: string) {
   if (!val) return '-'
@@ -800,6 +822,7 @@ async function fetchFollowRecords() {
 }
 
 const visitRecords = ref<{ checkInTime: string; checkOutTime: string; location: string; purpose: string; images: string[]; result: string }[]>([])
+const rawVisitRecords = ref<VisitRecordItem[]>([])
 const visitLoading = ref(false)
 
 async function fetchVisitRecords() {
@@ -807,6 +830,7 @@ async function fetchVisitRecords() {
   visitLoading.value = true
   try {
     const list = await getOpportunityVisitRecords(activeOpp.value.id)
+    rawVisitRecords.value = list
     visitRecords.value = list.map(item => ({
       checkInTime: formatTime(item.checkInAt),
       checkOutTime: formatTime(item.checkOutAt),
@@ -861,8 +885,34 @@ const onAddFollow = () => {
   Taro.showToast({ title: '新增跟进记录', icon: 'none' })
 }
 
+const showCheckOutPopup = ref(false)
+const checkOutSummary = ref('')
+
+const activeCheckInRecord = computed(() => {
+  return rawVisitRecords.value.find(r => r.status === 'checked_in')
+})
+
 const onCheckOut = () => {
-  Taro.showToast({ title: '签退打卡', icon: 'none' })
+  /* if (!activeCheckInRecord.value) {
+    Taro.showToast({ title: '暂未签到，无法签退', icon: 'none' })
+    return
+  } */
+  checkOutSummary.value = ''
+  showCheckOutPopup.value = true
+}
+
+const onCheckOutConfirm = async () => {
+  if (!checkOutSummary.value || !activeOpp.value || !activeCheckInRecord.value) return
+  try {
+    await checkOutVisitRecord(activeOpp.value.id, activeCheckInRecord.value.id, {
+      checkOutSummary: checkOutSummary.value,
+    })
+    Taro.showToast({ title: '签退成功', icon: 'success' })
+    showCheckOutPopup.value = false
+    fetchVisitRecords()
+  } catch {
+    Taro.showToast({ title: '签退失败', icon: 'none' })
+  }
 }
 
 onMounted(() => {
@@ -2061,5 +2111,104 @@ onMounted(() => {
 
 .cd-bottom-btn-text--primary {
   color: #5CC79C;
+}
+
+.checkout-card {
+  width: 582rpx;
+  background: #FFFFFF;
+  border-radius: 24rpx;
+  padding: 40rpx;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 32rpx;
+}
+
+.checkout-title {
+  font-size: 34rpx;
+  font-weight: 500;
+  color: #333333;
+}
+
+.checkout-textarea-box {
+  width: 502rpx;
+  height: 108rpx;
+  background: #FBFBFB;
+  border: 1rpx solid #E4E9EF;
+  border-radius: 6rpx;
+  padding: 12rpx 20rpx;
+  box-sizing: border-box;
+}
+
+.checkout-textarea {
+  width: 100%;
+  height: 100%;
+  font-size: 30rpx;
+  color: #1A1D24;
+}
+
+.checkout-voice-btn {
+  width: 502rpx;
+  height: 64rpx;
+  background: #EDFAF5;
+  border-radius: 6rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8rpx;
+}
+
+.checkout-voice-icon {
+  width: 32rpx;
+  height: 32rpx;
+  flex-shrink: 0;
+}
+
+.checkout-voice-text {
+  font-size: 28rpx;
+  color: #37AE7E;
+}
+
+.checkout-btns {
+  display: flex;
+  gap: 32rpx;
+  width: 502rpx;
+}
+
+.checkout-btn {
+  flex: 1;
+  height: 68rpx;
+  border-radius: 8rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.checkout-btn--cancel {
+  background: #EDFAF5;
+  border: 2rpx solid #37AE7E;
+}
+
+.checkout-btn-text--cancel {
+  font-size: 32rpx;
+  color: #37AE7E;
+}
+
+.checkout-btn--confirm {
+  background: #37AE7E;
+}
+
+.checkout-btn--disabled {
+  background: #BBBDC2;
+}
+
+.checkout-btn-text--confirm {
+  font-size: 32rpx;
+  color: #FFFFFF;
+}
+
+.checkout-btn-text--disabled {
+  font-size: 32rpx;
+  color: #FFFFFF;
 }
 </style>
