@@ -6,8 +6,8 @@
 
     <view class="leads-search-row">
       <view class="leads-search-box">
-        <input class="leads-search-input" v-model="keyword" placeholder="请输入搜索" placeholder-style="color:#9292A5;font-size:30rpx" />
-        <image class="leads-search-icon" :src="iconSearch" mode="aspectFit" />
+        <input class="leads-search-input" v-model="keyword" placeholder="请输入搜索" placeholder-style="color:#9292A5;font-size:30rpx" @confirm="onSearch" />
+        <image class="leads-search-icon" :src="iconSearch" mode="aspectFit" @tap="onSearch" />
       </view>
       <view class="leads-btn" @tap="showFilter = true">
         <image :src="iconFilter" mode="aspectFit" />
@@ -17,12 +17,16 @@
       </view>
     </view>
 
-    <scroll-view class="task-list" scroll-y="true" :enhanced="true" :show-scrollbar="false">
-      <view v-for="(card, idx) in taskCards" :key="idx" class="task-card">
+    <scroll-view class="task-list" scroll-y="true" :enhanced="true" :show-scrollbar="false" @scrolltolower="onLoadMore">
+      <view v-if="loading" class="task-loading">加载中...</view>
+      <view v-else-if="taskList.length === 0" class="task-empty">
+        <text class="task-empty-text">暂无营销任务</text>
+      </view>
+      <view v-else v-for="item in taskList" :key="item.id" class="task-card">
         <view class="task-card-header">
-          <text class="task-card-name">{{ card.name }}</text>
-          <view class="task-card-badge" :class="'task-card-badge--' + card.badgeStyle">
-            <text class="task-card-badge-text">{{ card.badge }}</text>
+          <text class="task-card-name">{{ item.name }}</text>
+          <view class="task-card-badge" :class="'task-card-badge--' + getBadgeType(item.status)">
+            <text class="task-card-badge-text">{{ TASK_STATUS_MAP[item.status] || item.status }}</text>
           </view>
         </view>
 
@@ -30,38 +34,43 @@
           <view class="task-card-row">
             <view class="task-card-field">
               <text class="task-card-label">任务编号</text>
-              <text class="task-card-value">{{ card.id }}</text>
+              <text class="task-card-value">{{ item.taskNo }}</text>
             </view>
             <view class="task-card-field task-card-field--fixed">
               <text class="task-card-label">营销渠道</text>
-              <text class="task-card-value">{{ card.channel }}</text>
+              <text class="task-card-value">{{ formatChannels(item.channels) }}</text>
             </view>
           </view>
           <view class="task-card-row">
             <view class="task-card-field">
               <text class="task-card-label">循环间隔</text>
-              <text class="task-card-value">{{ card.interval }}</text>
+              <text class="task-card-value">{{ item.isRecurring ? item.recurrenceIntervalDays + '天' : '无循环' }}</text>
             </view>
             <view class="task-card-field task-card-field--fixed">
               <text class="task-card-label">开始时间</text>
-              <text class="task-card-value">{{ card.startTime }}</text>
+              <text class="task-card-value">{{ formatDate(item.startAt) }}</text>
             </view>
           </view>
         </view>
 
         <view class="task-card-actions">
-          <view class="task-card-btn task-card-btn--delete" @tap="onDelete(idx)">
+          <view class="task-card-btn task-card-btn--delete" @tap="onDelete(item)">
             <text class="task-card-btn-text">删除</text>
           </view>
-          <view class="task-card-btn task-card-btn--edit" @tap="onView(idx)">
+          <view class="task-card-btn task-card-btn--edit" @tap="onView(item)">
             <text class="task-card-btn-text">查看</text>
           </view>
         </view>
+      </view>
+      <view v-if="taskList.length > 0" class="task-load-more">
+        <text v-if="hasMore" @tap="onLoadMore">加载更多</text>
+        <text v-else style="color:#BBBEC2">已加载全部</text>
       </view>
     </scroll-view>
 
     <tab-bar />
 
+    <!-- 筛选弹窗 -->
     <nut-popup v-model:visible="showFilter" position="bottom" :style="{ borderRadius: '24rpx 24rpx 0 0', height: '680rpx' }" :z-index="2000" safe-area-inset-bottom>
       <view class="filter-popup">
         <view class="filter-header">
@@ -93,13 +102,14 @@
           <view class="filter-footer-btn filter-footer-clear" @tap="selectedStatus = '全部'">
             <text class="filter-footer-clear-text">清空选择</text>
           </view>
-          <view class="filter-footer-btn filter-footer-submit" @tap="showFilter = false">
+          <view class="filter-footer-btn filter-footer-submit" @tap="onFilterConfirm">
             <text class="filter-footer-submit-text">确认</text>
           </view>
         </view>
       </view>
     </nut-popup>
 
+    <!-- 删除确认弹窗 -->
     <nut-popup v-model:visible="showDeletePopup" position="center" :style="{ borderRadius: '24rpx', width: '510rpx' }" :z-index="2100">
       <view class="delete-popup">
         <text class="delete-popup-title">删除营销任务</text>
@@ -117,88 +127,115 @@
   </view>
 </template>
 
-<script setup>
+<script setup lang="ts">
 import { ref } from 'vue'
 import Taro from '@tarojs/taro'
 import TabBar from '../tabs/index.vue'
+import { getTaskList, deleteTask, TASK_STATUS_MAP, TASK_STATUS_BADGE_MAP, type TaskListItem } from '@/api/automation'
 import iconSearch from '@/assets/dev/icon-search.png'
 import iconFilter from '@/assets/dev/icon-filter.png'
 import iconAdd from '@/assets/dev/icon-add.png'
 
 const keyword = ref('')
+const loading = ref(false)
+const taskList = ref<TaskListItem[]>([])
+const page = ref(1)
+const pageSize = 20
+const hasMore = ref(true)
+
 const showFilter = ref(false)
 const selectedStatus = ref('全部')
-const statusOptions = ['全部', '待开始', '进行中', '已完成']
+const statusOptions = ['全部', '待开始', '进行中', '已完成', '已取消']
 
-const onView = (idx) => {
-  const card = taskCards[idx]
-  Taro.navigateTo({ url: `/subpackages/ops/content/detail/index?name=${encodeURIComponent(card.name)}&badge=${encodeURIComponent(card.badge)}&id=${card.id}&channel=${encodeURIComponent(card.channel)}&interval=${encodeURIComponent(card.interval)}&startTime=${encodeURIComponent(card.startTime)}` })
+const statusValueMap: Record<string, string> = {
+  '待开始': 'pending',
+  '进行中': 'running',
+  '已完成': 'completed',
+  '已取消': 'cancelled',
+}
+
+function formatDate(dateStr: string): string {
+  if (!dateStr) return '-'
+  return dateStr.replace(/T/, ' ').replace(/\..*/, '').slice(0, 16)
+}
+
+function formatChannels(channels: { name: string }[]): string {
+  if (!channels || channels.length === 0) return '-'
+  return channels.map(c => c.name).join(' | ')
+}
+
+function getBadgeType(status: string): string {
+  return TASK_STATUS_BADGE_MAP[status] || 'pending'
+}
+
+async function fetchList(reset = false) {
+  if (loading.value) return
+  if (reset) {
+    page.value = 1
+    hasMore.value = true
+  }
+  loading.value = true
+  try {
+    const params: Record<string, unknown> = { page: page.value, pageSize }
+    if (keyword.value) params.name = keyword.value
+    if (selectedStatus.value !== '全部') {
+      params.statuses = [statusValueMap[selectedStatus.value]]
+    }
+    const res = await getTaskList(params)
+    if (reset) {
+      taskList.value = res.items || []
+    } else {
+      taskList.value = [...taskList.value, ...(res.items || [])]
+    }
+    hasMore.value = taskList.value.length < res.total
+  } catch {
+    // 错误已在 request 层统一处理
+  } finally {
+    loading.value = false
+  }
+}
+
+function onSearch() { fetchList(true) }
+function onLoadMore() {
+  if (!hasMore.value || loading.value) return
+  page.value++
+  fetchList(false)
+}
+
+function onFilterConfirm() {
+  showFilter.value = false
+  fetchList(true)
+}
+
+function onView(item: TaskListItem) {
+  Taro.navigateTo({ url: '/subpackages/ops/content/detail/index?id=' + item.id })
 }
 
 const showDeletePopup = ref(false)
-const deleteTargetIdx = ref(-1)
+const deleteTarget = ref<TaskListItem | null>(null)
 
-const onDelete = (idx) => {
-  deleteTargetIdx.value = idx
+function onDelete(item: TaskListItem) {
+  deleteTarget.value = item
   showDeletePopup.value = true
 }
 
-const onDeleteConfirm = () => {
-  taskCards.splice(deleteTargetIdx.value, 1)
+async function onDeleteConfirm() {
   showDeletePopup.value = false
+  if (!deleteTarget.value) return
+  try {
+    await deleteTask(deleteTarget.value.id, deleteTarget.value.companyId)
+    Taro.showToast({ title: '已删除', icon: 'success' })
+    fetchList(true)
+  } catch {
+    // 错误已在 request 层统一处理
+  }
 }
 
 const goAdd = () => {
   Taro.navigateTo({ url: '/subpackages/ops/content/add/index' })
 }
 
-const taskCards = [
-  {
-    name: '自动喷分粉枪推流发布',
-    badge: '待开始',
-    badgeStyle: 'pending',
-    id: 'yx2128128',
-    channel: '企微 | 公众号',
-    interval: '无循环',
-    startTime: '2025/01/03 10:00',
-  },
-  {
-    name: '自动喷分粉枪推流发布',
-    badge: '进行中',
-    badgeStyle: 'active',
-    id: 'yx2128128',
-    channel: '企微 | 公众号',
-    interval: '无循环',
-    startTime: '2025/01/03 10:00',
-  },
-  {
-    name: '自动喷分粉枪推流发布',
-    badge: '已完成',
-    badgeStyle: 'done',
-    id: 'yx2128128',
-    channel: '企微 | 公众号',
-    interval: '无循环',
-    startTime: '2025/01/03 10:00',
-  },
-  {
-    name: '自动喷分粉枪推流发布',
-    badge: '已完成',
-    badgeStyle: 'done',
-    id: 'yx2128128',
-    channel: '企微 | 公众号',
-    interval: '无循环',
-    startTime: '2025/01/03 10:00',
-  },
-  {
-    name: '自动喷分粉枪推流发布',
-    badge: '已完成',
-    badgeStyle: 'done',
-    id: 'yx2128128',
-    channel: '企微 | 公众号',
-    interval: '无循环',
-    startTime: '2025/01/03 10:00',
-  },
-]
+fetchList(true)
 </script>
 
 <style>
@@ -267,13 +304,26 @@ const taskCards = [
   box-sizing: border-box;
 }
 
+.task-loading,
+.task-empty {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 80rpx 0;
+}
+
+.task-empty-text {
+  font-size: 28rpx;
+  color: #9292A5;
+}
+
 .task-card {
   background: #FFFFFF;
   border-radius: 16rpx;
   padding: 28rpx;
   display: flex;
   flex-direction: column;
-  gap: 24rpx; 
+  gap: 24rpx;
   margin-bottom: 28rpx;
 }
 
@@ -305,6 +355,9 @@ const taskCards = [
 .task-card-badge--done {
   background: #EDFAF5;
 }
+.task-card-badge--gray {
+  background: #F5F5F5;
+}
 .task-card-badge-text {
   font-size: 24rpx;
   color: #FF9500;
@@ -315,6 +368,9 @@ const taskCards = [
 }
 .task-card-badge--done .task-card-badge-text {
   color: #37AE7E;
+}
+.task-card-badge--gray .task-card-badge-text {
+  color: #9292A5;
 }
 
 .task-card-body {
@@ -374,6 +430,13 @@ const taskCards = [
 }
 .task-card-btn--edit .task-card-btn-text {
   color: #37AE7E;
+}
+
+.task-load-more {
+  text-align: center;
+  font-size: 26rpx;
+  color: #5CC79C;
+  padding: 20rpx 0;
 }
 
 .filter-popup {

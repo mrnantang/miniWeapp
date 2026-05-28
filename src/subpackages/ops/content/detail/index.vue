@@ -5,49 +5,49 @@
       <view class="form-card">
         <view class="form-row">
           <text class="form-label">营销任务编号</text>
-          <text class="form-value">{{ task.id }}</text>
+          <text class="form-value">{{ detail.taskNo || '-' }}</text>
         </view>
         <view class="form-divider" />
 
         <view class="form-row">
           <text class="form-label">营销任务名称</text>
-          <text class="form-value">{{ task.name }}</text>
+          <text class="form-value">{{ detail.name || '-' }}</text>
         </view>
         <view class="form-divider" />
 
         <view class="form-row">
           <text class="form-label">受众客户</text>
-          <text class="form-value">所有客户</text>
+          <text class="form-value">{{ audienceLabel }}</text>
         </view>
         <view class="form-divider" />
 
         <view class="form-row">
           <text class="form-label">营销渠道</text>
-          <text class="form-value">{{ task.channel }}</text>
+          <text class="form-value">{{ formatChannels(detail.channels) }}</text>
         </view>
         <view class="form-divider" />
 
         <view class="form-row">
           <text class="form-label">是否循环推送</text>
-          <text class="form-value">是</text>
+          <text class="form-value">{{ detail.isRecurring ? '是' : '否' }}</text>
         </view>
         <view class="form-divider" />
 
         <view class="form-row">
           <text class="form-label">循环间隔</text>
-          <text class="form-value">{{ task.interval }}</text>
+          <text class="form-value">{{ detail.isRecurring ? detail.recurrenceIntervalDays + '天' : '无循环' }}</text>
         </view>
         <view class="form-divider" />
 
         <view class="form-row">
           <text class="form-label">任务开始时间</text>
-          <text class="form-value">{{ task.startTime }}</text>
+          <text class="form-value">{{ formatDate(detail.startAt) }}</text>
         </view>
         <view class="form-divider" />
 
         <view class="form-row">
           <text class="form-label">任务状态</text>
-          <text class="form-value">{{ task.badge }}</text>
+          <text class="form-value">{{ TASK_STATUS_MAP[detail.status] || detail.status }}</text>
         </view>
       </view>
 
@@ -55,7 +55,10 @@
         <view class="editor-header">
           <text class="editor-title">营销内容</text>
         </view>
-        <view class="editor-preview">
+        <view v-if="detail.contentHtml" class="editor-preview">
+          <rich-text :nodes="detail.contentHtml" />
+        </view>
+        <view v-else class="editor-preview">
           <image class="editor-image" src="https://via.placeholder.com/670x878" mode="widthFix" />
         </view>
       </view>
@@ -63,29 +66,64 @@
   </view>
 </template>
 
-<script setup>
-import { ref, onMounted } from 'vue'
+<script setup lang="ts">
+import { ref, computed } from 'vue'
 import Taro from '@tarojs/taro'
 import navBar from '@/components/NavBar.vue'
+import { getTaskDetail, TASK_STATUS_MAP, type TaskDetailResponse } from '@/api/automation'
 
-const task = ref({
+const detail = ref<TaskDetailResponse>({
+  id: 0,
+  taskNo: '',
   name: '',
-  badge: '',
-  id: '',
-  channel: '',
-  interval: '',
-  startTime: '',
+  status: '',
+  isRecurring: false,
+  recurrenceIntervalDays: 0,
+  startAt: '',
+  lastRunAt: '',
+  nextRunAt: '',
+  audienceType: '',
+  contentHtml: '',
+  channels: [],
+  materials: [],
+  runs: [],
+  companyId: 0,
+  departmentId: 0,
+  createdAt: '',
+  updatedAt: '',
 })
 
-onMounted(() => {
-  const params = Taro.getCurrentInstance().router.params
-  task.value.name = decodeURIComponent(params.name || '')
-  task.value.badge = decodeURIComponent(params.badge || '')
-  task.value.id = params.id || ''
-  task.value.channel = decodeURIComponent(params.channel || '')
-  task.value.interval = decodeURIComponent(params.interval || '')
-  task.value.startTime = decodeURIComponent(params.startTime || '')
+const audienceLabel = computed(() => {
+  const map: Record<string, string> = {
+    all_customers: '所有客户',
+    inactive_over_30_days: '一个月以上未联系客户',
+  }
+  return map[detail.value.audienceType] || detail.value.audienceType || '所有客户'
 })
+
+function formatDate(dateStr: string): string {
+  if (!dateStr) return '-'
+  return dateStr.replace(/T/, ' ').replace(/\..*/, '').slice(0, 16)
+}
+
+function formatChannels(channels: { name: string }[]): string {
+  if (!channels || channels.length === 0) return '-'
+  return channels.map(c => c.name).join(' | ')
+}
+
+async function fetchDetail() {
+  const instance = Taro.getCurrentInstance()
+  const id = Number(instance.router?.params?.id)
+  if (!id) return
+  try {
+    const res = await getTaskDetail(id)
+    detail.value = res
+  } catch {
+    // 错误已在 request 层统一处理
+  }
+}
+
+fetchDetail()
 </script>
 
 <style>
@@ -121,6 +159,8 @@ onMounted(() => {
   font-size: 30rpx;
   color: #1A1D24;
   text-align: right;
+  flex: 1;
+  margin-left: 24rpx;
 }
 .form-divider {
   height: 1rpx;
@@ -150,6 +190,8 @@ onMounted(() => {
   border: 2rpx solid #EBEBEB;
   border-radius: 8rpx;
   overflow: hidden;
+  padding: 16rpx;
+  min-height: 200rpx;
 }
 .editor-image {
   width: 100%;

@@ -72,3 +72,27 @@ export async function post<T>(url: string, data?: Record<string, unknown>): Prom
   })
   return handleResponse(res, url)
 }
+
+export async function put<T>(url: string, data?: Record<string, unknown>): Promise<T> {
+  const res = await Taro.request<ApiResponse<T>>({
+    url: `${getBaseUrl()}${url}`,
+    method: 'PUT',
+    data,
+    header: {
+      'Content-Type': 'application/json',
+      ...authHeader(),
+    },
+  })
+  return handleResponse(res, url)
+}
+
+export async function del<T>(url: string): Promise<T> {
+  const res = await Taro.request<ApiResponse<T>>({
+    url: `${getBaseUrl()}${url}`,
+    method: 'DELETE',
+    header: {
+      ...authHeader(),
+    },
+  })
+  return handleResponse(res, url)
+}

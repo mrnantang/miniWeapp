@@ -4,8 +4,8 @@
     <view class="reimb-wrap">
       <view class="reimb-search-row">
         <view class="reimb-search-box">
-          <input class="reimb-search-input" placeholder="请输入费用编号/关联客户" placeholder-style="color:#9292A5" />
-          <image class="reimb-search-icon" :src="iconSearch" mode="aspectFit" />
+          <input class="reimb-search-input" v-model="keyword" placeholder="请输入费用编号/关联客户" placeholder-style="color:#9292A5" @confirm="onSearch" />
+          <image class="reimb-search-icon" :src="iconSearch" mode="aspectFit" @tap="onSearch" />
         </view>
         <view class="reimb-btn" @tap="onFilter">
           <image :src="iconFilter" mode="aspectFit" />
@@ -14,43 +14,53 @@
           <image :src="iconAdd" mode="aspectFit" />
         </view>
       </view>
-      <scroll-view class="reimb-scroll" scroll-y :enhanced="true" :show-scrollbar="false">
-        <view v-for="(item, idx) in reimbList" :key="idx" class="reimb-card">
+      <scroll-view class="reimb-scroll" scroll-y :enhanced="true" :show-scrollbar="false" @scrolltolower="onLoadMore">
+        <view v-if="loading" class="reimb-loading">加载中...</view>
+        <view v-else-if="expenseList.length === 0" class="reimb-empty">
+          <text class="reimb-empty-text">暂无费用申请记录</text>
+        </view>
+        <view v-else v-for="item in expenseList" :key="item.id" class="reimb-card">
           <view class="reimb-card-top">
             <view class="reimb-card-left">
-              <text class="reimb-card-no">{{ item.no }}</text>
-              <text class="reimb-card-sub">(报销编号)</text>
+              <text class="reimb-card-no">{{ item.expenseNo }}</text>
+              <text class="reimb-card-sub">(费用编号)</text>
             </view>
-            <view class="reimb-badge" :class="'reimb-badge--' + item.badgeType">
-              <text class="reimb-badge-text">{{ item.badge }}</text>
+            <view class="reimb-badge" :class="'reimb-badge--' + getBadgeType(item.status)">
+              <text class="reimb-badge-text">{{ EXPENSE_STATUS_MAP[item.status] || item.status }}</text>
             </view>
           </view>
           <view class="reimb-card-info">
             <view class="reimb-info-col">
-              <text class="reimb-info-label">报销总金额</text>
-              <text class="reimb-info-value">￥{{ item.amount }}</text>
+              <text class="reimb-info-label">申请金额</text>
+              <text class="reimb-info-value">{{ formatAmount(item.amount) }}</text>
             </view>
             <view class="reimb-info-col">
-              <text class="reimb-info-label">报销类型</text>
-              <text class="reimb-info-value">{{ item.types }}</text>
+              <text class="reimb-info-label">费用项目</text>
+              <text class="reimb-info-value">{{ EXPENSE_ITEM_MAP[item.expenseItem] || item.expenseItem }}</text>
             </view>
           </view>
           <view class="reimb-card-actions">
             <view class="od-action-btn"
-              :class="{ 'od-action-btn--cancel': item.badgeType !== 'green', 'od-action-btn--cancel-disabled': item.badgeType === 'green' }">
+              :class="{ 'od-action-btn--cancel': item.canCancel, 'od-action-btn--cancel-disabled': !item.canCancel }"
+              @tap="item.canCancel && onCancel(item)">
               取消费用申请</view>
             <view class="od-action-btn od-action-btn--view" @tap="onView(item)">查看费用申请</view>
           </view>
         </view>
+        <view v-if="expenseList.length > 0" class="reimb-load-more">
+          <text v-if="hasMore" @tap="onLoadMore">加载更多</text>
+          <text v-else style="color:#BBBEC2">已加载全部</text>
+        </view>
       </scroll-view>
     </view>
 
+    <!-- 新增费用弹窗 -->
     <nut-popup v-model:visible="showAddPopup" position="bottom" :style="{ borderRadius: '24rpx 24rpx 0 0' }" :z-index="2100">
       <view class="exp-add-popup">
         <view class="exp-add-header">
           <text class="exp-add-header-btn" @tap="showAddPopup = false">取消</text>
           <text class="exp-add-header-title">申请费用</text>
-          <text class="exp-add-header-btn exp-add-header-confirm" @tap="showAddPopup = false">确认</text>
+          <text class="exp-add-header-btn exp-add-header-confirm" @tap="onSubmitAdd">确认</text>
         </view>
         <scroll-view class="exp-add-body" scroll-y>
           <view class="exp-add-field">
@@ -61,7 +71,7 @@
           <view class="exp-add-field">
             <text class="exp-add-label">费用承担部门</text>
             <view class="exp-add-value-row" @tap="onSelectDept">
-              <text class="exp-add-value exp-add-value--placeholder">{{ addForm.dept || '请选择' }}</text>
+              <text :class="addForm.dept ? 'exp-add-value' : 'exp-add-value exp-add-value--placeholder'">{{ addForm.dept || '请选择' }}</text>
               <image class="exp-add-arrow" :src="iconArrow" mode="aspectFit" />
             </view>
           </view>
@@ -69,7 +79,7 @@
           <view class="exp-add-field">
             <text class="exp-add-label">申请金额</text>
             <view class="exp-add-value-row">
-              <input class="exp-add-input" v-model="addForm.amount" placeholder="请输入" placeholder-style="color:#BBBEC2;font-size:30rpx" />
+              <input class="exp-add-input" v-model="addForm.amount" placeholder="请输入" placeholder-style="color:#BBBEC2;font-size:30rpx" type="digit" />
               <text class="exp-add-unit">元</text>
             </view>
           </view>
@@ -77,7 +87,7 @@
           <view class="exp-add-field">
             <text class="exp-add-label">费用项目</text>
             <view class="exp-add-value-row" @tap="onSelectItem">
-              <text class="exp-add-value">{{ addForm.item || '请选择' }}</text>
+              <text class="exp-add-value">{{ addForm.itemLabel || '请选择' }}</text>
               <image class="exp-add-arrow" :src="iconArrow" mode="aspectFit" />
             </view>
           </view>
@@ -85,7 +95,7 @@
           <view class="exp-add-field">
             <text class="exp-add-label">关联客户</text>
             <view class="exp-add-value-row" @tap="onSelectCustomer">
-              <text class="exp-add-value exp-add-value--placeholder">{{ addForm.customer || '请选择' }}</text>
+              <text :class="addForm.customer ? 'exp-add-value' : 'exp-add-value exp-add-value--placeholder'">{{ addForm.customer || '请选择' }}</text>
               <image class="exp-add-arrow" :src="iconArrow" mode="aspectFit" />
             </view>
           </view>
@@ -103,6 +113,7 @@
       </view>
     </nut-popup>
 
+    <!-- 费用项目选择弹窗 -->
     <nut-popup v-model:visible="showItemPopup" position="bottom" :style="{ borderRadius: '24rpx 24rpx 0 0' }" :z-index="2200">
       <view class="exp-item-popup">
         <view class="exp-add-header">
@@ -111,19 +122,60 @@
           <text class="exp-add-header-btn exp-add-header-confirm" @tap="showItemPopup = false">确认</text>
         </view>
         <view class="exp-item-list">
-          <template v-for="(it, idx) in expenseItemList" :key="it">
+          <template v-for="(it, idx) in EXPENSE_ITEM_OPTIONS" :key="it.value">
             <view class="exp-item-row" @tap="onItemSelect(it)">
-              <text class="exp-item-text">{{ it }}</text>
-              <view class="exp-item-radio" :class="{ 'exp-item-radio--checked': addForm.item === it }">
-                <view v-if="addForm.item === it" class="exp-item-radio-dot" />
+              <text class="exp-item-text">{{ it.label }}</text>
+              <view class="exp-item-radio" :class="{ 'exp-item-radio--checked': addForm.item === it.value }">
+                <view v-if="addForm.item === it.value" class="exp-item-radio-dot" />
               </view>
             </view>
-            <view v-if="idx < expenseItemList.length - 1" class="exp-add-divider" />
+            <view v-if="idx < EXPENSE_ITEM_OPTIONS.length - 1" class="exp-add-divider" />
           </template>
         </view>
       </view>
     </nut-popup>
 
+    <!-- 部门选择弹窗 -->
+    <nut-popup v-model:visible="showDeptPopup" position="bottom" :style="{ borderRadius: '24rpx 24rpx 0 0', height: '1022rpx' }" :z-index="2200" safe-area-inset-bottom>
+      <view class="filter-popup">
+        <view class="filter-header">
+          <text class="filter-header-title">选择部门</text>
+        </view>
+        <view class="filter-body">
+          <scroll-view class="filter-content" scroll-y="true" :enhanced="true" :show-scrollbar="false">
+            <view class="region-section">
+              <view class="region-breadcrumb">
+                <text class="region-breadcrumb-item" :class="{ 'region-breadcrumb-item--active': deptDrillStack.length === 0 }" @tap="deptBackTo(0)">{{ deptDrillStack.length > 0 ? deptDrillStack[0].name : '请选择公司' }}</text>
+                <template v-for="(node, idx) in deptDrillStack.slice(1)" :key="node.name">
+                  <text class="region-breadcrumb-sep">/</text>
+                  <text class="region-breadcrumb-item" :class="{ 'region-breadcrumb-item--active': idx + 1 === deptDrillStack.length - 1 }" @tap="deptBackTo(idx + 1)">{{ node.name }}</text>
+                </template>
+                <template v-if="selectedDeptName">
+                  <text class="region-breadcrumb-sep">/</text>
+                  <text class="region-breadcrumb-item region-breadcrumb-item--active">{{ selectedDeptName }}</text>
+                </template>
+              </view>
+              <view v-if="deptLoading" class="region-loading"><text class="region-loading-text">加载中...</text></view>
+              <view v-else class="org-tag-row">
+                <view v-for="item in currentDeptItems" :key="getDeptNodeKey(item)" class="org-tag" :class="{ 'org-tag--active': isDeptSelected(item) }" @tap="onDeptTap(item)">
+                  <text class="org-tag-text" :class="{ 'org-tag-text--active': isDeptSelected(item) }">{{ item.name }}</text>
+                </view>
+              </view>
+            </view>
+          </scroll-view>
+        </view>
+        <view class="filter-footer">
+          <view class="filter-footer-btn filter-footer-clear" @tap="showDeptPopup = false">
+            <text class="filter-footer-clear-text">取消</text>
+          </view>
+          <view class="filter-footer-btn filter-footer-submit" @tap="onDeptConfirm">
+            <text class="filter-footer-submit-text">确认</text>
+          </view>
+        </view>
+      </view>
+    </nut-popup>
+
+    <!-- 筛选弹窗 -->
     <nut-popup v-model:visible="showFilter" position="bottom"
       :style="{ borderRadius: '24rpx 24rpx 0 0', height: '1022rpx' }" :z-index="2000" safe-area-inset-bottom>
       <view class="filter-popup">
@@ -132,33 +184,25 @@
         </view>
         <view class="filter-body">
           <view class="filter-sidebar">
-            <view class="filter-sidebar-item" :class="{ 'filter-sidebar-item--active': filterIdx === 1 }"
-              @tap="filterIdx = 1">
-              <text class="filter-sidebar-text" :class="{ 'filter-sidebar-text--active': filterIdx === 1 }">报销类型</text>
+            <view class="filter-sidebar-item" :class="{ 'filter-sidebar-item--active': filterIdx === 1 }" @tap="filterIdx = 1">
+              <text class="filter-sidebar-text" :class="{ 'filter-sidebar-text--active': filterIdx === 1 }">费用状态</text>
             </view>
-            <view class="filter-sidebar-item" :class="{ 'filter-sidebar-item--active': filterIdx === 2}"
-              @tap="filterIdx = 2">
-              <text class="filter-sidebar-text" :class="{ 'filter-sidebar-text--active': filterIdx === 2 }">报销时间</text>
+            <view class="filter-sidebar-item" :class="{ 'filter-sidebar-item--active': filterIdx === 2 }" @tap="filterIdx = 2">
+              <text class="filter-sidebar-text" :class="{ 'filter-sidebar-text--active': filterIdx === 2 }">发起时间</text>
             </view>
           </view>
           <scroll-view class="filter-content" scroll-y :enhanced="true" :show-scrollbar="false">
             <view v-if="filterIdx === 1" class="filter-tags-section">
-              <text class="filter-section-title">审批</text>
+              <text class="filter-section-title">审批状态</text>
               <view class="filter-tag-row">
-                <view class="filter-tag" :class="{ 'filter-tag--active': filterTags.reimbType.includes('待审批') }"
-                  @tap="toggleFilterTag('reimbType', '待审批')">
-                  <text class="filter-tag-text"
-                    :class="{ 'filter-tag-text--active': filterTags.reimbType.includes('待审批') }">待审批</text>
+                <view class="filter-tag" :class="{ 'filter-tag--active': filterTags.reimbStatus.includes('待审批') }" @tap="toggleFilterTag('待审批')">
+                  <text class="filter-tag-text" :class="{ 'filter-tag-text--active': filterTags.reimbStatus.includes('待审批') }">待审批</text>
                 </view>
-                <view class="filter-tag" :class="{ 'filter-tag--active': filterTags.reimbType.includes('审批通过') }"
-                  @tap="toggleFilterTag('reimbType', '审批通过')">
-                  <text class="filter-tag-text"
-                    :class="{ 'filter-tag-text--active': filterTags.reimbType.includes('审批通过') }">审批通过</text>
+                <view class="filter-tag" :class="{ 'filter-tag--active': filterTags.reimbStatus.includes('审批通过') }" @tap="toggleFilterTag('审批通过')">
+                  <text class="filter-tag-text" :class="{ 'filter-tag-text--active': filterTags.reimbStatus.includes('审批通过') }">审批通过</text>
                 </view>
-                <view class="filter-tag" :class="{ 'filter-tag--active': filterTags.reimbType.includes('审批驳回') }"
-                  @tap="toggleFilterTag('reimbType', '审批驳回')">
-                  <text class="filter-tag-text"
-                    :class="{ 'filter-tag-text--active': filterTags.reimbType.includes('招待费') }">审批驳回</text>
+                <view class="filter-tag" :class="{ 'filter-tag--active': filterTags.reimbStatus.includes('审批驳回') }" @tap="toggleFilterTag('审批驳回')">
+                  <text class="filter-tag-text" :class="{ 'filter-tag-text--active': filterTags.reimbStatus.includes('审批驳回') }">审批驳回</text>
                 </view>
               </view>
             </view>
@@ -166,13 +210,11 @@
               <text class="filter-section-title">发起时间</text>
               <view class="filter-date-row">
                 <view class="filter-date-box" @tap="openDatePopup('start')">
-                  <text class="filter-date-box-text" :class="{ 'filter-date-box-text--set': startTime }">{{ startTime ||
-                    '开始时间' }}</text>
+                  <text class="filter-date-box-text" :class="{ 'filter-date-box-text--set': startTime }">{{ startTime || '开始时间' }}</text>
                 </view>
                 <text class="filter-date-sep">至</text>
                 <view class="filter-date-box" @tap="openDatePopup('end')">
-                  <text class="filter-date-box-text" :class="{ 'filter-date-box-text--set': endTime }">{{ endTime ||
-                    '结束时间' }}</text>
+                  <text class="filter-date-box-text" :class="{ 'filter-date-box-text--set': endTime }">{{ endTime || '结束时间' }}</text>
                 </view>
               </view>
             </view>
@@ -189,6 +231,7 @@
       </view>
     </nut-popup>
 
+    <!-- 日期选择弹窗 -->
     <nut-popup v-model:visible="showDatePopup" position="bottom" :style="{ borderRadius: '24rpx 24rpx 0 0' }" :z-index="2100" safe-area-inset-bottom>
       <view class="date-popup">
         <view class="filter-header">
@@ -212,69 +255,253 @@
   </view>
 </template>
 
-<script setup>
+<script setup lang="ts">
 import { ref, reactive, computed } from 'vue'
-import NavBar from '@/components/NavBar.vue'
 import Taro from '@tarojs/taro'
+import NavBar from '@/components/NavBar.vue'
+import {
+  getExpenseList, createExpense, cancelExpense,
+  EXPENSE_STATUS_MAP, EXPENSE_STATUS_BADGE_MAP, EXPENSE_ITEM_MAP, EXPENSE_ITEM_OPTIONS,
+  type ExpenseListItem,
+} from '@/api/expense'
+import { getUserCascader, type UserCascaderNode } from '@/api/system'
 import iconSearch from '@/assets/dev/icon-search.png'
 import iconFilter from '@/assets/dev/icon-filter.png'
 import iconAdd from '@/assets/dev/icon-add.png'
 import iconArrow from '@/assets/dev/rightArror.png'
 
+// 列表
+const keyword = ref('')
+const loading = ref(false)
+const expenseList = ref<ExpenseListItem[]>([])
+const page = ref(1)
+const pageSize = 20
+const hasMore = ref(true)
+
+function formatAmount(cent: number): string {
+  if (cent === undefined || cent === null) return '-'
+  return '￥' + (cent / 100).toLocaleString('zh-CN', { minimumFractionDigits: 0, maximumFractionDigits: 2 })
+}
+
+function getBadgeType(status: string): string {
+  return EXPENSE_STATUS_BADGE_MAP[status] || 'gray'
+}
+
+async function fetchList(reset = false) {
+  if (loading.value) return
+  if (reset) {
+    page.value = 1
+    hasMore.value = true
+  }
+  loading.value = true
+  try {
+    const params: Record<string, unknown> = { page: page.value, pageSize }
+    if (keyword.value) {
+      params.expenseNo = keyword.value
+    }
+    if (!filterTags.reimbStatus.includes('全部')) {
+      const statusMap: Record<string, string> = { '待审批': 'pending_approval', '审批通过': 'approval_passed', '审批驳回': 'approval_rejected' }
+      params.status = statusMap[filterTags.reimbStatus[0]]
+    }
+    if (startTime.value) params.submittedAtStart = startTime.value
+    if (endTime.value) params.submittedAtEnd = endTime.value
+
+    const res = await getExpenseList(params as Record<string, unknown>)
+    if (reset) {
+      expenseList.value = res.items || []
+    } else {
+      expenseList.value = [...expenseList.value, ...(res.items || [])]
+    }
+    hasMore.value = expenseList.value.length < res.total
+  } catch {
+    // 错误已在 request 层统一处理
+  } finally {
+    loading.value = false
+  }
+}
+
+function onSearch() { fetchList(true) }
+
+function onLoadMore() {
+  if (!hasMore.value || loading.value) return
+  page.value++
+  fetchList(false)
+}
+
+function onView(item: ExpenseListItem) {
+  Taro.navigateTo({ url: '/subpackages/dev/mine/expense/detail/index?id=' + item.id })
+}
+
+async function onCancel(item: ExpenseListItem) {
+  try {
+    const res = await Taro.showModal({ title: '提示', content: '确定要撤销该费用申请吗？' })
+    if (!res.confirm) return
+    await cancelExpense(item.id)
+    Taro.showToast({ title: '已撤销', icon: 'success' })
+    fetchList(true)
+  } catch {
+    // 用户取消或请求失败
+  }
+}
+
+// 新增弹窗
 const showAddPopup = ref(false)
 const showItemPopup = ref(false)
 
 const addForm = reactive({
   dept: '',
+  deptId: 0,
   amount: '',
-  item: '招待费',
+  item: '',
+  itemLabel: '',
   customer: '',
+  customerId: 0,
   remark: '',
   account: '',
 })
 
-const expenseItemList = ['差旅费', '广告投流', '办公费', '招待费', '交通费', '通讯费', '采购付款', '其他', '业务费']
-
-const onAdd = () => {
+function onAdd() {
   showAddPopup.value = true
 }
 
-const onSelectDept = () => {
-  Taro.showToast({ title: '选择部门', icon: 'none' })
+// 部门级联选择
+const showDeptPopup = ref(false)
+const deptLoading = ref(false)
+const deptTree = ref<UserCascaderNode[]>([])
+const deptDrillStack = ref<UserCascaderNode[]>([])
+const selectedDeptId = ref(0)
+const selectedDeptName = ref('')
+
+const currentDeptItems = computed(() => {
+  if (deptDrillStack.value.length === 0) return deptTree.value
+  const last = deptDrillStack.value[deptDrillStack.value.length - 1]
+  return last.children || []
+})
+
+function getDeptNodeKey(node: UserCascaderNode): string {
+  return `${node.nodeType}_${node.companyId || node.departmentId || node.userId || node.name}`
 }
 
-const onSelectItem = () => {
+function isDeptSelected(node: UserCascaderNode): boolean {
+  if (node.nodeType === 'department') {
+    return selectedDeptId.value === node.departmentId
+  }
+  return false
+}
+
+async function fetchDeptTree() {
+  if (deptTree.value.length > 0 || deptLoading.value) return
+  deptLoading.value = true
+  try {
+    const res = await getUserCascader({ companyId: 1 })
+    deptTree.value = res.items || []
+  } catch {
+    // 错误已在 request 层统一处理
+  } finally {
+    deptLoading.value = false
+  }
+}
+
+function onDeptTap(node: UserCascaderNode) {
+  if (node.nodeType === 'department') {
+    if (selectedDeptId.value === node.departmentId) {
+      selectedDeptId.value = 0
+      selectedDeptName.value = ''
+    } else {
+      selectedDeptId.value = node.departmentId || 0
+      selectedDeptName.value = node.name
+    }
+  } else if (node.nodeType === 'company') {
+    deptDrillStack.value.push(node)
+    selectedDeptId.value = 0
+    selectedDeptName.value = ''
+  }
+}
+
+function deptBackTo(index: number) {
+  deptDrillStack.value = deptDrillStack.value.slice(0, index)
+  selectedDeptId.value = 0
+  selectedDeptName.value = ''
+}
+
+function onDeptConfirm() {
+  addForm.deptId = selectedDeptId.value
+  addForm.dept = selectedDeptName.value
+  showDeptPopup.value = false
+}
+
+function onSelectDept() {
+  showDeptPopup.value = true
+  fetchDeptTree()
+}
+
+function onSelectItem() {
   showItemPopup.value = true
 }
 
-const onSelectCustomer = () => {
-  Taro.showToast({ title: '选择客户', icon: 'none' })
+function onSelectCustomer() {
+  Taro.showToast({ title: '选择客户-开发中', icon: 'none' })
 }
 
-const onItemSelect = (item) => {
-  addForm.item = item
-  showItemPopup.value = false
+function onItemSelect(it: { value: string; label: string }) {
+  addForm.item = it.value
+  addForm.itemLabel = it.label
 }
 
-const reimbList = ref([
-  { no: 'BX-992812781', badge: '待审批', badgeType: 'yellow', amount: '1,280.00', types: '审批通过 | 招待费 | 高速过路费' },
-  { no: 'BX-992812782', badge: '审批通过', badgeType: 'red', amount: '3,560.00', types: '办公用品 | 审批通过' },
-  { no: 'BX-992812783', badge: '三级审批通过', badgeType: 'green', amount: '8,200.00', types: '审批通过 | 招待费 | 住宿费' },
-  { no: 'BX-992812784', badge: '待审批', badgeType: 'yellow', amount: '520.00', types: '快递费' },
-])
+async function onSubmitAdd() {
+  if (!addForm.item) {
+    Taro.showToast({ title: '请选择费用项目', icon: 'none' })
+    return
+  }
+  if (!addForm.amount || Number(addForm.amount) <= 0) {
+    Taro.showToast({ title: '请输入申请金额', icon: 'none' })
+    return
+  }
+  if (!addForm.remark) {
+    Taro.showToast({ title: '请输入费用说明', icon: 'none' })
+    return
+  }
+  if (!addForm.account) {
+    Taro.showToast({ title: '请输入收款账户', icon: 'none' })
+    return
+  }
+  try {
+    await createExpense({
+      amount: Math.round(Number(addForm.amount) * 100),
+      expenseDepartmentId: addForm.deptId || 0,
+      expenseItem: addForm.item,
+      customerId: addForm.customerId || 0,
+      customerName: addForm.customer || '',
+      description: addForm.remark,
+      payeeAccount: addForm.account,
+      attachments: [],
+    })
+    Taro.showToast({ title: '提交成功', icon: 'success' })
+    showAddPopup.value = false
+    // 重置表单
+    addForm.dept = ''
+    addForm.deptId = 0
+    addForm.amount = ''
+    addForm.item = ''
+    addForm.itemLabel = ''
+    addForm.customer = ''
+    addForm.customerId = 0
+    addForm.remark = ''
+    addForm.account = ''
+    fetchList(true)
+  } catch {
+    // 错误已在 request 层统一处理
+  }
+}
 
+// 筛选
 const showFilter = ref(false)
 const filterIdx = ref(1)
 const showDatePopup = ref(false)
 const datePickerTarget = ref('start')
 
 const filterTags = reactive({
-  company: ['待审批'],
-  dept: ['待审批'],
-  subDept: ['待审批'],
-  employee: ['待审批'],
-  reimbType: ['待审批'],
-  reimbStatus: ['待审批'],
+  reimbStatus: ['全部'],
 })
 const startTime = ref('')
 const endTime = ref('')
@@ -286,7 +513,7 @@ const currentYear = now.getFullYear()
 const years = Array.from({ length: 5 }, (_, i) => currentYear - 2 + i)
 const months = Array.from({ length: 12 }, (_, i) => i + 1)
 
-const daysInMonth = (y, m) => new Date(y, m, 0).getDate()
+const daysInMonth = (y: number, m: number) => new Date(y, m, 0).getDate()
 const days = computed(() => {
   const y = years[pickerValue.value[0]]
   const m = months[pickerValue.value[1]]
@@ -295,20 +522,20 @@ const days = computed(() => {
 
 const pickerValue = ref([2, now.getMonth(), now.getDate() - 1])
 
-const toggleFilterTag = (key, tag) => {
-  const arr = filterTags[key]
-  if (tag === '待审批') {
-    filterTags[key] = ['待审批']
+function toggleFilterTag(tag: string) {
+  const arr = filterTags.reimbStatus
+  if (tag === '全部') {
+    filterTags.reimbStatus = ['全部']
     return
   }
-  if (arr.includes('待审批')) {
-    filterTags[key] = [tag]
+  if (arr.includes('全部')) {
+    filterTags.reimbStatus = [tag]
   } else {
     const idx = arr.indexOf(tag)
     if (idx >= 0) {
       arr.splice(idx, 1)
       if (arr.length === 0) {
-        filterTags[key] = ['待审批']
+        filterTags.reimbStatus = ['全部']
       }
     } else {
       arr.push(tag)
@@ -316,28 +543,25 @@ const toggleFilterTag = (key, tag) => {
   }
 }
 
-const onView = (item) => {
-  Taro.navigateTo({ url: '/subpackages/dev/mine/expense/detail/index' })
+function onFilter() { showFilter.value = true }
+
+function clearFilter() {
+  filterTags.reimbStatus = ['全部']
+  startTime.value = ''
+  endTime.value = ''
 }
 
-const onFilter = () => {
-  showFilter.value = true
-}
-
-const clearFilter = () => {
+function onFilterConfirm() {
   showFilter.value = false
+  fetchList(true)
 }
 
-const onFilterConfirm = () => {
-  showFilter.value = false
-}
-
-const openDatePopup = (type) => {
+function openDatePopup(type: string) {
   datePickerTarget.value = type
   showDatePopup.value = true
 }
 
-const onDateConfirm = () => {
+function onDateConfirm() {
   const y = years[pickerValue.value[0]]
   const m = months[pickerValue.value[1]]
   const d = days.value[pickerValue.value[2]]
@@ -350,9 +574,11 @@ const onDateConfirm = () => {
   showDatePopup.value = false
 }
 
-const onPickerChange = (e) => {
+function onPickerChange(e: { detail: { value: number[] } }) {
   pickerValue.value = e.detail.value
 }
+
+fetchList(true)
 </script>
 
 <style>
@@ -416,6 +642,19 @@ const onPickerChange = (e) => {
   flex-shrink: 0;
 }
 
+.reimb-loading,
+.reimb-empty {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 80rpx 0;
+}
+
+.reimb-empty-text {
+  font-size: 28rpx;
+  color: #9292A5;
+}
+
 .reimb-card {
   background: #FFFFFF;
   border-radius: 16rpx;
@@ -469,6 +708,11 @@ const onPickerChange = (e) => {
 .reimb-badge--green {
   background: #EDFAF5;
   color: #37AE7E;
+}
+
+.reimb-badge--gray {
+  background: #F5F5F5;
+  color: #9292A5;
 }
 
 .reimb-badge-text {
@@ -534,6 +778,13 @@ const onPickerChange = (e) => {
   background: #FFFFFF;
   border: 1rpx solid #B1E9D3;
   color: #37AE7E;
+}
+
+.reimb-load-more {
+  text-align: center;
+  font-size: 26rpx;
+  color: #5CC79C;
+  padding: 20rpx 0;
 }
 
 .filter-popup {
@@ -873,5 +1124,75 @@ const onPickerChange = (e) => {
   height: 20rpx;
   border-radius: 50%;
   background: #37AE7E;
+}
+
+/* 部门级联选择器 */
+.region-section {
+  display: flex;
+  flex-direction: column;
+}
+
+.region-breadcrumb {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4rpx;
+  margin-bottom: 24rpx;
+}
+
+.region-breadcrumb-item {
+  font-size: 28rpx;
+  color: #9292A5;
+}
+
+.region-breadcrumb-item--active {
+  color: #37AE7E;
+  font-weight: 500;
+}
+
+.region-breadcrumb-sep {
+  font-size: 28rpx;
+  color: #9292A5;
+  margin: 0 4rpx;
+}
+
+.region-loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 40rpx 0;
+}
+
+.region-loading-text {
+  font-size: 26rpx;
+  color: #9292A5;
+}
+
+.org-tag-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 24rpx;
+}
+
+.org-tag {
+  width: 208rpx;
+  padding: 12rpx 10rpx;
+  background: #F6F7FB;
+  border-radius: 6rpx;
+  box-sizing: border-box;
+  text-align: center;
+}
+
+.org-tag--active {
+  background: #EDFAF5;
+}
+
+.org-tag-text {
+  font-size: 26rpx;
+  color: #62687D;
+}
+
+.org-tag-text--active {
+  color: #37AE7E;
 }
 </style>

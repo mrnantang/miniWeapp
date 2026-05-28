@@ -135,11 +135,12 @@
   </view>
 </template>
 
-<script setup>
+<script setup lang="ts">
 import { ref, reactive } from 'vue'
 import Taro from '@tarojs/taro'
 import rightArrowIcon from '@/assets/dev/rightArror.png'
 import navBar from '@/components/NavBar.vue'
+import { createTask } from '@/api/automation'
 
 const form = reactive({
   name: '',
@@ -150,7 +151,7 @@ const form = reactive({
   startTime: '',
 })
 
-let editorCtx = null
+let editorCtx: unknown = null
 
 const onEditorReady = () => {
   Taro.createSelectorQuery().select('#editor').context((res) => {
@@ -158,17 +159,24 @@ const onEditorReady = () => {
   }).exec()
 }
 
-const onSelectCustomer = () => {}
-const onSelectChannel = () => {}
+const onSelectCustomer = () => {
+  Taro.showToast({ title: '受众选择开发中', icon: 'none' })
+}
+const onSelectChannel = () => {
+  Taro.showToast({ title: '渠道选择开发中', icon: 'none' })
+}
 const onToggleLoop = () => { form.loop = !form.loop }
-const onSelectStartTime = () => {}
+const onSelectStartTime = () => {
+  Taro.showToast({ title: '时间选择开发中', icon: 'none' })
+}
 
+// 素材相关
 const showMaterialPopup = ref(false)
 const activeMaterialTab = ref('应用案例')
 const materialTabs = ['应用案例', '使用说明', '安装说明', '公司简介']
 const selectedCat = ref('应用案例1')
 const materialCats = ['应用案例1', '应用案例2', '应用案例3', '重点客户跟进情况']
-const selectedMaterials = ref([])
+const selectedMaterials = ref<string[]>([])
 
 const materialList = [
   { name: '这是素材内容的标题', desc: '秋季新品发布海报秋季新', inactive: false },
@@ -179,7 +187,7 @@ const materialList = [
   { name: '这是素材内容的标题', desc: '秋季新品发布海报秋季新品发布海报秋季新品发布海报', inactive: false },
 ]
 
-const toggleMaterial = (name) => {
+const toggleMaterial = (name: string) => {
   const idx = selectedMaterials.value.indexOf(name)
   if (idx >= 0) {
     selectedMaterials.value.splice(idx, 1)
@@ -200,8 +208,29 @@ const goBack = () => {
   Taro.navigateBack()
 }
 
-const onSave = () => {
-  Taro.navigateBack()
+const onSave = async () => {
+  if (!form.name) {
+    Taro.showToast({ title: '请输入任务名称', icon: 'none' })
+    return
+  }
+  try {
+    await createTask({
+      name: form.name,
+      audienceType: '',
+      channelIds: [],
+      companyId: 0,
+      departmentId: 0,
+      contentHtml: '',
+      isRecurring: form.loop,
+      recurrenceIntervalDays: Number(form.interval) || 0,
+      materialIds: [],
+      startAt: form.startTime || '',
+    })
+    Taro.showToast({ title: '创建成功', icon: 'success' })
+    setTimeout(() => Taro.navigateBack(), 1500)
+  } catch {
+    // 错误已在 request 层统一处理
+  }
 }
 </script>
 

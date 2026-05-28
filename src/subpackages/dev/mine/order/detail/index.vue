@@ -2,50 +2,48 @@
   <view class="order-detail-page">
     <NavBar title="我的订单" />
     <scroll-view class="order-detail-scroll" scroll-y :enhanced="true" :show-scrollbar="false">
+      <!-- 订单信息 -->
       <view class="order-detail-card">
         <view class="od-field od-field--first">
           <text class="od-label" style="color: #1A1D24;">订单号</text>
-          <text class="od-value">{{ orderInfo.orderNo }}</text>
-        </view>
-        <view class="od-divider" />
-        <view class="od-field">
-          <text class="od-label">公司/部门</text>
-          <text class="od-value">{{ orderInfo.dept }}</text>
+          <text class="od-value">{{ orderDetail.orderNo }}</text>
         </view>
         <view class="od-divider" />
         <view class="od-field">
           <text class="od-label">关联合同</text>
-          <text class="od-value">{{ orderInfo.contract }}</text>
+          <text class="od-value">{{ orderDetail.contractName || '-' }}</text>
         </view>
         <view class="od-divider" />
         <view class="od-field">
           <text class="od-label">客户名称</text>
-          <text class="od-value">{{ orderInfo.customer }}</text>
+          <text class="od-value">{{ orderDetail.customerName }}</text>
         </view>
         <view class="od-divider" />
         <view class="od-field">
           <text class="od-label">订单金额</text>
-          <text class="od-value od-value--price">{{ orderInfo.amount }}</text>
+          <text class="od-value od-value--price">{{ formatAmount(orderDetail.receivableAmount) }}</text>
         </view>
         <view class="od-divider" />
         <view class="od-field">
           <text class="od-label">订单状态</text>
           <view class="od-status-row">
-            <view class="od-status-dot" :class="'od-status-dot--' + orderInfo.badgeType" />
-            <text class="od-status-text">{{ orderInfo.badge }}</text>
+            <view class="od-status-dot" :class="'od-status-dot--' + getBadgeType(orderDetail.orderStatus)" />
+            <text class="od-status-text">{{ ORDER_STATUS_MAP[orderDetail.orderStatus] || orderDetail.orderStatus }}</text>
           </view>
         </view>
         <view class="od-divider" />
         <view class="od-field">
           <text class="od-label">订单生成日期</text>
-          <text class="od-value">{{ orderInfo.date }}</text>
+          <text class="od-value">{{ formatDate(orderDetail.createdAt) }}</text>
         </view>
         <view class="od-divider" />
         <view class="od-field">
           <text class="od-label">所属销售</text>
-          <text class="od-value">{{ orderInfo.sales }}</text>
+          <text class="od-value">{{ orderDetail.salespersonName || '-' }}</text>
         </view>
       </view>
+
+      <!-- 收件信息 -->
       <view class="order-detail-card">
         <view class="od-field od-field--first">
           <text class="od-label" style="color: #1A1D24;">收件信息</text>
@@ -53,19 +51,21 @@
         <view class="od-divider" />
         <view class="od-field">
           <text class="od-label">收件人</text>
-          <text class="od-value">{{ orderInfo.recipient }}</text>
+          <text class="od-value">{{ orderDetail.recipientName || '-' }}</text>
         </view>
         <view class="od-divider" />
         <view class="od-field">
           <text class="od-label">手机号</text>
-          <text class="od-value">{{ orderInfo.phone }}</text>
+          <text class="od-value">{{ orderDetail.phone || '-' }}</text>
         </view>
         <view class="od-divider" />
         <view class="od-field">
           <text class="od-label">收件地址</text>
-          <text class="od-value">{{ orderInfo.address }}</text>
+          <text class="od-value">{{ orderDetail.recipientAddress || '-' }}</text>
         </view>
       </view>
+
+      <!-- 产品明细 -->
       <view class="order-detail-card">
         <view class="od-section-header">
           <text class="od-section-title">产品明细</text>
@@ -84,16 +84,16 @@
               <view class="od-th od-th--subtotal">小计</view>
               <view class="od-th od-th--action">操作</view>
             </view>
-            <view v-for="(row, idx) in productRows" :key="idx" class="od-table-row">
-              <view class="od-td od-td--seq">{{ idx + 1 }}</view>
-              <view class="od-td od-td--name">{{ row.name }}</view>
-              <view class="od-td od-td--model">{{ row.model }}</view>
-              <view class="od-td od-td--unit">{{ row.unit }}</view>
-              <view class="od-td od-td--qty">{{ row.qty }}</view>
-              <view class="od-td od-td--discount">{{ row.discount }}</view>
-              <view class="od-td od-td--tax">{{ row.tax }}</view>
-              <view class="od-td od-td--price">{{ row.price }}</view>
-              <view class="od-td od-td--subtotal">{{ row.subtotal }}</view>
+            <view v-for="(row, idx) in orderDetail.items" :key="idx" class="od-table-row">
+              <view class="od-td od-td--seq">{{ row.lineNo || idx + 1 }}</view>
+              <view class="od-td od-td--name">{{ row.productName }}</view>
+              <view class="od-td od-td--model">{{ row.productModel || '-' }}</view>
+              <view class="od-td od-td--unit">{{ row.unit || '-' }}</view>
+              <view class="od-td od-td--qty">{{ row.quantity }}</view>
+              <view class="od-td od-td--discount">{{ row.discountRate ? row.discountRate + '%' : '-' }}</view>
+              <view class="od-td od-td--tax">{{ row.taxRate ? row.taxRate + '%' : '-' }}</view>
+              <view class="od-td od-td--price">{{ formatAmount(row.unitPrice) }}</view>
+              <view class="od-td od-td--subtotal">{{ formatAmount(row.subtotalAmount) }}</view>
               <view class="od-td od-td--action">
                 <image class="od-delete-icon" :src="iconDelete" mode="aspectFit" />
               </view>
@@ -103,34 +103,37 @@
         <view class="od-divider" />
         <view class="od-total-bar">
           <text class="od-total-label">优惠后总价</text>
-          <text class="od-total-value">15,150</text>
+          <text class="od-total-value">{{ formatAmountRaw(orderDetail.discountedAmount) }}</text>
           <text class="od-total-unit">元</text>
         </view>
       </view>
 
+      <!-- 金额汇总 -->
       <view class="order-detail-card">
         <view class="od-summary-row">
           <text class="od-summary-label">折前总额(不含税)</text>
-          <text class="od-summary-value">￥17,450</text>
+          <text class="od-summary-value">￥{{ formatAmountRaw(orderDetail.totalAmount) }}</text>
         </view>
         <view class="od-summary-row">
           <text class="od-summary-label">折后总额(不含税)</text>
-          <text class="od-summary-value">￥15,999</text>
+          <text class="od-summary-value">￥{{ formatAmountRaw(orderDetail.discountedAmount) }}</text>
         </view>
         <view class="od-summary-row">
           <text class="od-summary-label">税费总额</text>
-          <text class="od-summary-value">￥1,000</text>
+          <text class="od-summary-value">￥{{ formatAmountRaw(orderDetail.taxAmount) }}</text>
         </view>
         <view class="od-divider" />
         <view class="od-summary-row">
           <text class="od-summary-label">应收总额</text>
           <view class="od-summary-total">
             <text class="od-summary-total-sign">￥</text>
-            <text class="od-summary-total-amount">15,150</text>
+            <text class="od-summary-total-amount">{{ formatAmountRaw(orderDetail.receivableAmount) }}</text>
             <text class="od-summary-total-unit">元</text>
           </view>
         </view>
       </view>
+
+      <!-- 物流/退款 Tabs -->
       <view class="order-detail-card">
         <view class="od-tabs">
           <view class="od-tab" :class="{ 'od-tab--active': activeTab === 'logistics' }" @tap="activeTab = 'logistics'">
@@ -142,6 +145,9 @@
             <view v-if="activeTab === 'refund'" class="od-tab-underline" />
           </view>
         </view>
+
+        <!-- 物流信息：一期不做 -->
+        <!--
         <view v-if="activeTab === 'logistics'">
           <view v-if="hasLogistics" class="od-logistics">
             <view class="od-logistics-field">
@@ -171,116 +177,175 @@
             <text class="od-empty-text">暂无数据</text>
           </view>
         </view>
-        <view v-else class="od-refund">
-          <view class="od-refund-field">
-            <text class="od-refund-label">退款编号</text>
-            <text class="od-refund-value">tTK-982819</text>
+        -->
+        <view v-if="activeTab === 'logistics'">
+          <view class="od-empty">
+            <image class="od-empty-icon" :src="iconEmpty" mode="aspectFit" />
+            <text class="od-empty-text">暂未开放</text>
           </view>
-          <view class="od-refund-divider" />
-          <view class="od-refund-field">
-            <text class="od-refund-label">部分/全额退款</text>
-            <text class="od-refund-value">部分退款</text>
+        </view>
+
+        <!-- 退款信息 -->
+        <view v-if="activeTab === 'refund'">
+          <view v-if="orderDetail.refunds && orderDetail.refunds.length > 0">
+            <view v-for="(refund, rIdx) in orderDetail.refunds" :key="refund.id">
+              <view v-if="rIdx > 0" class="od-refund-separator" />
+              <view class="od-refund">
+                <view class="od-refund-field">
+                  <text class="od-refund-label">退款编号</text>
+                  <text class="od-refund-value">{{ refund.refundNo }}</text>
+                </view>
+                <view class="od-refund-divider" />
+                <view class="od-refund-field">
+                  <text class="od-refund-label">部分/全额退款</text>
+                  <text class="od-refund-value">{{ REFUND_TYPE_MAP[refund.refundType] || refund.refundType }}</text>
+                </view>
+                <view class="od-refund-divider" />
+                <view class="od-refund-field">
+                  <text class="od-refund-label">是否需要退货</text>
+                  <text class="od-refund-value">{{ RETURN_REQUIREMENT_MAP[refund.returnRequirement] || refund.returnRequirement }}</text>
+                </view>
+                <view class="od-refund-divider" />
+                <view class="od-refund-field">
+                  <text class="od-refund-label">退款金额</text>
+                  <text class="od-refund-value od-refund-value--price">{{ formatAmount(refund.refundAmount) }}</text>
+                </view>
+                <view class="od-refund-divider" />
+                <view class="od-refund-field">
+                  <text class="od-refund-label">退款状态</text>
+                  <text class="od-refund-value">{{ REFUND_STATUS_MAP[refund.refundStatus] || refund.refundStatus }}</text>
+                </view>
+                <view class="od-refund-divider" />
+                <view class="od-refund-field">
+                  <text class="od-refund-label">退款渠道</text>
+                  <text class="od-refund-value">{{ REFUND_CHANNEL_MAP[refund.refundChannel] || refund.refundChannel }}</text>
+                </view>
+                <view v-if="refund.bankName" class="od-refund-divider" />
+                <view v-if="refund.bankName" class="od-refund-field">
+                  <text class="od-refund-label">银行名称</text>
+                  <text class="od-refund-value">{{ refund.bankName }}</text>
+                </view>
+                <view v-if="refund.bankAccountNo" class="od-refund-divider" />
+                <view v-if="refund.bankAccountNo" class="od-refund-field">
+                  <text class="od-refund-label">银行卡号</text>
+                  <text class="od-refund-value">{{ refund.bankAccountNo }}</text>
+                </view>
+                <view class="od-refund-divider" />
+                <view class="od-refund-field">
+                  <text class="od-refund-label">退款原因</text>
+                  <text class="od-refund-value">{{ refund.reason || '-' }}</text>
+                </view>
+                <view class="od-refund-actions">
+                  <view v-if="refund.refundStatus === 'pending_approval'" class="od-refund-btn od-refund-btn--cancel" @tap="onCancelRefund(refund)">取消退款</view>
+                  <view v-if="refund.refundStatus === 'approval_rejected'" class="od-refund-btn od-refund-btn--edit" @tap="onEditRefund(refund)">重新编辑</view>
+                </view>
+              </view>
+            </view>
           </view>
-          <view class="od-refund-divider" />
-          <view class="od-refund-field">
-            <text class="od-refund-label">是否需要退货</text>
-            <text class="od-refund-value">否</text>
-          </view>
-          <view class="od-refund-divider" />
-          <view class="od-refund-field">
-            <text class="od-refund-label">退款金额</text>
-            <text class="od-refund-value od-refund-value--price">￥6,000</text>
-          </view>
-          <view class="od-refund-divider" />
-          <view class="od-refund-field">
-            <text class="od-refund-label">退款状态</text>
-            <text class="od-refund-value">待审批</text>
-          </view>
-          <view class="od-refund-divider" />
-          <view class="od-refund-field">
-            <text class="od-refund-label">退款渠道</text>
-            <text class="od-refund-value">银行</text>
-          </view>
-          <view class="od-refund-divider" />
-          <view class="od-refund-field">
-            <text class="od-refund-label">银行名称</text>
-            <text class="od-refund-value">汇丰银行</text>
-          </view>
-          <view class="od-refund-divider" />
-          <view class="od-refund-field">
-            <text class="od-refund-label">银行卡号</text>
-            <text class="od-refund-value">21762871827812981</text>
-          </view>
-          <view class="od-refund-divider" />
-          <view class="od-refund-field">
-            <text class="od-refund-label">退款原因</text>
-            <text class="od-refund-value">客户计划有变</text>
-          </view>
-          <view class="od-refund-actions">
-            <view class="od-refund-btn od-refund-btn--cancel">取消退款</view>
-            <view class="od-refund-btn od-refund-btn--edit">重新编辑</view>
+          <view v-else class="od-empty">
+            <image class="od-empty-icon" :src="iconEmpty" mode="aspectFit" />
+            <text class="od-empty-text">暂无退款记录</text>
           </view>
         </view>
       </view>
-
     </scroll-view>
-
-    <nut-popup v-model:visible="showLogisticsPopup" position="bottom" :style="{ borderRadius: '24rpx 24rpx 0 0' }" :z-index="2100">
-      <view class="logistics-popup">
-        <view class="logistics-popup-header">
-          <text class="logistics-popup-title">查看物流</text>
-          <text class="logistics-popup-close" @tap="showLogisticsPopup = false">✕</text>
-        </view>
-        <scroll-view class="logistics-popup-body" scroll-y>
-          <nut-steps direction="vertical" :current="logisticsSteps.length" progress-dot>
-            <nut-step v-for="(item, idx) in logisticsSteps" :key="idx" :title="item.desc" :content="item.time"/>
-          </nut-steps>
-        </scroll-view>
-      </view>
-    </nut-popup>
   </view>
 </template>
 
-<script setup>
+<script setup lang="ts">
 import { ref } from 'vue'
+import Taro from '@tarojs/taro'
 import NavBar from '@/components/NavBar.vue'
+import {
+  getOrderDetail,
+  cancelRefund,
+  type OrderDetailResponse,
+  type RefundRecord,
+  ORDER_STATUS_MAP,
+  ORDER_STATUS_BADGE_MAP,
+  REFUND_STATUS_MAP,
+  REFUND_TYPE_MAP,
+  REFUND_CHANNEL_MAP,
+  RETURN_REQUIREMENT_MAP,
+} from '@/api/order'
 import iconDelete from '@/assets/dev/delete.png'
 import iconEmpty from '@/assets/dev/icon-empty.svg'
 
-const showLogisticsPopup = ref(false)
 const activeTab = ref('logistics')
-const hasLogistics = ref(true)
 
-const logisticsSteps = ref([
-  { desc: '上海市]已签收，签收人是姚明，感谢使用天天快递，期待再次为您服务', time: '2017-12-20 14:08:54' },
-  { desc: '[上海市]快件已经到达上海-应急代派', time: '2017-12-20 14:08:54' },
-  { desc: '[上海市]快件已经到达ZY上海杨浦集散仓A', time: '2017-12-20 14:08:54' },
-  { desc: '[上海市]快件已经到达 上海嘉定转运中心', time: '2017-12-20 14:08:54' },
-  { desc: '[上海转运中心]，正发往【上海嘉定转运中心]', time: '2017-12-20 14:08:54' },
-  { desc: '包裹正在等待揽收', time: '2017-12-20 14:08:54' },
-  { desc: '您的订单已出库', time: '2017-12-20 14:08:54' },
-  { desc: '您的订单开始处理', time: '2017-12-20 14:08:54' },
-])
-
-const orderInfo = ref({
-  orderNo: '0029928912199001',
-  dept: '德贝尔总公司/销售总部/销售一部',
-  contract: '超凡智慧投资标准喷粉枪合同',
-  customer: '超凡智慧投资',
-  amount: '￥160,000',
-  badge: '待发货',
-  badgeType: 'yellow',
-  date: '2024/01/23',
-  sales: '张子曦',
-  recipient: '张先生',
-  phone: '15899207728',
-  address: '广东省深圳市龙华区人民广场',
+const orderDetail = ref<OrderDetailResponse>({
+  id: 0,
+  orderNo: '',
+  contractName: '',
+  customerName: '',
+  orderStatus: '',
+  totalAmount: 0,
+  discountedAmount: 0,
+  taxAmount: 0,
+  receivableAmount: 0,
+  refundedAmount: 0,
+  currencyCode: '',
+  recipientName: '',
+  phone: '',
+  recipientAddress: '',
+  salespersonName: '',
+  createdAt: '',
+  items: [],
+  shipments: [],
+  refunds: [],
 })
 
-const productRows = ref([
-  { name: 'V12智能数控喷粉枪', model: 'V12', unit: '台', qty: '5', discount: '-', tax: '13%', price: '680.00', subtotal: '3,400.00' },
-  { name: 'E7静电自动喷粉枪', model: 'E7', unit: '台', qty: '3', discount: '-', tax: '13%', price: '580.00', subtotal: '1,740.00' },
-])
+function formatAmount(cent: number): string {
+  if (cent === undefined || cent === null) return '-'
+  return '￥' + (cent / 100).toLocaleString('zh-CN', { minimumFractionDigits: 0, maximumFractionDigits: 2 })
+}
+
+function formatAmountRaw(cent: number): string {
+  if (cent === undefined || cent === null) return '0'
+  return (cent / 100).toLocaleString('zh-CN', { minimumFractionDigits: 0, maximumFractionDigits: 2 })
+}
+
+function formatDate(dateStr: string): string {
+  if (!dateStr) return '-'
+  return dateStr.replace(/T/, ' ').replace(/\..*/, '').slice(0, 19)
+}
+
+function getBadgeType(status: string): string {
+  return ORDER_STATUS_BADGE_MAP[status] || 'gray'
+}
+
+async function fetchDetail() {
+  const instance = Taro.getCurrentInstance()
+  const id = Number(instance.router?.params?.id)
+  if (!id) return
+  try {
+    const res = await getOrderDetail(id)
+    orderDetail.value = res
+  } catch {
+    // 错误已在 request 层统一处理
+  }
+}
+
+async function onCancelRefund(refund: RefundRecord) {
+  try {
+    await Taro.showModal({
+      title: '提示',
+      content: '确定要取消该退款申请吗？',
+    })
+    await cancelRefund(refund.id)
+    Taro.showToast({ title: '已取消', icon: 'success' })
+    fetchDetail()
+  } catch {
+    // 用户取消或请求失败
+  }
+}
+
+function onEditRefund(_refund: RefundRecord) {
+  // 一期预留：跳转编辑退款页面
+  Taro.showToast({ title: '重新编辑功能开发中', icon: 'none' })
+}
+
+fetchDetail()
 </script>
 
 <style>
@@ -360,6 +425,18 @@ const productRows = ref([
   background: #FFAE17;
 }
 
+.od-status-dot--green {
+  background: #37AE7E;
+}
+
+.od-status-dot--red {
+  background: #F56C6C;
+}
+
+.od-status-dot--gray {
+  background: #9292A5;
+}
+
 .od-status-text {
   font-size: 28rpx;
   color: #1A1D24;
@@ -398,49 +475,6 @@ const productRows = ref([
   border-radius: 2rpx;
 }
 
-.od-logistics {
-  display: flex;
-  flex-direction: column;
-  gap: 28rpx;
-  padding: 28rpx;
-  background: #FBFBFB;
-  border: 1rpx solid #ECEBEB;
-  border-radius: 8rpx;
-}
-
-.od-logistics-field {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-}
-
-.od-logistics-label {
-  font-size: 28rpx;
-  color: #62687D;
-  flex-shrink: 0;
-}
-
-.od-logistics-value {
-  font-size: 28rpx;
-  color: #1A1D24;
-  text-align: right;
-  flex: 1;
-  margin-left: 24rpx;
-}
-
-.od-logistics-btn {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 8rpx 114rpx;
-  background: #EDFAF5;
-  border: 1rpx solid #B1E9D3;
-  border-radius: 8rpx;
-  font-size: 28rpx;
-  color: #37AE7E;
-  align-self: stretch;
-}
-
 .od-empty {
   display: flex;
   flex-direction: column;
@@ -463,6 +497,12 @@ const productRows = ref([
 .od-refund {
   display: flex;
   flex-direction: column;
+}
+
+.od-refund-separator {
+  height: 1rpx;
+  background: #E5E6EB;
+  margin: 20rpx 0;
 }
 
 .od-refund-field {
@@ -669,76 +709,6 @@ const productRows = ref([
 
 .od-summary-total-unit {
   font-size: 28rpx;
-  color: #62687D;
-}
-
-.logistics-popup {
-  padding: 40rpx 0 0;
-  background: #FFFFFF;
-  max-height: 70vh;
-  display: flex;
-  flex-direction: column;
-}
-
-.logistics-popup-header {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 20rpx;
-  padding: 0 40rpx 40rpx;
-  position: relative;
-}
-
-.logistics-popup-title {
-  font-size: 34rpx;
-  font-weight: 500;
-  color: #333333;
-  line-height: 44rpx;
-}
-
-.logistics-popup-close {
-  position: absolute;
-  right: 40rpx;
-  top: 0;
-  font-size: 28rpx;
-  color: #9292A5;
-  width: 44rpx;
-  height: 44rpx;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.logistics-popup-body {
-  padding: 0 40rpx 40rpx;
-  max-height: calc(70vh - 120rpx);
-}
-
-.logistics-popup .nut-steps {
-  padding: 0;
-}
-
-.logistics-popup .nut-steps .nut-step {
-  min-height: auto;
-}
-
-.logistics-popup .nut-steps .nut-step .nut-step-title {
-  font-size: 32rpx;
-  color: #62687D;
-  line-height: 48rpx;
-}
-
-.logistics-popup .nut-steps .nut-step:first-child .nut-step-title {
-  color: #1A1D24;
-}
-
-.logistics-popup .nut-steps .nut-step .nut-step-content {
-  font-size: 28rpx;
-  color: #BBBEC2;
-  line-height: 40rpx;
-}
-
-.logistics-popup .nut-steps .nut-step:first-child .nut-step-content {
   color: #62687D;
 }
 </style>

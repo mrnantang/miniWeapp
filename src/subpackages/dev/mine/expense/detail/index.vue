@@ -8,48 +8,47 @@
       <text class="rd-nav-title">费用详情</text>
       <view class="rd-nav-right" />
     </view>
-    <view style="height: 176rpx;width: 100%;">
-    </view>
+    <view style="height: 176rpx;width: 100%;" />
     <scroll-view class="rd-scroll" scroll-y :enhanced="true" :show-scrollbar="false">
       <view class="rd-info-card">
         <view class="rd-info-field">
           <text class="rd-info-label">费用编号</text>
-          <text class="rd-info-value">{{ detail.feeNo }}</text>
+          <text class="rd-info-value">{{ detail.expenseNo }}</text>
         </view>
         <view class="rd-divider" />
         <view class="rd-info-field">
           <text class="rd-info-label">费用承担部门</text>
-          <text class="rd-info-value">{{ detail.dept }}</text>
+          <text class="rd-info-value">{{ detail.expenseDepartmentName || '-' }}</text>
         </view>
         <view class="rd-divider" />
         <view class="rd-info-field">
           <text class="rd-info-label">关联客户</text>
-          <text class="rd-info-value">{{ detail.customer }}</text>
+          <text class="rd-info-value">{{ detail.customerName || '-' }}</text>
         </view>
         <view class="rd-divider" />
         <view class="rd-info-field">
           <text class="rd-info-label">收款账户</text>
-          <text class="rd-info-value">{{ detail.account }}</text>
+          <text class="rd-info-value">{{ detail.payeeAccount || '-' }}</text>
         </view>
         <view class="rd-divider" />
         <view class="rd-info-field">
           <text class="rd-info-label">申请金额</text>
-          <text class="rd-info-value">{{ detail.amount }}</text>
+          <text class="rd-info-value rd-info-value--price">{{ formatAmount(detail.amount) }}</text>
         </view>
         <view class="rd-divider" />
         <view class="rd-info-field">
           <text class="rd-info-label">费用项目</text>
-          <text class="rd-info-value">{{ detail.item }}</text>
+          <text class="rd-info-value">{{ EXPENSE_ITEM_MAP[detail.expenseItem] || detail.expenseItem }}</text>
         </view>
         <view class="rd-divider" />
         <view class="rd-info-field">
           <text class="rd-info-label">费用说明</text>
-          <text class="rd-info-value">{{ detail.remark }}</text>
+          <text class="rd-info-value">{{ detail.description || '-' }}</text>
         </view>
         <view class="rd-divider" />
         <view class="rd-info-field">
           <text class="rd-info-label">发起时间</text>
-          <text class="rd-info-value">{{ detail.time }}</text>
+          <text class="rd-info-value">{{ formatDate(detail.submittedAt || detail.createdAt) }}</text>
         </view>
       </view>
 
@@ -59,34 +58,39 @@
         </view>
         <view class="rd-divider" />
         <view class="rd-timeline">
-          <view class="rd-timeline-item">
+          <view v-for="(node, nIdx) in timelineNodes" :key="nIdx" class="rd-timeline-item">
             <view class="rd-timeline-dot-col">
-              <view class="rd-timeline-line rd-timeline-line--top" />
-              <view class="rd-timeline-dot rd-timeline-dot--empty" />
-              <view class="rd-timeline-line rd-timeline-line--fill" />
+              <view class="rd-timeline-line" :class="node.topLineClass" />
+              <view class="rd-timeline-dot" :class="node.dotClass" />
+              <view class="rd-timeline-line" :class="node.bottomLineClass" />
             </view>
-            <view class="rd-timeline-content rd-timeline-content--dim">
-              <text class="rd-timeline-text">二级审批</text>
-            </view>
-          </view>
-          <view class="rd-timeline-item">
-            <view class="rd-timeline-dot-col">
-              <view class="rd-timeline-line rd-timeline-line--fill" />
-              <view class="rd-timeline-dot rd-timeline-dot--empty" />
-              <view class="rd-timeline-line rd-timeline-line--fill" />
-            </view>
-            <view class="rd-timeline-content rd-timeline-content--dim">
-              <text class="rd-timeline-text">一级审批</text>
-            </view>
-          </view>
-          <view class="rd-timeline-item">
-            <view class="rd-timeline-dot-col">
-              <view class="rd-timeline-line rd-timeline-line--fill" />
-              <view class="rd-timeline-dot rd-timeline-dot--solid" />
-              <view class="rd-timeline-line rd-timeline-line--none" />
-            </view>
-            <view class="rd-timeline-content">
-              <text class="rd-timeline-text">发起审批</text>
+            <view class="rd-timeline-content" :class="{ 'rd-timeline-content--dim': node.isDim }">
+              <text class="rd-timeline-text">{{ node.nodeName }}</text>
+              <view v-for="(approver, aIdx) in node.approvers" :key="aIdx" class="rd-approval-box">
+                <view v-if="aIdx === 0 && node.approvalRule" class="rd-ap-field">
+                  <text class="rd-ap-label">审批原则</text>
+                  <text class="rd-ap-value">{{ node.approvalRule === 'all' ? '全部审批通过即通过' : '任一通过即通过' }}</text>
+                </view>
+                <view v-if="aIdx === 0 && node.approvalRule" class="rd-ap-dash" />
+                <view class="rd-ap-field">
+                  <text class="rd-ap-label">审批人</text>
+                  <text class="rd-ap-value">{{ approver.name }}</text>
+                </view>
+                <view class="rd-ap-field">
+                  <text class="rd-ap-label">审批状态</text>
+                  <text class="rd-ap-value" :class="{ 'rd-ap-value--reject': approver.status === 'rejected' }">
+                    {{ APPROVER_STATUS_MAP[approver.status] || approver.status }}
+                  </text>
+                </view>
+                <view v-if="approver.status === 'rejected' && approver.comment" class="rd-ap-field">
+                  <text class="rd-ap-label">驳回原因</text>
+                  <text class="rd-ap-value">{{ approver.comment }}</text>
+                </view>
+                <view v-if="approver.operatedAt" class="rd-ap-field">
+                  <text class="rd-ap-label">审批时间</text>
+                  <text class="rd-ap-value">{{ formatDate(approver.operatedAt) }}</text>
+                </view>
+              </view>
             </view>
           </view>
         </view>
@@ -94,33 +98,134 @@
     </scroll-view>
 
     <view class="rd-actions">
-      <view class="rd-btn rd-btn--cancel">撤销申请</view>
-      <view class="rd-btn rd-btn--submit">编辑</view>
+      <view v-if="detail.canCancel" class="rd-btn rd-btn--cancel" @tap="onCancel">撤销申请</view>
+      <view v-if="detail.canEdit" class="rd-btn rd-btn--submit" @tap="onEdit">编辑</view>
     </view>
   </view>
 </template>
 
-<script setup>
-import { ref } from 'vue'
+<script setup lang="ts">
+import { ref, computed } from 'vue'
 import Taro from '@tarojs/taro'
+import {
+  getExpenseDetail, cancelExpense, EXPENSE_ITEM_MAP,
+  type ExpenseDetailResponse,
+} from '@/api/expense'
 import iconBack from '@/assets/dev/icon-back.png'
 
-const detail = ref({
-  feeNo: '32423432421341',
-  dept: '德贝尔总公司/销售总部/销售一部',
-  customer: '超凡科技有限公司',
-  account: '217388178371823232',
-  amount: '￥1000',
-  item: '招待费',
-  remark: '给客户买礼物，投其所好',
-  time: '2024/01/23 10:12',
+const APPROVER_STATUS_MAP: Record<string, string> = {
+  pending: '待审批',
+  approved: '审批通过',
+  rejected: '审批驳回',
+}
+
+const detail = ref<ExpenseDetailResponse>({
+  id: 0,
+  expenseNo: '',
+  amount: 0,
+  expenseItem: '',
+  expenseDepartmentId: 0,
+  expenseDepartmentName: '',
+  customerId: 0,
+  customerName: '',
+  description: '',
+  payeeAccount: '',
+  status: '',
+  submittedAt: '',
+  createdAt: '',
+  applicantId: 0,
+  applicantName: '',
+  companyId: 0,
+  departmentId: 0,
+  latestRejectReason: '',
+  canApprove: false,
+  canCancel: false,
+  canEdit: false,
+  attachments: [],
+  approvalFlow: { nodes: [] },
+  approvalHistory: [],
 })
+
+const approvalStatus = computed(() => {
+  const s = detail.value.status
+  if (s === 'approval_rejected') return 'rejected'
+  if (s === 'approval_passed') return 'approved'
+  return 'pending'
+})
+
+const timelineNodes = computed(() => {
+  const nodes = detail.value.approvalFlow?.nodes || []
+  const result = nodes
+    .sort((a, b) => b.nodeNo - a.nodeNo)
+    .map((node, idx, arr) => {
+      const first = idx === 0
+      const last = idx === arr.length - 1
+      const hasApproval = node.approvers.some(a => a.status === 'approved' || a.status === 'rejected')
+      return {
+        nodeName: node.nodeName,
+        approvalRule: node.approvalRule,
+        approvers: node.approvers,
+        isDim: !hasApproval && !first,
+        topLineClass: first ? 'rd-timeline-line--top' : 'rd-timeline-line--fill',
+        dotClass: hasApproval ? 'rd-timeline-dot--solid' : 'rd-timeline-dot--empty',
+        bottomLineClass: last ? 'rd-timeline-line--none' : 'rd-timeline-line--fill',
+      }
+    })
+  result.push({
+    nodeName: '发起审批',
+    approvalRule: '',
+    approvers: [],
+    isDim: result.length > 0,
+    topLineClass: result.length > 0 ? 'rd-timeline-line--fill' : 'rd-timeline-line--top',
+    dotClass: 'rd-timeline-dot--empty',
+    bottomLineClass: 'rd-timeline-line--none',
+  })
+  return result
+})
+
+function formatAmount(cent: number): string {
+  if (cent === undefined || cent === null) return '-'
+  return '￥' + (cent / 100).toLocaleString('zh-CN', { minimumFractionDigits: 0, maximumFractionDigits: 2 })
+}
+
+function formatDate(dateStr: string): string {
+  if (!dateStr) return '-'
+  return dateStr.replace(/T/, ' ').replace(/\..*/, '').slice(0, 19)
+}
 
 const goBack = () => {
   Taro.navigateBack()
 }
 
-const approvalStatus = ref('pending') // pending | approved | rejected
+async function fetchDetail() {
+  const instance = Taro.getCurrentInstance()
+  const id = Number(instance.router?.params?.id)
+  if (!id) return
+  try {
+    const res = await getExpenseDetail(id)
+    detail.value = res
+  } catch {
+    // 错误已在 request 层统一处理
+  }
+}
+
+async function onCancel() {
+  try {
+    const res = await Taro.showModal({ title: '提示', content: '确定要撤销该费用申请吗？' })
+    if (!res.confirm) return
+    await cancelExpense(detail.value.id)
+    Taro.showToast({ title: '已撤销', icon: 'success' })
+    fetchDetail()
+  } catch {
+    // 用户取消或请求失败
+  }
+}
+
+function onEdit() {
+  Taro.showToast({ title: '编辑功能开发中', icon: 'none' })
+}
+
+fetchDetail()
 </script>
 
 <style>
@@ -217,6 +322,10 @@ const approvalStatus = ref('pending') // pending | approved | rejected
   text-align: right;
   flex: 1;
   margin-left: 24rpx;
+}
+
+.rd-info-value--price {
+  font-weight: 600;
 }
 
 .rd-divider {
