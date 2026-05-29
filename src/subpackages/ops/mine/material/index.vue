@@ -6,7 +6,7 @@
       <view class="leads-search-row">
         <view class="leads-search-box">
           <input class="leads-search-input" v-model="keyword" placeholder="请输入搜索"
-            placeholder-style="color:#9292A5;font-size:30rpx" />
+            placeholder-style="color:#9292A5;font-size:30rpx" @input="onSearchInput" />
           <image class="leads-search-icon" :src="iconSearch" mode="aspectFit" />
         </view>
         <view class="leads-btn" @tap="showFilter = true">
@@ -19,48 +19,68 @@
 
       <scroll-view class="material-tabs-scroll" scroll-x="true" :enhanced="true" :show-scrollbar="false">
         <view class="material-tabs">
-          <view v-for="tab in tabs" :key="tab" class="material-tab"
-            :class="{ 'material-tab--active': activeTab === tab }" @tap="activeTab = tab">
-            <text class="material-tab-text" :class="{ 'material-tab-text--active': activeTab === tab }">{{ tab }}</text>
+          <view class="material-tab" :class="{ 'material-tab--active': activeFolderId === 0 }" @tap="onFolderTap(null)">
+            <text class="material-tab-text" :class="{ 'material-tab-text--active': activeFolderId === 0 }">全部</text>
+          </view>
+          <view v-for="folder in folders" :key="folder.id" class="material-tab"
+            :class="{ 'material-tab--active': activeFolderId === folder.id }" @tap="onFolderTap(folder)">
+            <text class="material-tab-text" :class="{ 'material-tab-text--active': activeFolderId === folder.id }">{{ folder.name }}</text>
           </view>
         </view>
       </scroll-view>
 
-      <scroll-view class="material-cats-scroll" scroll-x="true" :enhanced="true" :show-scrollbar="false">
+      <scroll-view v-if="currentChildFolders.length > 0" class="material-cats-scroll" scroll-x="true" :enhanced="true" :show-scrollbar="false">
         <view class="material-cats">
-          <view v-for="cat in cats" :key="cat" class="material-cat"
-            :class="{ 'material-cat--active': activeCat === cat }" @tap="activeCat = cat">
-            <text class="material-cat-text" :class="{ 'material-cat-text--active': activeCat === cat }">{{ cat }}</text>
+          <view
+            v-for="child in currentChildFolders"
+            :key="child.id"
+            class="material-cat"
+            :class="{ 'material-cat--active': activeChildFolderId === child.id }"
+            @tap="onChildFolderTap(child)"
+          >
+            <text class="material-cat-text" :class="{ 'material-cat-text--active': activeChildFolderId === child.id }">{{ child.name }}</text>
           </view>
         </view>
       </scroll-view>
 
-      <scroll-view class="material-list" scroll-y :enhanced="true" :show-scrollbar="false">
-        <view v-for="(item, idx) in materialList" :key="idx" class="material-card">
-          <view class="material-card-top">
-            <view class="material-thumb" />
-            <view class="material-card-right">
-              <view class="material-title-row">
-                <text class="material-title">秋季新品发布海报</text>
-                <view class="material-tag">
-                  <text class="material-tag-text">图文</text>
+      <scroll-view class="material-scroll" scroll-y="true" :enhanced="true" :show-scrollbar="false" @scrolltolower="onLoadMore">
+        <view v-if="loading && materialList.length === 0" class="material-empty">
+          <text class="material-empty-text">加载中...</text>
+        </view>
+        <view v-else class="material-list">
+          <view v-for="item in materialList" :key="item.id" class="material-card">
+            <view class="material-card-top">
+              <image class="material-thumb" :src="item.coverUrl" mode="aspectFill" />
+              <view class="material-card-right">
+                <view class="material-title-row">
+                  <text class="material-title">{{ item.name }}</text>
+                  <view class="material-tag">
+                    <text class="material-tag-text">{{ MATERIAL_TYPE_MAP[item.materialType] || item.materialType }}</text>
+                  </view>
                 </view>
+                <text class="material-desc">{{ item.summary || '-' }}</text>
               </view>
-              <text class="material-desc">秋季新品发布海报秋季新品发布海报秋季新品发布海报秋季新品发，布海报秋季新品发布海报秋季</text>
             </view>
-          </view>
-          <view class="material-card-actions">
-            <view class="material-action-btn material-action-btn--delete">
-              <text class="material-action-btn-text material-action-btn-text--delete">删除</text>
-            </view>
-            <view class="material-action-btn material-action-btn--edit">
-              <text class="material-action-btn-text">编辑</text>
-            </view>
-            <view class="material-action-btn material-action-btn--edit">
-              <text class="material-action-btn-text">查看</text>
+            <view class="material-card-actions">
+              <view class="material-action-btn material-action-btn--delete" @tap="onDelete(item)">
+                <text class="material-action-btn-text material-action-btn-text--delete">删除</text>
+              </view>
+              <view class="material-action-btn material-action-btn--edit" @tap="onEdit(item)">
+                <text class="material-action-btn-text">编辑</text>
+              </view>
+              <view class="material-action-btn material-action-btn--edit" @tap="onView(item)">
+                <text class="material-action-btn-text">查看</text>
+              </view>
             </view>
           </view>
         </view>
+        <view v-if="loading && materialList.length > 0" class="material-empty">
+          <text class="material-empty-text">加载更多...</text>
+        </view>
+        <view v-if="!loading && materialList.length === 0" class="material-empty">
+          <text class="material-empty-text">暂无素材</text>
+        </view>
+        <text v-if="!hasMore && materialList.length > 0" class="material-more">没有更多了</text>
       </scroll-view>
     </view>
 
@@ -88,8 +108,8 @@
           <scroll-view class="filter-content" scroll-y :enhanced="true" :show-scrollbar="false">
             <view class="org-tags">
               <view class="org-tag-row">
-                <view v-for="s in tabs2" :key="s" class="org-tag" :class="{ 'org-tag--active': filterType === s }"
-                  @tap="filterType = s; showFilter = false">
+                <view v-for="s in typeOptions" :key="s" class="org-tag" :class="{ 'org-tag--active': filterType === s }"
+                  @tap="onFilterTap(s)">
                   <text class="org-tag-text" :class="{ 'org-tag-text--active': filterType === s }">{{ s }}</text>
                 </view>
               </view>
@@ -106,32 +126,203 @@
         </view>
       </view>
     </nut-popup>
+
+    <!-- 删除确认弹窗 -->
+    <nut-popup v-model:visible="showDeletePopup" position="center" :style="{ borderRadius: '24rpx', width: '510rpx' }" :z-index="2100">
+      <view class="delete-popup">
+        <text class="delete-popup-title">删除素材</text>
+        <text class="delete-popup-desc">请确认是否删除该素材</text>
+        <view class="delete-popup-actions">
+          <view class="delete-popup-btn delete-popup-btn--cancel" @tap="showDeletePopup = false">
+            <text class="delete-popup-btn-text--cancel">取消</text>
+          </view>
+          <view class="delete-popup-btn delete-popup-btn--confirm" @tap="onDeleteConfirm">
+            <text class="delete-popup-btn-text--confirm">确认</text>
+          </view>
+        </view>
+      </view>
+    </nut-popup>
   </view>
 </template>
 
-<script setup>
-import { ref } from 'vue'
+<script setup lang="ts">
+import { ref, onMounted } from 'vue'
 import Taro from '@tarojs/taro'
 import iconSearch from '@/assets/dev/icon-search.png'
 import iconFilter from '@/assets/dev/icon-filter.png'
 import iconAdd from '@/assets/dev/icon-add.png'
 import navBar from '@/components/NavBar.vue'
-
-const activeTab = ref('应用案例')
-const activeCat = ref('应用案例1')
-const tabs = ['应用案例', '使用说明', '安装说明', '产品详解', '公司简介', '开发公海', '大公海']
-const tabs2 = ['全部', '图文', '视频', '海报', '资料']
-const cats = ['应用案例1', '应用案例2', '应用案例3', '重点客户跟进情况']
-
-const materialList = ref([1, 2, 3, 4, 5, 6])
+import { getUserInfo } from '@/utils/storage'
+import {
+  getFolderTree,
+  getMaterialList,
+  deleteMaterial,
+  MATERIAL_TYPE_MAP,
+  type FolderNode,
+  type MaterialItem,
+} from '@/api/material'
 
 const keyword = ref('')
 const showFilter = ref(false)
 const filterType = ref('全部')
+const typeOptions = ['全部', '图文', '视频', '海报', '资料']
+const TYPE_REVERSE_MAP: Record<string, string> = {
+  '全部': '',
+  '图文': 'article',
+  '海报': 'poster',
+  '视频': 'video',
+  '资料': 'document',
+}
 
-const goAdd = () => {
+// 文件夹
+const folders = ref<FolderNode[]>([])
+const activeFolderId = ref<number>(0)
+const activeChildFolderId = ref<number>(0)
+
+const currentChildFolders = ref<FolderNode[]>([])
+
+function updateChildFolders() {
+  if (activeFolderId.value === 0) {
+    currentChildFolders.value = []
+  } else {
+    const parent = folders.value.find(f => f.id === activeFolderId.value)
+    currentChildFolders.value = parent?.children || []
+  }
+}
+
+// 列表
+const materialList = ref<MaterialItem[]>([])
+const loading = ref(false)
+const page = ref(1)
+const pageSize = 10
+const hasMore = ref(true)
+const total = ref(0)
+
+let searchTimer: ReturnType<typeof setTimeout> | null = null
+
+async function fetchFolders() {
+  try {
+    const data = await getFolderTree()
+    folders.value = data || []
+    updateChildFolders()
+  } catch {
+    // ignore
+  }
+}
+
+async function fetchList(reset = false) {
+  if (loading.value) return
+  if (reset) {
+    page.value = 1
+    materialList.value = []
+    hasMore.value = true
+  }
+  if (!hasMore.value && !reset) return
+  loading.value = true
+  try {
+    const userInfo = getUserInfo<{ companyId: number; departmentId: number }>()
+    const params: Record<string, unknown> = {
+      page: page.value,
+      pageSize,
+      companyId: userInfo?.companyId,
+    }
+    if (keyword.value) params.name = keyword.value
+    if (activeChildFolderId.value > 0) {
+      params.folderId = activeChildFolderId.value
+    } else if (activeFolderId.value > 0) {
+      params.folderId = activeFolderId.value
+    }
+    if (filterType.value !== '全部') {
+      params.types = [TYPE_REVERSE_MAP[filterType.value]]
+    }
+    const res = await getMaterialList(params)
+    if (reset) {
+      materialList.value = res.items || []
+    } else {
+      materialList.value = [...materialList.value, ...(res.items || [])]
+    }
+    total.value = res.total
+    hasMore.value = materialList.value.length < res.total
+  } catch {
+    // ignore
+  } finally {
+    loading.value = false
+  }
+}
+
+function onSearchInput() {
+  if (searchTimer) clearTimeout(searchTimer)
+  searchTimer = setTimeout(() => {
+    fetchList(true)
+  }, 300)
+}
+
+function onLoadMore() {
+  if (loading.value || !hasMore.value) return
+  page.value++
+  fetchList(false)
+}
+
+function onFolderTap(folder: FolderNode | null) {
+  activeFolderId.value = folder ? folder.id : 0
+  activeChildFolderId.value = 0
+  updateChildFolders()
+  fetchList(true)
+}
+
+function onChildFolderTap(child: FolderNode) {
+  activeChildFolderId.value = child.id
+  fetchList(true)
+}
+
+function onFilterTap(type: string) {
+  filterType.value = type
+  showFilter.value = false
+  fetchList(true)
+}
+
+function onFilterConfirm() {
+  showFilter.value = false
+  fetchList(true)
+}
+
+// 删除
+const showDeletePopup = ref(false)
+const deleteTarget = ref<MaterialItem | null>(null)
+
+function onDelete(item: MaterialItem) {
+  deleteTarget.value = item
+  showDeletePopup.value = true
+}
+
+async function onDeleteConfirm() {
+  showDeletePopup.value = false
+  if (!deleteTarget.value) return
+  try {
+    await deleteMaterial(deleteTarget.value.id, deleteTarget.value.companyId)
+    Taro.showToast({ title: '已删除', icon: 'success' })
+    fetchList(true)
+  } catch {
+    // ignore
+  }
+}
+
+function onEdit(item: MaterialItem) {
+  Taro.navigateTo({ url: `/subpackages/ops/mine/material/detail/index?id=${item.id}&companyId=${item.companyId}` })
+}
+
+function onView(item: MaterialItem) {
+  Taro.navigateTo({ url: `/subpackages/ops/mine/material/detail/index?id=${item.id}&companyId=${item.companyId}` })
+}
+
+function goAdd() {
   Taro.navigateTo({ url: '/subpackages/ops/mine/material/add/index' })
 }
+
+onMounted(() => {
+  fetchFolders()
+  fetchList(true)
+})
 </script>
 
 <style>
@@ -279,6 +470,26 @@ const goAdd = () => {
   display: flex;
   gap: 20rpx;
   align-items: center;
+}
+.material-scroll {
+  height: calc(100vh - 88rpx - 36rpx - 116rpx - 90rpx - 60rpx - 110rpx);
+}
+.material-empty {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 80rpx 0;
+}
+.material-empty-text {
+  font-size: 28rpx;
+  color: #9292A5;
+}
+.material-more {
+  display: block;
+  text-align: center;
+  font-size: 24rpx;
+  color: #9292A5;
+  padding: 40rpx 0 80rpx;
 }
 .material-thumb {
   width: 96rpx;
@@ -497,6 +708,56 @@ const goAdd = () => {
 .filter-footer-submit-text {
   font-size: 32rpx;
   font-weight: 500;
+  color: #FFFFFF;
+}
+
+.delete-popup {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10rpx;
+  padding: 40rpx;
+}
+.delete-popup-title {
+  font-size: 34rpx;
+  font-weight: 500;
+  color: #1A1D24;
+  text-align: center;
+  width: 100%;
+}
+.delete-popup-desc {
+  font-size: 30rpx;
+  color: #62687D;
+  text-align: center;
+  width: 398rpx;
+}
+.delete-popup-actions {
+  display: flex;
+  gap: 32rpx;
+  align-self: stretch;
+  margin-top: 6rpx;
+}
+.delete-popup-btn {
+  flex: 1;
+  height: 76rpx;
+  border-radius: 8rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.delete-popup-btn--cancel {
+  background: #EDFAF5;
+  border: 2rpx solid #37AE7E;
+}
+.delete-popup-btn-text--cancel {
+  font-size: 32rpx;
+  color: #37AE7E;
+}
+.delete-popup-btn--confirm {
+  background: #37AE7E;
+}
+.delete-popup-btn-text--confirm {
+  font-size: 32rpx;
   color: #FFFFFF;
 }
 </style>

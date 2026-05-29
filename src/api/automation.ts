@@ -117,8 +117,8 @@ export interface MutationResponse {
 // ========== 状态映射 ==========
 
 export const TASK_STATUS_MAP: Record<string, string> = {
-  pending: '待开始',
-  running: '进行中',
+  pending: '待执行',
+  running: '执行中或循环中',
   completed: '已完成',
   cancelled: '已取消',
 }
@@ -138,8 +138,8 @@ export function getTaskList(params?: TaskListParams): Promise<ListTasksResponse>
 }
 
 /** 查询营销任务详情 */
-export function getTaskDetail(id: number): Promise<TaskDetailResponse> {
-  return get<TaskDetailResponse>(`/automation/tasks/${id}`)
+export function getTaskDetail(id: number, companyId: number): Promise<TaskDetailResponse> {
+  return get<TaskDetailResponse>(`/automation/tasks/${id}`, { companyId })
 }
 
 /** 新增营销任务 */

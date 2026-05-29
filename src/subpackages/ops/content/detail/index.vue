@@ -114,9 +114,10 @@ function formatChannels(channels: { name: string }[]): string {
 async function fetchDetail() {
   const instance = Taro.getCurrentInstance()
   const id = Number(instance.router?.params?.id)
-  if (!id) return
+  const companyId = Number(instance.router?.params?.companyId)
+  if (!id || !companyId) return
   try {
-    const res = await getTaskDetail(id)
+    const res = await getTaskDetail(id, companyId)
     detail.value = res
   } catch {
     // 错误已在 request 层统一处理

@@ -27,18 +27,20 @@
 
       <view class="form-row">
         <text class="form-label">素材封面</text>
-        <view class="cover-upload">
-          <image class="cover-plus" :src="iconPlus" mode="aspectFit" />
-          <text class="cover-text">点击上传</text>
+        <view class="cover-upload" @tap="onUploadCover">
+          <image v-if="form.coverUrl" class="cover-preview" :src="form.coverUrl" mode="aspectFill" />
+          <image v-else class="cover-plus" :src="iconPlus" mode="aspectFit" />
+          <text v-if="!form.coverUrl" class="cover-text">点击上传</text>
         </view>
       </view>
       <view class="form-divider" />
-      
+
       <view class="form-row">
         <text class="form-label">海报图片</text>
-        <view class="cover-upload">
-          <image class="cover-plus" :src="iconPlus" mode="aspectFit" />
-          <text class="cover-text">点击上传</text>
+        <view class="cover-upload" @tap="onUploadPoster">
+          <image v-if="form.posterUrl" class="cover-preview" :src="form.posterUrl" mode="aspectFill" />
+          <image v-else class="cover-plus" :src="iconPlus" mode="aspectFit" />
+          <text v-if="!form.posterUrl" class="cover-text">点击上传</text>
         </view>
       </view>
     </view>
@@ -57,24 +59,36 @@
   </view>
 </template>
 
-<script setup>
+<script setup lang="ts">
 import { ref, reactive } from 'vue'
 import Taro from '@tarojs/taro'
 import rightArrowIcon from '@/assets/dev/rightArror.png'
 import iconPlus from '@/assets/dev/plus.png'
 import navBar from '@/components/NavBar.vue'
+import { getUserInfo } from '@/utils/storage'
+import { createMaterial, uploadFile, type MaterialFileInput } from '@/api/material'
+
+const TYPE_MAP: Record<string, string> = {
+  '图文': 'article',
+  '海报': 'poster',
+  '视频': 'video',
+  '资料': 'document',
+}
+
 const form = reactive({
   type: '图文',
   name: '',
   desc: '',
+  coverUrl: '',
+  posterUrl: '',
 })
 
-let editorCtx = null
+let editorCtx: any = null
 
 const typeOptions = ['图文', '海报', '视频', '资料']
 const typeIndex = ref(0)
 
-const onTypeChange = (e) => {
+const onTypeChange = (e: { detail: { value: number } }) => {
   typeIndex.value = e.detail.value
   form.type = typeOptions[e.detail.value]
 }
@@ -85,8 +99,103 @@ const onEditorReady = () => {
   }).exec()
 }
 
-const onSelectType = () => {}
-const onSave = () => { Taro.navigateBack() }
+function getEditorHtml(): Promise<string> {
+  return new Promise((resolve) => {
+    if (!editorCtx) {
+      resolve('')
+      return
+    }
+    editorCtx.getContents({
+      success: (res: { html?: string }) => {
+        resolve(res.html || '')
+      },
+      fail: () => {
+        resolve('')
+      },
+    })
+  })
+}
+
+/** 上传封面图片 */
+async function onUploadCover() {
+  try {
+    const res = await Taro.chooseImage({
+      count: 1,
+      sizeType: ['compressed'],
+      sourceType: ['album', 'camera'],
+    })
+    const filePath = res.tempFilePaths[0]
+    Taro.showLoading({ title: '上传中...' })
+    const uploadRes = await uploadFile(filePath, 'automation/material')
+    form.coverUrl = uploadRes.url
+    Taro.hideLoading()
+    Taro.showToast({ title: '上传成功', icon: 'success' })
+  } catch (err) {
+    Taro.hideLoading()
+    if ((err as { errMsg?: string }).errMsg?.includes('cancel')) return
+    Taro.showToast({ title: '上传失败', icon: 'none' })
+  }
+}
+
+/** 上传海报图片 */
+async function onUploadPoster() {
+  try {
+    const res = await Taro.chooseImage({
+      count: 1,
+      sizeType: ['compressed'],
+      sourceType: ['album', 'camera'],
+    })
+    const filePath = res.tempFilePaths[0]
+    Taro.showLoading({ title: '上传中...' })
+    const uploadRes = await uploadFile(filePath, 'automation/material')
+    form.posterUrl = uploadRes.url
+    Taro.hideLoading()
+    Taro.showToast({ title: '上传成功', icon: 'success' })
+  } catch (err) {
+    Taro.hideLoading()
+    if ((err as { errMsg?: string }).errMsg?.includes('cancel')) return
+    Taro.showToast({ title: '上传失败', icon: 'none' })
+  }
+}
+
+const onSave = async () => {
+  if (!form.name) {
+    Taro.showToast({ title: '请输入素材名称', icon: 'none' })
+    return
+  }
+
+  const userInfo = getUserInfo<{ companyId: number; departmentId: number }>()
+  const companyId = userInfo?.companyId || 0
+  const departmentId = userInfo?.departmentId || 0
+
+  // 构建文件列表
+  const files: MaterialFileInput[] = []
+  if (form.coverUrl) {
+    files.push({ fileUrl: form.coverUrl, fileRole: 'cover', fileName: 'cover' })
+  }
+  if (form.posterUrl) {
+    files.push({ fileUrl: form.posterUrl, fileRole: 'poster', fileName: 'poster' })
+  }
+
+  const contentHtml = await getEditorHtml()
+
+  try {
+    await createMaterial({
+      name: form.name,
+      summary: form.desc,
+      materialType: TYPE_MAP[form.type] || 'article',
+      companyId,
+      departmentId,
+      contentHtml,
+      files,
+    })
+    Taro.showToast({ title: '创建成功', icon: 'success' })
+    setTimeout(() => Taro.navigateBack(), 1500)
+  } catch {
+    // ignore
+  }
+}
+
 const goBack = () => { Taro.navigateBack() }
 </script>
 
@@ -155,6 +264,11 @@ const goBack = () => { Taro.navigateBack() }
 .cover-plus {
   width: 36rpx;
   height: 36rpx;
+}
+.cover-preview {
+  width: 100%;
+  height: 100%;
+  border-radius: 8rpx;
 }
 .cover-text {
   font-size: 30rpx;

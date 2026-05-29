@@ -18,7 +18,7 @@
         <view class="form-row" @tap="onSelectCustomer">
           <text class="form-label">受众客户</text>
           <view class="form-value-row">
-            <text class="form-value" :class="{ 'form-value--set': form.customer }">{{ form.customer || '请选择' }}</text>
+            <text class="form-value" :class="{ 'form-value--set': form.audienceLabel }">{{ form.audienceLabel || '请选择' }}</text>
             <image class="form-arrow" :src="rightArrowIcon" mode="aspectFit" />
           </view>
         </view>
@@ -27,7 +27,7 @@
         <view class="form-row" @tap="onSelectChannel">
           <text class="form-label">营销渠道（可多选）</text>
           <view class="form-value-row">
-            <text class="form-value" :class="{ 'form-value--set': form.channel }">{{ form.channel || '请选择' }}</text>
+            <text class="form-value" :class="{ 'form-value--set': form.channelLabel }">{{ form.channelLabel || '请选择' }}</text>
             <image class="form-arrow" :src="rightArrowIcon" mode="aspectFit" />
           </view>
         </view>
@@ -48,12 +48,14 @@
         </view>
         <view class="form-divider" />
 
-        <view class="form-row" @tap="onSelectStartTime">
+        <view class="form-row">
           <text class="form-label">任务开始时间</text>
-          <view class="form-value-row">
-            <text class="form-value" :class="{ 'form-value--set': form.startTime }">{{ form.startTime || '请选择' }}</text>
-            <image class="form-arrow" :src="rightArrowIcon" mode="aspectFit" />
-          </view>
+          <picker mode="date" :value="form.startTime" @change="onDateChange">
+            <view class="form-value-row01">
+              <text class="form-value" :class="{ 'form-value--set': form.startTime }">{{ form.startTime || '请选择' }}</text>
+              <image class="form-arrow" :src="rightArrowIcon" mode="aspectFit" />
+            </view>
+          </picker>
         </view>
       </view>
 
@@ -83,50 +85,77 @@
           <text class="material-header-btn material-header-confirm" @tap="onMaterialConfirm">确认</text>
         </view>
 
-        <scroll-view class="material-tabs-scroll" scroll-x="true" :enhanced="true" :show-scrollbar="false">
+        <view class="material-tabs-scroll">
           <view class="material-tabs">
-            <view
-              v-for="tab in materialTabs"
-              :key="tab"
-              class="material-tab"
-              :class="{ 'material-tab--active': activeMaterialTab === tab }"
-              @tap="activeMaterialTab = tab"
-            >
-              <text class="material-tab-text" :class="{ 'material-tab-text--active': activeMaterialTab === tab }">{{ tab }}</text>
+            <view class="material-tab" :class="{ 'material-tab--active': activeFolderId === 0 }" @tap="onFolderTap(null)">
+              <text class="material-tab-text" :class="{ 'material-tab-text--active': activeFolderId === 0 }">全部</text>
             </view>
-          </view>
-        </scroll-view>
-
-        <view class="material-cats">
-          <view
-            v-for="cat in materialCats"
-            :key="cat"
-            class="material-cat"
-            :class="{ 'material-cat--active': selectedCat === cat }"
-            @tap="selectedCat = cat"
-          >
-            <text class="material-cat-text" :class="{ 'material-cat-text--active': selectedCat === cat }">{{ cat }}</text>
+            <view
+              v-for="folder in folders"
+              :key="folder.id"
+              class="material-tab"
+              :class="{ 'material-tab--active': activeFolderId === folder.id }"
+              @tap="onFolderTap(folder)"
+            >
+              <text class="material-tab-text" :class="{ 'material-tab-text--active': activeFolderId === folder.id }">{{ folder.name }}</text>
+            </view>
           </view>
         </view>
 
-        <scroll-view class="material-list" scroll-y="true" :enhanced="true" :show-scrollbar="false">
-          <view v-for="item in materialList" :key="item.name" class="material-card">
+        <view v-if="currentChildFolders.length > 0" class="material-cats">
+          <view
+            v-for="child in currentChildFolders"
+            :key="child.id"
+            class="material-cat"
+            :class="{ 'material-cat--active': activeChildFolderId === child.id }"
+            @tap="onChildFolderTap(child)"
+          >
+            <text class="material-cat-text" :class="{ 'material-cat-text--active': activeChildFolderId === child.id }">{{ child.name }}</text>
+          </view>
+        </view>
+
+        <scroll-view class="material-list" scroll-y="true" :enhanced="true" :show-scrollbar="false" @scrolltolower="onMaterialLoadMore">
+          <view v-for="item in materialList" :key="item.id" class="material-card">
             <view class="material-card-body">
-              <view class="material-thumb" />
+              <image class="material-thumb" :src="item.coverUrl" mode="aspectFill" />
               <view class="material-texts">
                 <text class="material-title">{{ item.name }}</text>
-                <text class="material-desc">{{ item.desc }}</text>
+                <text class="material-desc">{{ item.summary || '-' }}</text>
               </view>
             </view>
             <view
               class="material-action"
-              :class="{ 'material-action--selected': selectedMaterials.includes(item.name), 'material-action--cancel': !selectedMaterials.includes(item.name) && item.inactive }"
-              @tap="toggleMaterial(item.name)"
+              :class="{ 'material-action--selected': selectedMaterialIds.includes(item.id) }"
+              @tap="toggleMaterial(item)"
             >
               <text
                 class="material-action-text"
-                :class="{ 'material-action-text--selected': selectedMaterials.includes(item.name), 'material-action-text--cancel': !selectedMaterials.includes(item.name) && item.inactive }"
-              >{{ selectedMaterials.includes(item.name) ? '已选' : (item.inactive ? '取消' : '选择') }}</text>
+                :class="{ 'material-action-text--selected': selectedMaterialIds.includes(item.id) }"
+              >{{ selectedMaterialIds.includes(item.id) ? '已选' : '选择' }}</text>
+            </view>
+          </view>
+        </scroll-view>
+      </view>
+    </nut-popup>
+
+    <!-- 渠道选择弹窗 -->
+    <nut-popup v-model:visible="showChannelPopup" position="bottom" :style="{ borderRadius: '24rpx 24rpx 0 0' }" :z-index="2000" safe-area-inset-bottom>
+      <view class="channel-popup">
+        <view class="channel-popup-header">
+          <text class="channel-popup-header-btn" @tap="showChannelPopup = false">取消</text>
+          <text class="channel-popup-header-title">选择营销渠道</text>
+          <text class="channel-popup-header-btn channel-popup-header-confirm" @tap="onChannelConfirm">确认</text>
+        </view>
+        <scroll-view class="channel-popup-list" scroll-y="true" :enhanced="true" :show-scrollbar="false">
+          <view class="org-tag-row">
+            <view
+              v-for="channel in channelList"
+              :key="channel.id"
+              class="org-tag"
+              :class="{ 'org-tag--active': selectedChannelIds.includes(channel.id) }"
+              @tap="toggleChannel(channel)"
+            >
+              <text class="org-tag-text" :class="{ 'org-tag-text--active': selectedChannelIds.includes(channel.id) }">{{ channel.name }}</text>
             </view>
           </view>
         </scroll-view>
@@ -136,22 +165,33 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive } from 'vue'
+import { ref, reactive, onMounted } from 'vue'
 import Taro from '@tarojs/taro'
 import rightArrowIcon from '@/assets/dev/rightArror.png'
 import navBar from '@/components/NavBar.vue'
 import { createTask } from '@/api/automation'
+import { getUserInfo } from '@/utils/storage'
+import { getChannelList, type ChannelItem } from '@/api/platform'
+import { getFolderTree, getMaterialList, type FolderNode, type MaterialItem } from '@/api/material'
 
 const form = reactive({
   name: '',
-  customer: '',
-  channel: '',
+  audienceType: '',
+  audienceLabel: '',
+  channelIds: [] as number[],
+  channelLabel: '',
   loop: false,
   interval: '',
   startTime: '',
+  contentHtml: '',
 })
 
-let editorCtx: unknown = null
+const audienceOptions = [
+  { label: '所有客户', value: 'all_customers' },
+  { label: '一个月以上未联系客户', value: 'inactive_over_30_days' },
+]
+
+let editorCtx: any = null
 
 const onEditorReady = () => {
   Taro.createSelectorQuery().select('#editor').context((res) => {
@@ -159,72 +199,225 @@ const onEditorReady = () => {
   }).exec()
 }
 
-const onSelectCustomer = () => {
-  Taro.showToast({ title: '受众选择开发中', icon: 'none' })
+/** 读取编辑器 HTML 内容 */
+function getEditorHtml(): Promise<string> {
+  return new Promise((resolve) => {
+    if (!editorCtx) {
+      resolve(form.contentHtml || '')
+      return
+    }
+    editorCtx.getContents({
+      success: (res: { html?: string; text?: string }) => {
+        resolve(res.html || '')
+      },
+      fail: () => {
+        resolve(form.contentHtml || '')
+      },
+    })
+  })
 }
+
+const onSelectCustomer = () => {
+  Taro.showActionSheet({
+    itemList: audienceOptions.map(o => o.label),
+    success: (res) => {
+      const opt = audienceOptions[res.tapIndex]
+      form.audienceType = opt.value
+      form.audienceLabel = opt.label
+    },
+  })
+}
+
+// 渠道多选
+const channelList = ref<any>([])
+const showChannelPopup = ref(false)
+const selectedChannelIds = ref<number[]>([])
+
+async function fetchChannels() {
+  try {
+    const res = await getChannelList()
+    channelList.value = res || []
+  } catch {
+    // ignore
+  }
+}
+
 const onSelectChannel = () => {
-  Taro.showToast({ title: '渠道选择开发中', icon: 'none' })
+  selectedChannelIds.value = [...form.channelIds]
+  showChannelPopup.value = true
+}
+
+const toggleChannel = (channel: ChannelItem) => {
+  const idx = selectedChannelIds.value.indexOf(channel.id)
+  if (idx >= 0) {
+    selectedChannelIds.value.splice(idx, 1)
+  } else {
+    selectedChannelIds.value.push(channel.id)
+  }
+}
+
+const onChannelConfirm = () => {
+  form.channelIds = [...selectedChannelIds.value]
+  form.channelLabel = channelList.value
+    .filter(c => form.channelIds.includes(c.id))
+    .map(c => c.name)
+    .join('、')
+  showChannelPopup.value = false
 }
 const onToggleLoop = () => { form.loop = !form.loop }
-const onSelectStartTime = () => {
-  Taro.showToast({ title: '时间选择开发中', icon: 'none' })
+
+const onDateChange = (e: { detail: { value: string } }) => {
+  form.startTime = e.detail.value
 }
 
 // 素材相关
 const showMaterialPopup = ref(false)
-const activeMaterialTab = ref('应用案例')
-const materialTabs = ['应用案例', '使用说明', '安装说明', '公司简介']
-const selectedCat = ref('应用案例1')
-const materialCats = ['应用案例1', '应用案例2', '应用案例3', '重点客户跟进情况']
-const selectedMaterials = ref<string[]>([])
+const folders = ref<FolderNode[]>([])
+const activeFolderId = ref<number>(0)
+const activeChildFolderId = ref<number>(0)
+const currentChildFolders = ref<FolderNode[]>([])
 
-const materialList = [
-  { name: '这是素材内容的标题', desc: '秋季新品发布海报秋季新', inactive: false },
-  { name: '这是素材内容的标题', desc: '秋季新品发布海报秋季新报', inactive: true },
-  { name: '这是素材内容的标题', desc: '秋季新品发布海报秋季新品发布海报秋季新品发布海报', inactive: false },
-  { name: '这是素材内容的标题', desc: '秋季新品发布海报秋季新品发布海报秋季新品发布海报', inactive: false },
-  { name: '这是素材内容的标题', desc: '秋季新品发布海报秋季新品发布海报秋季新品发布海报', inactive: false },
-  { name: '这是素材内容的标题', desc: '秋季新品发布海报秋季新品发布海报秋季新品发布海报', inactive: false },
-]
-
-const toggleMaterial = (name: string) => {
-  const idx = selectedMaterials.value.indexOf(name)
-  if (idx >= 0) {
-    selectedMaterials.value.splice(idx, 1)
+function updateChildFolders() {
+  if (activeFolderId.value === 0) {
+    currentChildFolders.value = []
   } else {
-    selectedMaterials.value.push(name)
+    const parent = folders.value.find(f => f.id === activeFolderId.value)
+    currentChildFolders.value = parent?.children || []
   }
 }
 
-const onMaterialConfirm = () => {
+const materialList = ref<MaterialItem[]>([])
+const materialLoading = ref(false)
+const materialPage = ref(1)
+const materialHasMore = ref(true)
+const materialPageSize = 10
+
+const selectedMaterialIds = ref<number[]>([])
+
+async function fetchFolders() {
+  try {
+    const data = await getFolderTree()
+    
+    folders.value = data || []
+    updateChildFolders()
+  } catch {
+    // ignore
+  }
+}
+
+async function fetchMaterialList(reset = false) {
+  if (materialLoading.value) return
+  if (reset) {
+    materialPage.value = 1
+    materialList.value = []
+    materialHasMore.value = true
+  }
+  if (!materialHasMore.value && !reset) return
+  materialLoading.value = true
+  try {
+    const userInfo = getUserInfo<{ companyId: number }>()
+    const params: Record<string, unknown> = {
+      page: materialPage.value,
+      pageSize: materialPageSize,
+      companyId: userInfo?.companyId,
+    }
+    if (activeChildFolderId.value > 0) {
+      params.folderId = activeChildFolderId.value
+    } else if (activeFolderId.value > 0) {
+      params.folderId = activeFolderId.value
+    }
+    const res = await getMaterialList(params)
+    if (reset) {
+      materialList.value = res.items || []
+    } else {
+      materialList.value = [...materialList.value, ...(res.items || [])]
+    }
+    materialHasMore.value = materialList.value.length < res.total
+  } catch {
+    // ignore
+  } finally {
+    materialLoading.value = false
+  }
+}
+
+function onFolderTap(folder: FolderNode | null) {
+  activeFolderId.value = folder ? folder.id : 0
+  activeChildFolderId.value = 0
+  updateChildFolders()
+  fetchMaterialList(true)
+}
+
+function onChildFolderTap(child: FolderNode) {
+  activeChildFolderId.value = child.id
+  fetchMaterialList(true)
+}
+
+function toggleMaterial(item: MaterialItem) {
+  const idx = selectedMaterialIds.value.indexOf(item.id)
+  if (idx >= 0) {
+    selectedMaterialIds.value.splice(idx, 1)
+  } else {
+    selectedMaterialIds.value.push(item.id)
+  }
+}
+
+function onMaterialConfirm() {
   showMaterialPopup.value = false
 }
 
-const onSelectMaterial = () => {
+function onSelectMaterial() {
   showMaterialPopup.value = true
+    if (folders.value.length === 0) {
+      fetchFolders().then(() => fetchMaterialList(true))
+      fetchFolders()
+    } else {
+      fetchMaterialList(true)
+    }
+}
+
+function onMaterialLoadMore() {
+  if (materialLoading.value || !materialHasMore.value) return
+  materialPage.value++
+  fetchMaterialList(false)
 }
 
 const goBack = () => {
   Taro.navigateBack()
 }
 
+onMounted(() => {
+  fetchChannels()
+})
+
 const onSave = async () => {
   if (!form.name) {
     Taro.showToast({ title: '请输入任务名称', icon: 'none' })
     return
   }
+  if (!form.startTime) {
+    Taro.showToast({ title: '请选择任务开始时间', icon: 'none' })
+    return
+  }
+
+  const userInfo = getUserInfo<{ companyId: number; departmentId: number }>()
+  const companyId = userInfo?.companyId || 0
+  const departmentId = userInfo?.departmentId || 0
+
+  // 读取编辑器 HTML 内容
+  const contentHtml = await getEditorHtml()
+
   try {
     await createTask({
       name: form.name,
-      audienceType: '',
-      channelIds: [],
-      companyId: 0,
-      departmentId: 0,
-      contentHtml: '',
+      audienceType: form.audienceType,
+      channelIds: form.channelIds,
+      companyId,
+      departmentId,
+      contentHtml,
       isRecurring: form.loop,
       recurrenceIntervalDays: Number(form.interval) || 0,
-      materialIds: [],
-      startAt: form.startTime || '',
+      materialIds: selectedMaterialIds.value,
+      startAt: form.startTime,
     })
     Taro.showToast({ title: '创建成功', icon: 'success' })
     setTimeout(() => Taro.navigateBack(), 1500)
@@ -279,6 +472,11 @@ const onSave = async () => {
   align-items: center;
   gap: 8rpx;
   max-width: 60%;
+}
+.form-value-row01 {
+  display: flex;
+  align-items: center;
+  gap: 8rpx;
 }
 .form-input {
   font-size: 30rpx;
@@ -369,12 +567,14 @@ const onSave = async () => {
 .material-popup {
   display: flex;
   flex-direction: column;
+  max-height: 75vh;
+  overflow: hidden;
 }
 .material-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 24rpx 40rpx;
+  padding: 28rpx 40rpx;
 }
 .material-header-btn {
   font-size: 32rpx;
@@ -390,6 +590,7 @@ const onSave = async () => {
 }
 .material-tabs-scroll {
   border-bottom: 1rpx solid #E6EBF0;
+  overflow-x: auto;
   white-space: nowrap;
 }
 .material-tabs {
@@ -427,6 +628,8 @@ const onSave = async () => {
   border-radius: 6rpx;
   background: #FFFFFF;
   border: 2rpx solid #E8EAF3;
+  white-space: nowrap;
+  height: 40rpx;
 }
 .material-cat--active {
   background: #EDFAF5;
@@ -441,10 +644,8 @@ const onSave = async () => {
 }
 .material-list {
   flex: 1;
+  min-height: 0;
   padding: 0 40rpx 40rpx;
-  display: flex;
-  flex-direction: column;
-  gap: 16rpx;
   box-sizing: border-box;
 }
 .material-card {
@@ -520,5 +721,57 @@ const onSave = async () => {
 }
 .material-action-text--cancel {
   color: #F53F3F;
+}
+
+.channel-popup {
+  display: flex;
+  flex-direction: column;
+  max-height: 800rpx;
+}
+.channel-popup-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 24rpx 40rpx;
+  flex-shrink: 0;
+}
+.channel-popup-header-btn {
+  font-size: 32rpx;
+  color: #828593;
+}
+.channel-popup-header-title {
+  font-size: 34rpx;
+  font-weight: 500;
+  color: #333333;
+}
+.channel-popup-header-confirm {
+  color: #37AE7E;
+}
+.channel-popup-list {
+  max-height: 600rpx;
+  padding: 0 40rpx 40rpx;
+}
+.org-tag-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 24rpx;
+}
+.org-tag {
+  width: calc(50% - 12rpx);
+  padding: 12rpx 10rpx;
+  background: #F6F7FB;
+  border-radius: 6rpx;
+  text-align: center;
+  box-sizing: border-box;
+}
+.org-tag--active {
+  background: #EDFAF5;
+}
+.org-tag-text {
+  font-size: 26rpx;
+  color: #62687D;
+}
+.org-tag-text--active {
+  color: #37AE7E;
 }
 </style>

@@ -21,7 +21,8 @@
       "Bash(node -e ' *)",
       "Bash(mkdir -p .firecrawl)",
       "Bash(git filter-branch *)",
-      "Bash(mkdir -p c:/tangwei/miniWeapp/.firecrawl)"
+      "Bash(mkdir -p c:/tangwei/miniWeapp/.firecrawl)",
+      "Bash(wc -l \"c:\\\\\\\\tangwei\\\\\\\\miniWeapp\\\\\\\\dber-backend\\\\\\\\API.openapi.json\")"
     ],
     "additionalDirectories": [
       "c:\\tangwei\\miniWeapp"

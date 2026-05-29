@@ -129,7 +129,7 @@
 
 <script setup lang="ts">
 import { ref } from 'vue'
-import Taro from '@tarojs/taro'
+import Taro, { useDidShow } from '@tarojs/taro'
 import TabBar from '../tabs/index.vue'
 import { getTaskList, deleteTask, TASK_STATUS_MAP, TASK_STATUS_BADGE_MAP, type TaskListItem } from '@/api/automation'
 import iconSearch from '@/assets/dev/icon-search.png'
@@ -145,11 +145,11 @@ const hasMore = ref(true)
 
 const showFilter = ref(false)
 const selectedStatus = ref('全部')
-const statusOptions = ['全部', '待开始', '进行中', '已完成', '已取消']
+const statusOptions = ['全部', '待执行', '执行中或循环中', '已完成', '已取消']
 
 const statusValueMap: Record<string, string> = {
-  '待开始': 'pending',
-  '进行中': 'running',
+  '待执行': 'pending',
+  '执行中或循环中': 'running',
   '已完成': 'completed',
   '已取消': 'cancelled',
 }
@@ -208,7 +208,7 @@ function onFilterConfirm() {
 }
 
 function onView(item: TaskListItem) {
-  Taro.navigateTo({ url: '/subpackages/ops/content/detail/index?id=' + item.id })
+  Taro.navigateTo({ url: `/subpackages/ops/content/detail/index?id=${item.id}&companyId=${item.companyId}` })
 }
 
 const showDeletePopup = ref(false)
@@ -235,7 +235,9 @@ const goAdd = () => {
   Taro.navigateTo({ url: '/subpackages/ops/content/add/index' })
 }
 
-fetchList(true)
+useDidShow(() => {
+  fetchList(true)
+})
 </script>
 
 <style>
