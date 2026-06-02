@@ -5,7 +5,7 @@
       <view class="banner-mask" />
       <view class="banner-info">
         <text class="banner-title">老板工作台</text>
-        <text class="banner-subtitle" @tap="showFilter = true">快速高效好伙伴！</text>
+        <text class="banner-subtitle" @tap="showFilter = true">{{ filterLabel }}</text>
       </view>
     </view>
 
@@ -90,90 +90,7 @@
 
     <tab-bar />
 
-    <nut-popup v-model:visible="showFilter" position="bottom" :style="{ borderRadius: '24rpx 24rpx 0 0', height: '1022rpx' }" :z-index="2000" safe-area-inset-bottom>
-      <view class="filter-popup">
-        <view class="filter-header">
-          <text class="filter-header-title">全部筛选</text>
-        </view>
-
-        <view class="filter-body">
-          <view class="filter-sidebar">
-            <view
-              class="filter-sidebar-item"
-              :class="{ 'filter-sidebar-item--active': filterIdx === 0 }"
-              @tap="filterIdx = 0"
-            >
-              <text class="filter-sidebar-text" :class="{ 'filter-sidebar-text--active': filterIdx === 0 }">公司/部门/员工</text>
-            </view>
-          </view>
-
-          <scroll-view class="filter-content" scroll-y :enhanced="true" :show-scrollbar="false">
-            <view v-if="filterIdx === 0" class="org-tags">
-              <text class="org-cat-title">公司</text>
-              <view class="org-tag-row">
-                <view
-                  v-for="c in companyList"
-                  :key="c"
-                  class="org-tag"
-                  :class="{ 'org-tag--active': selectedTags.includes(c) }"
-                  @tap="toggleTag(c)"
-                >
-                  <text class="org-tag-text" :class="{ 'org-tag-text--active': selectedTags.includes(c) }">{{ c }}</text>
-                </view>
-              </view>
-
-              <text class="org-cat-title">部门</text>
-              <view class="org-tag-row">
-                <view
-                  v-for="d in deptList"
-                  :key="d"
-                  class="org-tag"
-                  :class="{ 'org-tag--active': selectedTags.includes(d) }"
-                  @tap="toggleTag(d)"
-                >
-                  <text class="org-tag-text" :class="{ 'org-tag-text--active': selectedTags.includes(d) }">{{ d }}</text>
-                </view>
-              </view>
-
-              <text class="org-cat-title">子部门</text>
-              <view class="org-tag-row">
-                <view
-                  v-for="s in subDeptList"
-                  :key="s"
-                  class="org-tag"
-                  :class="{ 'org-tag--active': selectedTags.includes(s) }"
-                  @tap="toggleTag(s)"
-                >
-                  <text class="org-tag-text" :class="{ 'org-tag-text--active': selectedTags.includes(s) }">{{ s }}</text>
-                </view>
-              </view>
-
-              <text class="org-cat-title">员工</text>
-              <view class="org-tag-row" v-for="(row, ri) in employeeRows" :key="ri">
-                <view
-                  v-for="e in row"
-                  :key="e"
-                  class="org-tag"
-                  :class="{ 'org-tag--active': selectedTags.includes(e) }"
-                  @tap="toggleTag(e)"
-                >
-                  <text class="org-tag-text" :class="{ 'org-tag-text--active': selectedTags.includes(e) }">{{ e }}</text>
-                </view>
-              </view>
-            </view>
-          </scroll-view>
-        </view>
-
-        <view class="filter-footer">
-          <view class="filter-footer-btn filter-footer-clear" @tap="clearTags">
-            <text class="filter-footer-clear-text">清空选择</text>
-          </view>
-          <view class="filter-footer-btn filter-footer-submit" @tap="onFilterConfirm">
-            <text class="filter-footer-submit-text">确认</text>
-          </view>
-        </view>
-      </view>
-    </nut-popup>
+    <BossFilterPopup v-model="showFilter" :sidebar-items="filterSidebarItems" @confirm="onFilterConfirm" @clear="filterLabel = '全部'" />
 
   </view>
 </template>
@@ -185,6 +102,7 @@ import TabBar from '../../boss/tabs/index.vue'
 import DuplicateCheckPopup from '@/subpackages/dev/customer/components/DuplicateCheckPopup.vue'
 import { getDevelopmentDashboard } from '@/api/reporting'
 import { getCustomerList } from '@/api/customer'
+import BossFilterPopup from '../../boss/components/BossFilterPopup.vue'
 import wechatIcon from '@/assets/dev/icon-wechat.png'
 import gradeIcon from '@/assets/dev/icon-grade.png'
 import locationIcon from '@/assets/dev/icon-location.png'
@@ -236,55 +154,27 @@ const activeNames = ref([])
 const focusCards = ref([])
 
 const showFilter = ref(false)
-const filterIdx = ref(0)
-const datePickerTarget = ref('start')
-const startTime = ref('')
-const endTime = ref('')
 
-const datePopupTitle = computed(() => datePickerTarget.value === 'start' ? '选择开始时间' : '选择结束时间')
-
-const selectedTags = ref([])
-
-const companyList = ['德贝尔总公司', '江苏扬州办事处', '江苏苏州办事处', '江苏徐州办事处']
-const deptList = ['销售总部', '开发总部', '财务总部', '外贸总部']
-const subDeptList = ['销售一部', '销售二部']
-const employeeRows = [
-  ['张传送', '李治廷'],
-  ['仇茂茂', '李聪'],
-  ['屈伊', '陈子奕'],
-  ['仇茂茂', '李聪'],
+const filterSidebarItems = [
+  { label: '负责人', type: 'userCascader' },
+  { label: '时间', type: 'time' },
 ]
 
-const toggleTag = (tag) => {
-  const idx = selectedTags.value.indexOf(tag)
-  if (idx >= 0) {
-    selectedTags.value.splice(idx, 1)
-  } else {
-    selectedTags.value.push(tag)
+const filterParams = ref({})
+const filterLabel = ref('全部')
+
+const onFilterConfirm = (result) => {
+  if (result.type === 'userCascader') {
+    filterParams.value.companyId = result.companyId
+    filterParams.value.departmentId = result.departmentId
+    filterParams.value.operatorId = result.userId
+    filterLabel.value = result.userCascaderPath || result.userName || '全部'
+  } else if (result.type === 'time') {
+    filterParams.value.startDate = result.startTime || undefined
+    filterParams.value.endDate = result.endTime || undefined
+    filterLabel.value = (result.startTime && result.endTime) ? `${result.startTime} ~ ${result.endTime}` : '全部'
   }
-}
-
-const clearTags = () => {
-  selectedTags.value = []
-  startTime.value = ''
-  endTime.value = ''
-}
-
-const onFilterConfirm = () => {
-  showFilter.value = false
-}
-
-
-const onDateConfirm = () => {
-  const y = years[pickerValue.value[0]]
-  const m = months[pickerValue.value[1]]
-  const d = days.value[pickerValue.value[2]]
-  const dateStr = `${y}-${m < 10 ? '0' + m : m}-${d < 10 ? '0' + d : d}`
-  if (datePickerTarget.value === 'start') {
-    startTime.value = dateStr
-  } else {
-    endTime.value = dateStr
-  }
+  loadDashboard()
 }
 
 const showSearchPopup = ref(false)
@@ -298,29 +188,19 @@ const onNearbyConfirm = () => {
   showNearbyPopup.value = false
 }
 
-const now = new Date()
-const currentYear = now.getFullYear()
-const years = Array.from({ length: 5 }, (_, i) => currentYear - 2 + i)
-const months = Array.from({ length: 12 }, (_, i) => i + 1)
-
-const daysInMonth = (y, m) => new Date(y, m, 0).getDate()
-const days = computed(() => {
-  const y = years[pickerValue.value[0]]
-  const m = months[pickerValue.value[1]]
-  return Array.from({ length: daysInMonth(y, m) }, (_, i) => i + 1)
-})
-
-const pickerValue = ref([2, now.getMonth(), now.getDate() - 1])
-
-const onPickerChange = (e) => {
-  pickerValue.value = e.detail.value
-}
-
-onMounted(async () => {
+async function loadDashboard() {
+  const params = filterParams.value
   try {
+    const arrayParams = {
+      ...(params.companyId ? { companyId: params.companyId } : {}),
+      ...(params.departmentId ? { departmentId: params.departmentId } : {}),
+      ...(params.operatorId ? { operatorId: params.operatorId } : {}),
+      ...(params.startDate ? { startDate: params.startDate } : {}),
+      ...(params.endDate ? { endDate: params.endDate } : {}),
+    }
     const [res, customerRes] = await Promise.all([
-      getDevelopmentDashboard(),
-      getCustomerList({ levels: 'A' }),
+      getDevelopmentDashboard(arrayParams),
+      getCustomerList({ level: 'A' }),
     ])
     const panels = []
     for (const [key, meta] of Object.entries(PANEL_META)) {
@@ -347,6 +227,10 @@ onMounted(async () => {
   } catch {
     // 看板数据加载失败使用空列表
   }
+}
+
+onMounted(() => {
+  loadDashboard()
 })
 </script>
 
