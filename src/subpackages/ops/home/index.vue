@@ -24,76 +24,33 @@
         </view>
 
         <nut-collapse v-model="activeNames" expand-icon-placement="right">
-          <nut-collapse-item name="follow" :border="false">
+          <nut-collapse-item v-for="panel in dashboardPanels" :key="panel.name" :name="panel.name" :border="false">
+            <template #icon>
+              <image class="collapse-arrow" :class="{ 'collapse-arrow--open': activeNames.includes(panel.name) }" :src="iconExpandArrow" mode="aspectFit" />
+            </template>
             <template #title>
               <view class="section-head">
                 <view class="section-title-row">
                   <view class="dot" />
-                  <text class="section-title">运营概况</text>
+                  <text class="section-title">{{ panel.title }}</text>
                 </view>
               </view>
             </template>
 
             <view class="s-divider" />
 
-            <view class="stats-row">
-              <view class="stat-card">
-                <text class="stat-label">内容发布量</text>
-                <text class="stat-num">1,286</text>
-                <view class="stat-change up">
-                  <view class="arrow-up" />
-                  <text class="change-text">15.3%</text>
+            <view v-for="(row, ri) in panel.statsRows" :key="ri">
+              <view class="stats-row">
+                <view v-for="(stat, si) in row" :key="si" class="stat-card" :class="{ 'stat-card--hidden': !stat.label }">
+                  <text class="stat-label">{{ stat.label }}</text>
+                  <text class="stat-num">{{ stat.value }}</text>
+                  <view v-if="stat.label" class="stat-change" :class="stat.changeRate >= 0 ? 'up' : 'down'">
+                    <view :class="stat.changeRate >= 0 ? 'arrow-up' : 'arrow-down'" />
+                    <text class="change-text">{{ Math.abs(stat.changeRate) }}%</text>
+                  </view>
                 </view>
               </view>
-              <view class="v-divider" />
-              <view class="stat-card">
-                <text class="stat-label">线索获取量</text>
-                <text class="stat-num">3,472</text>
-                <view class="stat-change up">
-                  <view class="arrow-up" />
-                  <text class="change-text">22.1%</text>
-                </view>
-              </view>
-              <view class="v-divider" />
-              <view class="stat-card">
-                <text class="stat-label">线索转化率</text>
-                <text class="stat-num">18.6%</text>
-                <view class="stat-change up">
-                  <view class="arrow-up" />
-                  <text class="change-text">3.2%</text>
-                </view>
-              </view>
-            </view>
-
-            <view class="s-divider" />
-
-            <view class="stats-row">
-              <view class="stat-card">
-                <text class="stat-label">营销活动数</text>
-                <text class="stat-num">24</text>
-                <view class="stat-change up">
-                  <view class="arrow-up" />
-                  <text class="change-text">8.5%</text>
-                </view>
-              </view>
-              <view class="v-divider" />
-              <view class="stat-card">
-                <text class="stat-label">活动参与人数</text>
-                <text class="stat-num">5,891</text>
-                <view class="stat-change up">
-                  <view class="arrow-up" />
-                  <text class="change-text">31.7%</text>
-                </view>
-              </view>
-              <view class="v-divider" />
-              <view class="stat-card">
-                <text class="stat-label">内容传播量</text>
-                <text class="stat-num">12,478</text>
-                <view class="stat-change up">
-                  <view class="arrow-up" />
-                  <text class="change-text">45.2%</text>
-                </view>
-              </view>
+              <view v-if="ri < panel.statsRows.length - 1" class="s-divider" />
             </view>
           </nut-collapse-item>
         </nut-collapse>
@@ -303,10 +260,11 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import Taro from '@tarojs/taro'
 import TabBar from '../tabs/index.vue'
 import DuplicateCheckPopup from '@/subpackages/dev/customer/components/DuplicateCheckPopup.vue'
+import { getOperationsDashboard } from '@/api/reporting'
 import wechatIcon from '@/assets/dev/icon-wechat.png'
 import gradeIcon from '@/assets/dev/icon-grade.png'
 import locationIcon from '@/assets/dev/icon-location.png'
@@ -318,8 +276,39 @@ import iconFilter from '@/assets/dev/icon-filter.png'
 import iconTaskHeader from '@/assets/dev/icon-task-header.png'
 import iconPhone from '@/assets/dev/icon-phone.png'
 import iconIndustry from '@/assets/dev/icon-industry.png'
+import iconExpandArrow from '@/assets/dev/upArror.png'
 
-const activeNames = ref(['follow'])
+const dashboardPanels = ref([])
+
+const PANEL_META = {
+  overview: { name: 'overview', title: '运营概况' },
+  leads:    { name: 'leads',    title: '线索数据' },
+  adFlow:   { name: 'adFlow',   title: '投流数据' },
+}
+
+function buildStatsRows(metrics) {
+  const rows = []
+  for (let i = 0; i < metrics.length; i += 3) {
+    const row = []
+    for (let j = 0; j < 3; j++) {
+      const idx = i + j
+      if (idx >= metrics.length) {
+        row.push({ label: '', value: '', changeRate: 0 })
+      } else {
+        const m = metrics[idx]
+        row.push({
+          label: m.label,
+          value: String(m.value ?? '-'),
+          changeRate: m.changeRate || 0,
+        })
+      }
+    }
+    rows.push(row)
+  }
+  return rows
+}
+
+const activeNames = ref([])
 const activeTaskTab = ref(0)
 
 const currentCards = computed(() => {
@@ -426,6 +415,23 @@ const pickerValue = ref([2, now.getMonth(), now.getDate() - 1])
 const onPickerChange = (e) => {
   pickerValue.value = e.detail.value
 }
+
+onMounted(async () => {
+  try {
+    const res = await getOperationsDashboard()
+    const panels = []
+    for (const [key, meta] of Object.entries(PANEL_META)) {
+      const metricsResp = res[key]
+      if (metricsResp?.metrics && metricsResp.metrics.length > 0) {
+        panels.push({ name: meta.name, title: meta.title, statsRows: buildStatsRows(metricsResp.metrics) })
+      }
+    }
+    dashboardPanels.value = panels
+    activeNames.value = panels.map(p => p.name)
+  } catch {
+    // 看板数据加载失败使用空列表
+  }
+})
 </script>
 
 <style>
@@ -561,6 +567,15 @@ const onPickerChange = (e) => {
   align-items: center;
   justify-content: space-between;
   padding: 28rpx 0;
+}
+.collapse-arrow {
+  width: 28rpx;
+  height: 28rpx;
+  transition: transform 0.2s;
+  transform: rotate(180deg);
+}
+.collapse-arrow--open {
+  transform: rotate(0deg);
 }
 .section-title-row {
   display: flex;

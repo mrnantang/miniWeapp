@@ -12,9 +12,6 @@
         <view class="leads-btn" @tap="showFilter = true">
           <image :src="iconFilter" mode="aspectFit" />
         </view>
-        <view class="leads-btn" @tap="goAdd">
-          <image :src="iconAdd" mode="aspectFit" />
-        </view>
       </view>
 
       <scroll-view class="material-tabs-scroll" scroll-x="true" :enhanced="true" :show-scrollbar="false">
@@ -48,7 +45,7 @@
           <text class="material-empty-text">加载中...</text>
         </view>
         <view v-else class="material-list">
-          <view v-for="item in materialList" :key="item.id" class="material-card">
+          <view v-for="item in materialList" :key="item.id" class="material-card" @tap="onView(item)">
             <view class="material-card-top">
               <image class="material-thumb" :src="item.coverUrl" mode="aspectFill" />
               <view class="material-card-right">
@@ -61,17 +58,6 @@
                 <text class="material-desc">{{ item.summary || '-' }}</text>
               </view>
             </view>
-            <view class="material-card-actions">
-              <view class="material-action-btn material-action-btn--delete" @tap="onDelete(item)">
-                <text class="material-action-btn-text material-action-btn-text--delete">删除</text>
-              </view>
-              <view class="material-action-btn material-action-btn--edit" @tap="onEdit(item)">
-                <text class="material-action-btn-text">编辑</text>
-              </view>
-              <view class="material-action-btn material-action-btn--edit" @tap="onView(item)">
-                <text class="material-action-btn-text">查看</text>
-              </view>
-            </view>
           </view>
         </view>
         <view v-if="loading && materialList.length > 0" class="material-empty">
@@ -82,15 +68,6 @@
         </view>
         <text v-if="!hasMore && materialList.length > 0" class="material-more">没有更多了</text>
       </scroll-view>
-    </view>
-
-    <view class="material-bottom-bar">
-      <view class="material-bottom-btn">
-        <text class="material-bottom-btn-text">编辑素材文件夹</text>
-      </view>
-      <view class="material-bottom-btn">
-        <text class="material-bottom-btn-text">素材类型管理</text>
-      </view>
     </view>
 
     <nut-popup v-model:visible="showFilter" position="bottom"
@@ -127,36 +104,19 @@
       </view>
     </nut-popup>
 
-    <!-- 删除确认弹窗 -->
-    <nut-popup v-model:visible="showDeletePopup" position="center" :style="{ borderRadius: '24rpx', width: '510rpx' }" :z-index="2100">
-      <view class="delete-popup">
-        <text class="delete-popup-title">删除素材</text>
-        <text class="delete-popup-desc">请确认是否删除该素材</text>
-        <view class="delete-popup-actions">
-          <view class="delete-popup-btn delete-popup-btn--cancel" @tap="showDeletePopup = false">
-            <text class="delete-popup-btn-text--cancel">取消</text>
-          </view>
-          <view class="delete-popup-btn delete-popup-btn--confirm" @tap="onDeleteConfirm">
-            <text class="delete-popup-btn-text--confirm">确认</text>
-          </view>
-        </view>
-      </view>
-    </nut-popup>
   </view>
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
-import Taro from '@tarojs/taro'
+import { ref } from 'vue'
+import Taro, { useDidShow } from '@tarojs/taro'
 import iconSearch from '@/assets/dev/icon-search.png'
 import iconFilter from '@/assets/dev/icon-filter.png'
-import iconAdd from '@/assets/dev/icon-add.png'
 import navBar from '@/components/NavBar.vue'
 import { getUserInfo } from '@/utils/storage'
 import {
   getFolderTree,
   getMaterialList,
-  deleteMaterial,
   MATERIAL_TYPE_MAP,
   type FolderNode,
   type MaterialItem,
@@ -286,40 +246,11 @@ function onFilterConfirm() {
   fetchList(true)
 }
 
-// 删除
-const showDeletePopup = ref(false)
-const deleteTarget = ref<MaterialItem | null>(null)
-
-function onDelete(item: MaterialItem) {
-  deleteTarget.value = item
-  showDeletePopup.value = true
-}
-
-async function onDeleteConfirm() {
-  showDeletePopup.value = false
-  if (!deleteTarget.value) return
-  try {
-    await deleteMaterial(deleteTarget.value.id, deleteTarget.value.companyId)
-    Taro.showToast({ title: '已删除', icon: 'success' })
-    fetchList(true)
-  } catch {
-    // ignore
-  }
-}
-
-function onEdit(item: MaterialItem) {
-  Taro.navigateTo({ url: `/subpackages/ops/mine/material/detail/index?id=${item.id}&companyId=${item.companyId}` })
-}
-
 function onView(item: MaterialItem) {
   Taro.navigateTo({ url: `/subpackages/ops/mine/material/detail/index?id=${item.id}&companyId=${item.companyId}` })
 }
 
-function goAdd() {
-  Taro.navigateTo({ url: '/subpackages/ops/mine/material/add/index' })
-}
-
-onMounted(() => {
+useDidShow(() => {
   fetchFolders()
   fetchList(true)
 })
@@ -462,9 +393,6 @@ onMounted(() => {
   border: 2rpx solid #ECEBEB;
   border-radius: 16rpx;
   padding: 28rpx;
-  display: flex;
-  flex-direction: column;
-  gap: 28rpx;
 }
 .material-card-top {
   display: flex;
@@ -472,7 +400,7 @@ onMounted(() => {
   align-items: center;
 }
 .material-scroll {
-  height: calc(100vh - 88rpx - 36rpx - 116rpx - 90rpx - 60rpx - 110rpx);
+  height: calc(100vh - 88rpx - 36rpx - 116rpx - 90rpx - 60rpx);
 }
 .material-empty {
   display: flex;
@@ -537,56 +465,6 @@ onMounted(() => {
   text-overflow: ellipsis;
   white-space: nowrap;
 }
-.material-card-actions {
-  display: flex;
-  gap: 16rpx;
-}
-.material-action-btn {
-  flex: 1;
-  height: 64rpx;
-  border-radius: 8rpx;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-.material-action-btn--delete {
-  background: #FFF0F0;
-  border: 1rpx solid #FFD8D8;
-}
-.material-action-btn--edit {
-  background: #FFFFFF;
-  border: 1rpx solid #37AE7E;
-}
-.material-action-btn-text {
-  font-size: 28rpx;
-  color: #37AE7E;
-}
-.material-action-btn-text--delete {
-  color: #F53F3F;
-}
-
-.material-bottom-bar {
-  display: flex;
-  gap: 28rpx;
-  padding: 16rpx 40rpx calc(16rpx + env(safe-area-inset-bottom));
-  background: #FFFFFF;
-}
-.material-bottom-btn {
-  flex: 1;
-  height: 72rpx;
-  border-radius: 8rpx;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: #EFFDF7;
-  border: 2rpx solid #5CC79C;
-}
-.material-bottom-btn-text {
-  font-size: 32rpx;
-  font-weight: 500;
-  color: #5CC79C;
-}
-
 .filter-popup {
   display: flex;
   flex-direction: column;
@@ -711,53 +589,4 @@ onMounted(() => {
   color: #FFFFFF;
 }
 
-.delete-popup {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 10rpx;
-  padding: 40rpx;
-}
-.delete-popup-title {
-  font-size: 34rpx;
-  font-weight: 500;
-  color: #1A1D24;
-  text-align: center;
-  width: 100%;
-}
-.delete-popup-desc {
-  font-size: 30rpx;
-  color: #62687D;
-  text-align: center;
-  width: 398rpx;
-}
-.delete-popup-actions {
-  display: flex;
-  gap: 32rpx;
-  align-self: stretch;
-  margin-top: 6rpx;
-}
-.delete-popup-btn {
-  flex: 1;
-  height: 76rpx;
-  border-radius: 8rpx;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-.delete-popup-btn--cancel {
-  background: #EDFAF5;
-  border: 2rpx solid #37AE7E;
-}
-.delete-popup-btn-text--cancel {
-  font-size: 32rpx;
-  color: #37AE7E;
-}
-.delete-popup-btn--confirm {
-  background: #37AE7E;
-}
-.delete-popup-btn-text--confirm {
-  font-size: 32rpx;
-  color: #FFFFFF;
-}
 </style>

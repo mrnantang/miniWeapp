@@ -1,6 +1,9 @@
 import { get, post, put, del } from '@/utils/request'
 import Taro from '@tarojs/taro'
 
+// TARO_APP_API_BASE 由构建配置 defineConstants 注入
+declare const TARO_APP_API_BASE: string
+
 // ========== 类型定义 ==========
 
 /** 素材文件 */
@@ -175,7 +178,7 @@ export async function uploadFile(filePath: string, directory?: string): Promise<
   const token = Taro.getStorageSync('token')
   return new Promise((resolve, reject) => {
     Taro.uploadFile({
-      url: 'http://124.223.105.21:8080/api/uploads',
+      url: `${TARO_APP_API_BASE}/uploads`,
       filePath,
       name: 'file',
       header: {

@@ -123,6 +123,9 @@
     },
     {
       "name": "Finance SalesReport"
+    },
+    {
+      "name": "Contract Share"
     }
   ],
   "paths": {
@@ -5882,6 +5885,356 @@
         ]
       }
     },
+    "/api/reporting/development/dashboard": {
+      "get": {
+        "summary": "查询招商数据看板",
+        "deprecated": false,
+        "description": "根据公司、部门、人员和日期范围查询招商数据看板整页聚合数据",
+        "tags": [
+          "Reporting"
+        ],
+        "parameters": [
+          {
+            "name": "companyId",
+            "in": "query",
+            "description": "公司 ID",
+            "required": false,
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "departmentId",
+            "in": "query",
+            "description": "部门 ID",
+            "required": false,
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "operatorId",
+            "in": "query",
+            "description": "人员 ID",
+            "required": false,
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "startDate",
+            "in": "query",
+            "description": "开始日期，格式 YYYY-MM-DD",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "endDate",
+            "in": "query",
+            "description": "结束日期，格式 YYYY-MM-DD",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/ResponseEnvelope"
+                    },
+                    {
+                      "properties": {
+                        "data": {
+                          "$ref": "#/components/schemas/dto.StaffDashboardResponse"
+                        }
+                      },
+                      "type": "object"
+                    }
+                  ]
+                }
+              }
+            },
+            "headers": {}
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/BadRequestEnvelope"
+                    },
+                    {
+                      "properties": {
+                        "data": {
+                          "$ref": "#/components/schemas/EmptyData"
+                        }
+                      },
+                      "type": "object"
+                    }
+                  ]
+                }
+              }
+            },
+            "headers": {}
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/UnauthorizedEnvelope"
+                    },
+                    {
+                      "properties": {
+                        "data": {
+                          "$ref": "#/components/schemas/EmptyData"
+                        }
+                      },
+                      "type": "object"
+                    }
+                  ]
+                }
+              }
+            },
+            "headers": {}
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/ForbiddenEnvelope"
+                    },
+                    {
+                      "properties": {
+                        "data": {
+                          "$ref": "#/components/schemas/EmptyData"
+                        }
+                      },
+                      "type": "object"
+                    }
+                  ]
+                }
+              }
+            },
+            "headers": {}
+          },
+          "503": {
+            "description": "Service Unavailable",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/ServiceUnavailableEnvelope"
+                    },
+                    {
+                      "properties": {
+                        "data": {
+                          "$ref": "#/components/schemas/EmptyData"
+                        }
+                      },
+                      "type": "object"
+                    }
+                  ]
+                }
+              }
+            },
+            "headers": {}
+          }
+        },
+        "security": []
+      }
+    },
+    "/api/reporting/finance/dashboard": {
+      "get": {
+        "summary": "查询财务数据看板",
+        "deprecated": false,
+        "description": "根据公司、部门、人员和日期范围查询财务数据看板整页聚合数据",
+        "tags": [
+          "Reporting"
+        ],
+        "parameters": [
+          {
+            "name": "companyId",
+            "in": "query",
+            "description": "公司 ID",
+            "required": false,
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "departmentId",
+            "in": "query",
+            "description": "部门 ID",
+            "required": false,
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "operatorId",
+            "in": "query",
+            "description": "人员 ID",
+            "required": false,
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "startDate",
+            "in": "query",
+            "description": "开始日期，格式 YYYY-MM-DD",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "endDate",
+            "in": "query",
+            "description": "结束日期，格式 YYYY-MM-DD",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/ResponseEnvelope"
+                    },
+                    {
+                      "properties": {
+                        "data": {
+                          "$ref": "#/components/schemas/dto.FinanceDashboardResponse"
+                        }
+                      },
+                      "type": "object"
+                    }
+                  ]
+                }
+              }
+            },
+            "headers": {}
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/BadRequestEnvelope"
+                    },
+                    {
+                      "properties": {
+                        "data": {
+                          "$ref": "#/components/schemas/EmptyData"
+                        }
+                      },
+                      "type": "object"
+                    }
+                  ]
+                }
+              }
+            },
+            "headers": {}
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/UnauthorizedEnvelope"
+                    },
+                    {
+                      "properties": {
+                        "data": {
+                          "$ref": "#/components/schemas/EmptyData"
+                        }
+                      },
+                      "type": "object"
+                    }
+                  ]
+                }
+              }
+            },
+            "headers": {}
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/ForbiddenEnvelope"
+                    },
+                    {
+                      "properties": {
+                        "data": {
+                          "$ref": "#/components/schemas/EmptyData"
+                        }
+                      },
+                      "type": "object"
+                    }
+                  ]
+                }
+              }
+            },
+            "headers": {}
+          },
+          "503": {
+            "description": "Service Unavailable",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/ServiceUnavailableEnvelope"
+                    },
+                    {
+                      "properties": {
+                        "data": {
+                          "$ref": "#/components/schemas/EmptyData"
+                        }
+                      },
+                      "type": "object"
+                    }
+                  ]
+                }
+              }
+            },
+            "headers": {}
+          }
+        },
+        "security": []
+      }
+    },
     "/api/reporting/operations/ad-flow": {
       "get": {
         "summary": "查询广告投流分析",
@@ -5969,6 +6322,52 @@
                   "allOf": [
                     {
                       "$ref": "#/components/schemas/BadRequestEnvelope"
+                    },
+                    {
+                      "properties": {
+                        "data": {
+                          "$ref": "#/components/schemas/EmptyData"
+                        }
+                      },
+                      "type": "object"
+                    }
+                  ]
+                }
+              }
+            },
+            "headers": {}
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/UnauthorizedEnvelope"
+                    },
+                    {
+                      "properties": {
+                        "data": {
+                          "$ref": "#/components/schemas/EmptyData"
+                        }
+                      },
+                      "type": "object"
+                    }
+                  ]
+                }
+              }
+            },
+            "headers": {}
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/ForbiddenEnvelope"
                     },
                     {
                       "properties": {
@@ -6113,6 +6512,640 @@
             },
             "headers": {}
           },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/UnauthorizedEnvelope"
+                    },
+                    {
+                      "properties": {
+                        "data": {
+                          "$ref": "#/components/schemas/EmptyData"
+                        }
+                      },
+                      "type": "object"
+                    }
+                  ]
+                }
+              }
+            },
+            "headers": {}
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/ForbiddenEnvelope"
+                    },
+                    {
+                      "properties": {
+                        "data": {
+                          "$ref": "#/components/schemas/EmptyData"
+                        }
+                      },
+                      "type": "object"
+                    }
+                  ]
+                }
+              }
+            },
+            "headers": {}
+          },
+          "503": {
+            "description": "Service Unavailable",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/ServiceUnavailableEnvelope"
+                    },
+                    {
+                      "properties": {
+                        "data": {
+                          "$ref": "#/components/schemas/EmptyData"
+                        }
+                      },
+                      "type": "object"
+                    }
+                  ]
+                }
+              }
+            },
+            "headers": {}
+          }
+        },
+        "security": []
+      }
+    },
+    "/api/reporting/operations/dashboard": {
+      "get": {
+        "summary": "查询运营数据看板",
+        "deprecated": false,
+        "description": "根据公司、部门、人员和日期范围查询运营数据看板整页聚合数据",
+        "tags": [
+          "Reporting"
+        ],
+        "parameters": [
+          {
+            "name": "companyId",
+            "in": "query",
+            "description": "公司 ID",
+            "required": false,
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "departmentId",
+            "in": "query",
+            "description": "部门 ID",
+            "required": false,
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "operatorId",
+            "in": "query",
+            "description": "人员 ID",
+            "required": false,
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "startDate",
+            "in": "query",
+            "description": "开始日期，格式 YYYY-MM-DD",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "endDate",
+            "in": "query",
+            "description": "结束日期，格式 YYYY-MM-DD",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/ResponseEnvelope"
+                    },
+                    {
+                      "properties": {
+                        "data": {
+                          "$ref": "#/components/schemas/dto.OperationsDashboardResponse"
+                        }
+                      },
+                      "type": "object"
+                    }
+                  ]
+                }
+              }
+            },
+            "headers": {}
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/BadRequestEnvelope"
+                    },
+                    {
+                      "properties": {
+                        "data": {
+                          "$ref": "#/components/schemas/EmptyData"
+                        }
+                      },
+                      "type": "object"
+                    }
+                  ]
+                }
+              }
+            },
+            "headers": {}
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/UnauthorizedEnvelope"
+                    },
+                    {
+                      "properties": {
+                        "data": {
+                          "$ref": "#/components/schemas/EmptyData"
+                        }
+                      },
+                      "type": "object"
+                    }
+                  ]
+                }
+              }
+            },
+            "headers": {}
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/ForbiddenEnvelope"
+                    },
+                    {
+                      "properties": {
+                        "data": {
+                          "$ref": "#/components/schemas/EmptyData"
+                        }
+                      },
+                      "type": "object"
+                    }
+                  ]
+                }
+              }
+            },
+            "headers": {}
+          },
+          "503": {
+            "description": "Service Unavailable",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/ServiceUnavailableEnvelope"
+                    },
+                    {
+                      "properties": {
+                        "data": {
+                          "$ref": "#/components/schemas/EmptyData"
+                        }
+                      },
+                      "type": "object"
+                    }
+                  ]
+                }
+              }
+            },
+            "headers": {}
+          }
+        },
+        "security": []
+      }
+    },
+    "/api/reporting/operations/deal-amounts": {
+      "get": {
+        "summary": "查询运营成交总金额明细",
+        "deprecated": false,
+        "description": "根据公司、部门、人员、日期范围和明细筛选条件分页查询运营成交总金额明细。数组参数支持重复传参或逗号分隔。",
+        "tags": [
+          "Reporting"
+        ],
+        "parameters": [
+          {
+            "name": "companyId",
+            "in": "query",
+            "description": "公司 ID",
+            "required": false,
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "departmentId",
+            "in": "query",
+            "description": "部门 ID",
+            "required": false,
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "operatorId",
+            "in": "query",
+            "description": "人员 ID",
+            "required": false,
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "startDate",
+            "in": "query",
+            "description": "开始日期，格式 YYYY-MM-DD",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "endDate",
+            "in": "query",
+            "description": "结束日期，格式 YYYY-MM-DD",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "operatorKeyword",
+            "in": "query",
+            "description": "运营人员姓名关键字",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "regionPaths",
+            "in": "query",
+            "description": "区域路径，格式 province:{省编码}/city:{市编码}/district:{区县编码}，可只传省或省市",
+            "required": false,
+            "schema": {
+              "items": {
+                "type": "string"
+              },
+              "type": "array"
+            }
+          },
+          {
+            "name": "dealCycles",
+            "in": "query",
+            "description": "首单成交周期，枚举值：30d=30天、60d=60天、90d=90天、half_year=半年内、one_year=一年、custom=自定义时间段",
+            "required": false,
+            "schema": {
+              "items": {
+                "enum": [
+                  "30d",
+                  "60d",
+                  "90d",
+                  "half_year",
+                  "one_year",
+                  "custom"
+                ],
+                "type": "string"
+              },
+              "type": "array"
+            }
+          },
+          {
+            "name": "customDealCycleStartAt",
+            "in": "query",
+            "description": "自定义成交周期开始时间，dealCycles 包含 custom 时生效；支持 RFC3339、YYYY-MM-DD HH:mm:ss、YYYY-MM-DD HH:mm、YYYY-MM-DD",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "customDealCycleEndAt",
+            "in": "query",
+            "description": "自定义成交周期结束时间，dealCycles 包含 custom 时生效；支持 RFC3339、YYYY-MM-DD HH:mm:ss、YYYY-MM-DD HH:mm、YYYY-MM-DD",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "customerIndustries",
+            "in": "query",
+            "description": "客户行业，按客户行业原始值筛选",
+            "required": false,
+            "schema": {
+              "items": {
+                "type": "string"
+              },
+              "type": "array"
+            }
+          },
+          {
+            "name": "customerLevels",
+            "in": "query",
+            "description": "客户等级，按客户等级原始值筛选",
+            "required": false,
+            "schema": {
+              "items": {
+                "type": "string"
+              },
+              "type": "array"
+            }
+          },
+          {
+            "name": "leadOnlineAtStart",
+            "in": "query",
+            "description": "线索上线开始时间；支持 RFC3339、YYYY-MM-DD HH:mm:ss、YYYY-MM-DD HH:mm、YYYY-MM-DD",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "leadOnlineAtEnd",
+            "in": "query",
+            "description": "线索上线结束时间；支持 RFC3339、YYYY-MM-DD HH:mm:ss、YYYY-MM-DD HH:mm、YYYY-MM-DD",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "dealTypes",
+            "in": "query",
+            "description": "成交类型，枚举值：新客配件、复购配件、免费保修、付费维修、新客自动、新客手动、复购自动、复购手动",
+            "required": false,
+            "schema": {
+              "items": {
+                "enum": [
+                  "新客配件",
+                  "复购配件",
+                  "免费保修",
+                  "付费维修",
+                  "新客自动",
+                  "新客手动",
+                  "复购自动",
+                  "复购手动"
+                ],
+                "type": "string"
+              },
+              "type": "array"
+            }
+          },
+          {
+            "name": "gunType",
+            "in": "query",
+            "description": "喷枪类型，枚举值：自动、手动；也可能返回客户业务档案中维护的其他原始值",
+            "required": false,
+            "schema": {
+              "enum": [
+                "自动",
+                "手动"
+              ],
+              "type": "string"
+            }
+          },
+          {
+            "name": "channelTypes",
+            "in": "query",
+            "description": "渠道类型，枚举值：投流渠道、自然流渠道",
+            "required": false,
+            "schema": {
+              "items": {
+                "enum": [
+                  "投流渠道",
+                  "自然流渠道"
+                ],
+                "type": "string"
+              },
+              "type": "array"
+            }
+          },
+          {
+            "name": "cooperationModes",
+            "in": "query",
+            "description": "协作方式，枚举值：三方协作、运营销售、运营开发、独立签单、其他协作",
+            "required": false,
+            "schema": {
+              "items": {
+                "enum": [
+                  "三方协作",
+                  "运营销售",
+                  "运营开发",
+                  "独立签单",
+                  "其他协作"
+                ],
+                "type": "string"
+              },
+              "type": "array"
+            }
+          },
+          {
+            "name": "dealAtStart",
+            "in": "query",
+            "description": "成交开始时间；支持 RFC3339、YYYY-MM-DD HH:mm:ss、YYYY-MM-DD HH:mm、YYYY-MM-DD",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "dealAtEnd",
+            "in": "query",
+            "description": "成交结束时间；支持 RFC3339、YYYY-MM-DD HH:mm:ss、YYYY-MM-DD HH:mm、YYYY-MM-DD",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "description": "页码，默认 1",
+            "required": false,
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "pageSize",
+            "in": "query",
+            "description": "每页数量，默认 10，最大 100",
+            "required": false,
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "sortField",
+            "in": "query",
+            "description": "排序字段，枚举值：productQuantity=产品数量、expenseTotalAmount=费用合计、dealTotalAmount=成交总金额、dealAt=成交时间、leadOnlineAt=线索上线时间；默认 dealAt",
+            "required": false,
+            "schema": {
+              "enum": [
+                "productQuantity",
+                "expenseTotalAmount",
+                "dealTotalAmount",
+                "dealAt",
+                "leadOnlineAt"
+              ],
+              "type": "string"
+            }
+          },
+          {
+            "name": "sortOrder",
+            "in": "query",
+            "description": "排序方向，枚举值：ascend=升序、asc=升序、descend=降序、desc=降序；默认降序",
+            "required": false,
+            "schema": {
+              "enum": [
+                "ascend",
+                "asc",
+                "descend",
+                "desc"
+              ],
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/ResponseEnvelope"
+                    },
+                    {
+                      "properties": {
+                        "data": {
+                          "$ref": "#/components/schemas/dto.OperationsDealAmountListResponse"
+                        }
+                      },
+                      "type": "object"
+                    }
+                  ]
+                }
+              }
+            },
+            "headers": {}
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/BadRequestEnvelope"
+                    },
+                    {
+                      "properties": {
+                        "data": {
+                          "$ref": "#/components/schemas/EmptyData"
+                        }
+                      },
+                      "type": "object"
+                    }
+                  ]
+                }
+              }
+            },
+            "headers": {}
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/UnauthorizedEnvelope"
+                    },
+                    {
+                      "properties": {
+                        "data": {
+                          "$ref": "#/components/schemas/EmptyData"
+                        }
+                      },
+                      "type": "object"
+                    }
+                  ]
+                }
+              }
+            },
+            "headers": {}
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/ForbiddenEnvelope"
+                    },
+                    {
+                      "properties": {
+                        "data": {
+                          "$ref": "#/components/schemas/EmptyData"
+                        }
+                      },
+                      "type": "object"
+                    }
+                  ]
+                }
+              }
+            },
+            "headers": {}
+          },
           "503": {
             "description": "Service Unavailable",
             "content": {
@@ -6227,6 +7260,52 @@
                   "allOf": [
                     {
                       "$ref": "#/components/schemas/BadRequestEnvelope"
+                    },
+                    {
+                      "properties": {
+                        "data": {
+                          "$ref": "#/components/schemas/EmptyData"
+                        }
+                      },
+                      "type": "object"
+                    }
+                  ]
+                }
+              }
+            },
+            "headers": {}
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/UnauthorizedEnvelope"
+                    },
+                    {
+                      "properties": {
+                        "data": {
+                          "$ref": "#/components/schemas/EmptyData"
+                        }
+                      },
+                      "type": "object"
+                    }
+                  ]
+                }
+              }
+            },
+            "headers": {}
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/ForbiddenEnvelope"
                     },
                     {
                       "properties": {
@@ -6371,6 +7450,52 @@
             },
             "headers": {}
           },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/UnauthorizedEnvelope"
+                    },
+                    {
+                      "properties": {
+                        "data": {
+                          "$ref": "#/components/schemas/EmptyData"
+                        }
+                      },
+                      "type": "object"
+                    }
+                  ]
+                }
+              }
+            },
+            "headers": {}
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/ForbiddenEnvelope"
+                    },
+                    {
+                      "properties": {
+                        "data": {
+                          "$ref": "#/components/schemas/EmptyData"
+                        }
+                      },
+                      "type": "object"
+                    }
+                  ]
+                }
+              }
+            },
+            "headers": {}
+          },
           "503": {
             "description": "Service Unavailable",
             "content": {
@@ -6500,6 +7625,52 @@
             },
             "headers": {}
           },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/UnauthorizedEnvelope"
+                    },
+                    {
+                      "properties": {
+                        "data": {
+                          "$ref": "#/components/schemas/EmptyData"
+                        }
+                      },
+                      "type": "object"
+                    }
+                  ]
+                }
+              }
+            },
+            "headers": {}
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/ForbiddenEnvelope"
+                    },
+                    {
+                      "properties": {
+                        "data": {
+                          "$ref": "#/components/schemas/EmptyData"
+                        }
+                      },
+                      "type": "object"
+                    }
+                  ]
+                }
+              }
+            },
+            "headers": {}
+          },
           "503": {
             "description": "Service Unavailable",
             "content": {
@@ -6614,6 +7785,227 @@
                   "allOf": [
                     {
                       "$ref": "#/components/schemas/BadRequestEnvelope"
+                    },
+                    {
+                      "properties": {
+                        "data": {
+                          "$ref": "#/components/schemas/EmptyData"
+                        }
+                      },
+                      "type": "object"
+                    }
+                  ]
+                }
+              }
+            },
+            "headers": {}
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/UnauthorizedEnvelope"
+                    },
+                    {
+                      "properties": {
+                        "data": {
+                          "$ref": "#/components/schemas/EmptyData"
+                        }
+                      },
+                      "type": "object"
+                    }
+                  ]
+                }
+              }
+            },
+            "headers": {}
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/ForbiddenEnvelope"
+                    },
+                    {
+                      "properties": {
+                        "data": {
+                          "$ref": "#/components/schemas/EmptyData"
+                        }
+                      },
+                      "type": "object"
+                    }
+                  ]
+                }
+              }
+            },
+            "headers": {}
+          },
+          "503": {
+            "description": "Service Unavailable",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/ServiceUnavailableEnvelope"
+                    },
+                    {
+                      "properties": {
+                        "data": {
+                          "$ref": "#/components/schemas/EmptyData"
+                        }
+                      },
+                      "type": "object"
+                    }
+                  ]
+                }
+              }
+            },
+            "headers": {}
+          }
+        },
+        "security": []
+      }
+    },
+    "/api/reporting/sales/dashboard": {
+      "get": {
+        "summary": "查询销售数据看板",
+        "deprecated": false,
+        "description": "根据公司、部门、人员和日期范围查询销售数据看板整页聚合数据",
+        "tags": [
+          "Reporting"
+        ],
+        "parameters": [
+          {
+            "name": "companyId",
+            "in": "query",
+            "description": "公司 ID",
+            "required": false,
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "departmentId",
+            "in": "query",
+            "description": "部门 ID",
+            "required": false,
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "operatorId",
+            "in": "query",
+            "description": "人员 ID",
+            "required": false,
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "startDate",
+            "in": "query",
+            "description": "开始日期，格式 YYYY-MM-DD",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "endDate",
+            "in": "query",
+            "description": "结束日期，格式 YYYY-MM-DD",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/ResponseEnvelope"
+                    },
+                    {
+                      "properties": {
+                        "data": {
+                          "$ref": "#/components/schemas/dto.StaffDashboardResponse"
+                        }
+                      },
+                      "type": "object"
+                    }
+                  ]
+                }
+              }
+            },
+            "headers": {}
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/BadRequestEnvelope"
+                    },
+                    {
+                      "properties": {
+                        "data": {
+                          "$ref": "#/components/schemas/EmptyData"
+                        }
+                      },
+                      "type": "object"
+                    }
+                  ]
+                }
+              }
+            },
+            "headers": {}
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/UnauthorizedEnvelope"
+                    },
+                    {
+                      "properties": {
+                        "data": {
+                          "$ref": "#/components/schemas/EmptyData"
+                        }
+                      },
+                      "type": "object"
+                    }
+                  ]
+                }
+              }
+            },
+            "headers": {}
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/ForbiddenEnvelope"
                     },
                     {
                       "properties": {
@@ -9308,6 +10700,150 @@
                   "allOf": [
                     {
                       "$ref": "#/components/schemas/NotImplementedEnvelope"
+                    },
+                    {
+                      "properties": {
+                        "data": {
+                          "$ref": "#/components/schemas/EmptyData"
+                        }
+                      },
+                      "type": "object"
+                    }
+                  ]
+                }
+              }
+            },
+            "headers": {}
+          }
+        },
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ]
+      }
+    },
+    "/api/sales/contracts/{id}/share": {
+      "post": {
+        "summary": "生成合同分享链接",
+        "deprecated": false,
+        "description": "为合同生成可给客户访问的小程序预览分享链接",
+        "tags": [
+          "Contract"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "合同 ID",
+            "required": true,
+            "example": 0,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/ResponseEnvelope"
+                    },
+                    {
+                      "properties": {
+                        "data": {
+                          "$ref": "#/components/schemas/dto.ShareContractResponse"
+                        }
+                      },
+                      "type": "object"
+                    }
+                  ]
+                }
+              }
+            },
+            "headers": {}
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/BadRequestEnvelope"
+                    },
+                    {
+                      "properties": {
+                        "data": {
+                          "$ref": "#/components/schemas/EmptyData"
+                        }
+                      },
+                      "type": "object"
+                    }
+                  ]
+                }
+              }
+            },
+            "headers": {}
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/UnauthorizedEnvelope"
+                    },
+                    {
+                      "properties": {
+                        "data": {
+                          "$ref": "#/components/schemas/EmptyData"
+                        }
+                      },
+                      "type": "object"
+                    }
+                  ]
+                }
+              }
+            },
+            "headers": {}
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/ForbiddenEnvelope"
+                    },
+                    {
+                      "properties": {
+                        "data": {
+                          "$ref": "#/components/schemas/EmptyData"
+                        }
+                      },
+                      "type": "object"
+                    }
+                  ]
+                }
+              }
+            },
+            "headers": {}
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/NotFoundEnvelope"
                     },
                     {
                       "properties": {
@@ -13723,7 +15259,7 @@
       "get": {
         "summary": "查询组织用户级联树",
         "deprecated": false,
-        "description": "返回公司、部门、用户级联树，适合负责人、跟进人、协作人等选择器。",
+        "description": "根据 permissionCode 对应的数据权限规则返回可见的公司、部门和用户级联树；适合负责人、跟进人、协作人等选择器。",
         "operationId": "systemCompanyUserCascader",
         "tags": [
           "System Company"
@@ -13732,7 +15268,7 @@
           {
             "name": "companyId",
             "in": "query",
-            "description": "公司 ID；传入后仅返回该公司下的部门与用户",
+            "description": "公司 ID；传入后仅在该公司范围内按数据权限裁剪部门与用户",
             "required": false,
             "schema": {
               "type": "integer"
@@ -13741,8 +15277,8 @@
           {
             "name": "permissionCode",
             "in": "query",
-            "description": "目标业务权限码；当前版本暂未启用权限裁剪，保留该参数用于后续兼容",
-            "required": false,
+            "description": "目标业务权限码，例如 lead.create、lead.transfer、customer.view；用于按数据权限范围裁剪可见公司、部门和用户",
+            "required": true,
             "schema": {
               "type": "string"
             }
@@ -17200,6 +18736,56 @@
             "BearerAuth": []
           }
         ]
+      }
+    },
+    "/api/webhooks/baidu/aifanfan/leads": {
+      "post": {
+        "summary": "接收百度爱番番原始线索回调",
+        "deprecated": false,
+        "description": "测试阶段原样记录爱番番推送的 headers、query 和 body，不做字段映射",
+        "tags": [
+          "Integration"
+        ],
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "type": "object",
+                  "properties": {}
+                }
+              }
+            },
+            "headers": {}
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/BadRequestEnvelope"
+                    },
+                    {
+                      "properties": {
+                        "data": {
+                          "$ref": "#/components/schemas/EmptyData"
+                        }
+                      },
+                      "type": "object"
+                    }
+                  ]
+                }
+              }
+            },
+            "headers": {}
+          }
+        },
+        "security": []
       }
     },
     "/api/webhooks/dy/leads": {
@@ -24536,6 +26122,181 @@
             "BearerAuth": []
           }
         ]
+      },
+      "put": {
+        "summary": "编辑线索基础信息",
+        "deprecated": false,
+        "description": "根据线索 ID 编辑线索基础信息，不处理归属人转移。",
+        "tags": [
+          "Lead"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "线索 ID",
+            "required": true,
+            "example": 0,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/dto.UpdateLeadRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/ResponseEnvelope"
+                    },
+                    {
+                      "properties": {
+                        "data": {
+                          "$ref": "#/components/schemas/dto.LeadItem"
+                        }
+                      },
+                      "type": "object"
+                    }
+                  ]
+                }
+              }
+            },
+            "headers": {}
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/BadRequestEnvelope"
+                    },
+                    {
+                      "properties": {
+                        "data": {
+                          "$ref": "#/components/schemas/EmptyData"
+                        }
+                      },
+                      "type": "object"
+                    }
+                  ]
+                }
+              }
+            },
+            "headers": {}
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/UnauthorizedEnvelope"
+                    },
+                    {
+                      "properties": {
+                        "data": {
+                          "$ref": "#/components/schemas/EmptyData"
+                        }
+                      },
+                      "type": "object"
+                    }
+                  ]
+                }
+              }
+            },
+            "headers": {}
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/ForbiddenEnvelope"
+                    },
+                    {
+                      "properties": {
+                        "data": {
+                          "$ref": "#/components/schemas/EmptyData"
+                        }
+                      },
+                      "type": "object"
+                    }
+                  ]
+                }
+              }
+            },
+            "headers": {}
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/NotFoundEnvelope"
+                    },
+                    {
+                      "properties": {
+                        "data": {
+                          "$ref": "#/components/schemas/EmptyData"
+                        }
+                      },
+                      "type": "object"
+                    }
+                  ]
+                }
+              }
+            },
+            "headers": {}
+          },
+          "503": {
+            "description": "Service Unavailable",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/ServiceUnavailableEnvelope"
+                    },
+                    {
+                      "properties": {
+                        "data": {
+                          "$ref": "#/components/schemas/EmptyData"
+                        }
+                      },
+                      "type": "object"
+                    }
+                  ]
+                }
+              }
+            },
+            "headers": {}
+          }
+        },
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ]
       }
     },
     "/api/leads/{id}/assignment-logs": {
@@ -29620,6 +31381,507 @@
         ]
       }
     },
+    "/api/quotations/{id}/customer-accept": {
+      "post": {
+        "summary": "客户接受报价",
+        "deprecated": false,
+        "description": "销售记录客户已接受审批通过的报价",
+        "tags": [
+          "Quotation"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "报价 ID",
+            "required": true,
+            "example": 0,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/ResponseEnvelope"
+                    },
+                    {
+                      "properties": {
+                        "data": {
+                          "$ref": "#/components/schemas/dto.QuotationActionResponse"
+                        }
+                      },
+                      "type": "object"
+                    }
+                  ]
+                }
+              }
+            },
+            "headers": {}
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/BadRequestEnvelope"
+                    },
+                    {
+                      "properties": {
+                        "data": {
+                          "$ref": "#/components/schemas/EmptyData"
+                        }
+                      },
+                      "type": "object"
+                    }
+                  ]
+                }
+              }
+            },
+            "headers": {}
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/UnauthorizedEnvelope"
+                    },
+                    {
+                      "properties": {
+                        "data": {
+                          "$ref": "#/components/schemas/EmptyData"
+                        }
+                      },
+                      "type": "object"
+                    }
+                  ]
+                }
+              }
+            },
+            "headers": {}
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/ForbiddenEnvelope"
+                    },
+                    {
+                      "properties": {
+                        "data": {
+                          "$ref": "#/components/schemas/EmptyData"
+                        }
+                      },
+                      "type": "object"
+                    }
+                  ]
+                }
+              }
+            },
+            "headers": {}
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/NotFoundEnvelope"
+                    },
+                    {
+                      "properties": {
+                        "data": {
+                          "$ref": "#/components/schemas/EmptyData"
+                        }
+                      },
+                      "type": "object"
+                    }
+                  ]
+                }
+              }
+            },
+            "headers": {}
+          },
+          "501": {
+            "description": "Not Implemented",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/NotImplementedEnvelope"
+                    },
+                    {
+                      "properties": {
+                        "data": {
+                          "$ref": "#/components/schemas/EmptyData"
+                        }
+                      },
+                      "type": "object"
+                    }
+                  ]
+                }
+              }
+            },
+            "headers": {}
+          }
+        },
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ]
+      }
+    },
+    "/api/quotations/{id}/customer-reject": {
+      "post": {
+        "summary": "客户拒绝报价",
+        "deprecated": false,
+        "description": "销售记录客户已拒绝审批通过的报价",
+        "tags": [
+          "Quotation"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "报价 ID",
+            "required": true,
+            "example": 0,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/ResponseEnvelope"
+                    },
+                    {
+                      "properties": {
+                        "data": {
+                          "$ref": "#/components/schemas/dto.QuotationActionResponse"
+                        }
+                      },
+                      "type": "object"
+                    }
+                  ]
+                }
+              }
+            },
+            "headers": {}
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/BadRequestEnvelope"
+                    },
+                    {
+                      "properties": {
+                        "data": {
+                          "$ref": "#/components/schemas/EmptyData"
+                        }
+                      },
+                      "type": "object"
+                    }
+                  ]
+                }
+              }
+            },
+            "headers": {}
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/UnauthorizedEnvelope"
+                    },
+                    {
+                      "properties": {
+                        "data": {
+                          "$ref": "#/components/schemas/EmptyData"
+                        }
+                      },
+                      "type": "object"
+                    }
+                  ]
+                }
+              }
+            },
+            "headers": {}
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/ForbiddenEnvelope"
+                    },
+                    {
+                      "properties": {
+                        "data": {
+                          "$ref": "#/components/schemas/EmptyData"
+                        }
+                      },
+                      "type": "object"
+                    }
+                  ]
+                }
+              }
+            },
+            "headers": {}
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/NotFoundEnvelope"
+                    },
+                    {
+                      "properties": {
+                        "data": {
+                          "$ref": "#/components/schemas/EmptyData"
+                        }
+                      },
+                      "type": "object"
+                    }
+                  ]
+                }
+              }
+            },
+            "headers": {}
+          },
+          "501": {
+            "description": "Not Implemented",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/NotImplementedEnvelope"
+                    },
+                    {
+                      "properties": {
+                        "data": {
+                          "$ref": "#/components/schemas/EmptyData"
+                        }
+                      },
+                      "type": "object"
+                    }
+                  ]
+                }
+              }
+            },
+            "headers": {}
+          }
+        },
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ]
+      }
+    },
+    "/api/quotations/{id}/expire": {
+      "post": {
+        "summary": "标记报价过期",
+        "deprecated": false,
+        "description": "销售将审批通过但客户未确认的报价标记为已过期",
+        "tags": [
+          "Quotation"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "报价 ID",
+            "required": true,
+            "example": 0,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/ResponseEnvelope"
+                    },
+                    {
+                      "properties": {
+                        "data": {
+                          "$ref": "#/components/schemas/dto.QuotationActionResponse"
+                        }
+                      },
+                      "type": "object"
+                    }
+                  ]
+                }
+              }
+            },
+            "headers": {}
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/BadRequestEnvelope"
+                    },
+                    {
+                      "properties": {
+                        "data": {
+                          "$ref": "#/components/schemas/EmptyData"
+                        }
+                      },
+                      "type": "object"
+                    }
+                  ]
+                }
+              }
+            },
+            "headers": {}
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/UnauthorizedEnvelope"
+                    },
+                    {
+                      "properties": {
+                        "data": {
+                          "$ref": "#/components/schemas/EmptyData"
+                        }
+                      },
+                      "type": "object"
+                    }
+                  ]
+                }
+              }
+            },
+            "headers": {}
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/ForbiddenEnvelope"
+                    },
+                    {
+                      "properties": {
+                        "data": {
+                          "$ref": "#/components/schemas/EmptyData"
+                        }
+                      },
+                      "type": "object"
+                    }
+                  ]
+                }
+              }
+            },
+            "headers": {}
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/NotFoundEnvelope"
+                    },
+                    {
+                      "properties": {
+                        "data": {
+                          "$ref": "#/components/schemas/EmptyData"
+                        }
+                      },
+                      "type": "object"
+                    }
+                  ]
+                }
+              }
+            },
+            "headers": {}
+          },
+          "501": {
+            "description": "Not Implemented",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/NotImplementedEnvelope"
+                    },
+                    {
+                      "properties": {
+                        "data": {
+                          "$ref": "#/components/schemas/EmptyData"
+                        }
+                      },
+                      "type": "object"
+                    }
+                  ]
+                }
+              }
+            },
+            "headers": {}
+          }
+        },
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ]
+      }
+    },
     "/api/quotations/{id}/reject": {
       "post": {
         "summary": "审批驳回报价",
@@ -30156,6 +32418,18 @@
             }
           },
           {
+            "name": "companyDepartmentPaths",
+            "in": "query",
+            "description": "公司/部门多选路径，形如 company:1 或 company:1/department:10",
+            "required": false,
+            "schema": {
+              "items": {
+                "type": "string"
+              },
+              "type": "array"
+            }
+          },
+          {
             "name": "taskNo",
             "in": "query",
             "description": "任务编号，模糊匹配",
@@ -30312,7 +32586,7 @@
       "post": {
         "summary": "新建营销任务",
         "deprecated": false,
-        "description": "创建单次或循环执行的智能营销任务",
+        "description": "创建单次或循环执行的智能营销任务，startAt 使用 YYYY-MM-DD 日期格式",
         "tags": [
           "Automation Task"
         ],
@@ -34512,6 +36786,167 @@
         ]
       }
     },
+    "/api/finance/expenses/related-customers": {
+      "get": {
+        "summary": "查询费用申请可关联客户",
+        "deprecated": false,
+        "description": "返回费用申请表单可选择的客户；普通用户仅返回本人负责或协作客户，admin 返回当前公司全部未删除客户",
+        "tags": [
+          "Finance Expense"
+        ],
+        "parameters": [
+          {
+            "name": "keyword",
+            "in": "query",
+            "description": "客户名称关键词，模糊匹配",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "description": "页码",
+            "required": false,
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "pageSize",
+            "in": "query",
+            "description": "每页条数",
+            "required": false,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/ResponseEnvelope"
+                    },
+                    {
+                      "properties": {
+                        "data": {
+                          "$ref": "#/components/schemas/dto.ListExpenseRelatedCustomersResponse"
+                        }
+                      },
+                      "type": "object"
+                    }
+                  ]
+                }
+              }
+            },
+            "headers": {}
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/BadRequestEnvelope"
+                    },
+                    {
+                      "properties": {
+                        "data": {
+                          "$ref": "#/components/schemas/EmptyData"
+                        }
+                      },
+                      "type": "object"
+                    }
+                  ]
+                }
+              }
+            },
+            "headers": {}
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/UnauthorizedEnvelope"
+                    },
+                    {
+                      "properties": {
+                        "data": {
+                          "$ref": "#/components/schemas/EmptyData"
+                        }
+                      },
+                      "type": "object"
+                    }
+                  ]
+                }
+              }
+            },
+            "headers": {}
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/ForbiddenEnvelope"
+                    },
+                    {
+                      "properties": {
+                        "data": {
+                          "$ref": "#/components/schemas/EmptyData"
+                        }
+                      },
+                      "type": "object"
+                    }
+                  ]
+                }
+              }
+            },
+            "headers": {}
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/InternalServerErrorEnvelope"
+                    },
+                    {
+                      "properties": {
+                        "data": {
+                          "$ref": "#/components/schemas/EmptyData"
+                        }
+                      },
+                      "type": "object"
+                    }
+                  ]
+                }
+              }
+            },
+            "headers": {}
+          }
+        },
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ]
+      }
+    },
     "/api/finance/expenses/{id}": {
       "delete": {
         "summary": "删除费用单",
@@ -38636,7 +41071,7 @@
       "post": {
         "summary": "确认绩效申请",
         "deprecated": false,
-        "description": "确认指定绩效申请无误；确认后状态流转为 confirmed=已确认",
+        "description": "当前确认人确认自己名下的业绩分配条目；全部待确认条目都确认后才会流转为 confirmed=已确认并生成提成记录",
         "tags": [
           "Finance Performance"
         ],
@@ -38665,7 +41100,7 @@
                     {
                       "properties": {
                         "data": {
-                          "$ref": "#/components/schemas/dto.ActionResponse"
+                          "$ref": "#/components/schemas/dto.PerformanceConfirmResponse"
                         }
                       },
                       "type": "object"
@@ -43257,6 +45692,159 @@
           }
         ]
       }
+    },
+    "/api/sales/contracts/share/{token}": {
+      "get": {
+        "summary": "打开合同分享链接",
+        "deprecated": false,
+        "description": "根据分享 token 跳转到小程序合同预览路径",
+        "tags": [
+          "Contract Share"
+        ],
+        "parameters": [
+          {
+            "name": "token",
+            "in": "path",
+            "description": "分享 token",
+            "required": true,
+            "example": "",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "302": {
+            "description": "Found",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
+            "headers": {}
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/NotFoundEnvelope"
+                    },
+                    {
+                      "properties": {
+                        "data": {
+                          "$ref": "#/components/schemas/EmptyData"
+                        }
+                      },
+                      "type": "object"
+                    }
+                  ]
+                }
+              }
+            },
+            "headers": {}
+          }
+        },
+        "security": []
+      }
+    },
+    "/api/sales/contracts/share/{token}/preview": {
+      "get": {
+        "summary": "查询合同分享预览",
+        "deprecated": false,
+        "description": "小程序端根据分享 token 查询合同只读预览数据",
+        "tags": [
+          "Contract Share"
+        ],
+        "parameters": [
+          {
+            "name": "token",
+            "in": "path",
+            "description": "分享 token",
+            "required": true,
+            "example": "",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/ResponseEnvelope"
+                    },
+                    {
+                      "properties": {
+                        "data": {
+                          "$ref": "#/components/schemas/dto.ContractSharePreviewResponse"
+                        }
+                      },
+                      "type": "object"
+                    }
+                  ]
+                }
+              }
+            },
+            "headers": {}
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/BadRequestEnvelope"
+                    },
+                    {
+                      "properties": {
+                        "data": {
+                          "$ref": "#/components/schemas/EmptyData"
+                        }
+                      },
+                      "type": "object"
+                    }
+                  ]
+                }
+              }
+            },
+            "headers": {}
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/NotFoundEnvelope"
+                    },
+                    {
+                      "properties": {
+                        "data": {
+                          "$ref": "#/components/schemas/EmptyData"
+                        }
+                      },
+                      "type": "object"
+                    }
+                  ]
+                }
+              }
+            },
+            "headers": {}
+          }
+        },
+        "security": []
+      }
     }
   },
   "components": {
@@ -44761,6 +47349,10 @@
             "description": "DepartmentID 表示部门 ID。",
             "type": "integer"
           },
+          "departmentType": {
+            "description": "DepartmentType 表示所属部门类型。",
+            "type": "string"
+          },
           "displayName": {
             "description": "DisplayName 表示用户展示名称。",
             "type": "string"
@@ -44779,6 +47371,10 @@
           },
           "phone": {
             "description": "Phone 表示手机号。",
+            "type": "string"
+          },
+          "positionDepartmentType": {
+            "description": "PositionDepartmentType 表示职位归属部门类型。",
             "type": "string"
           },
           "userId": {
@@ -45245,6 +47841,9 @@
           "id": {
             "type": "integer"
           },
+          "receiptAmount": {
+            "type": "integer"
+          },
           "receiptDate": {
             "type": "string"
           },
@@ -45256,6 +47855,65 @@
           },
           "voucherUrl": {
             "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "dto.ContractSharePreviewResponse": {
+        "properties": {
+          "buyerSnapshot": {
+            "additionalProperties": {},
+            "type": "object",
+            "properties": {}
+          },
+          "contractNo": {
+            "type": "string"
+          },
+          "customerName": {
+            "type": "string"
+          },
+          "customerPhone": {
+            "type": "string"
+          },
+          "discountedAmount": {
+            "type": "integer"
+          },
+          "displayStatus": {
+            "type": "string"
+          },
+          "fileUrl": {
+            "type": "string"
+          },
+          "id": {
+            "type": "integer"
+          },
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/dto.ContractLineItem"
+            },
+            "type": "array"
+          },
+          "name": {
+            "type": "string"
+          },
+          "renderedHtml": {
+            "type": "string"
+          },
+          "sellerSnapshot": {
+            "additionalProperties": {},
+            "type": "object",
+            "properties": {}
+          },
+          "signedBackFileUrl": {
+            "type": "string"
+          },
+          "summarySnapshot": {
+            "additionalProperties": {},
+            "type": "object",
+            "properties": {}
+          },
+          "totalAmount": {
+            "type": "integer"
           }
         },
         "type": "object"
@@ -45710,6 +48368,22 @@
             "description": "Address 表示详细地址。",
             "type": "string"
           },
+          "businessLicenseFileName": {
+            "description": "BusinessLicenseFileName 表示营业执照文件名。",
+            "type": "string"
+          },
+          "businessLicenseFileSize": {
+            "description": "BusinessLicenseFileSize 表示营业执照文件大小。",
+            "type": "integer"
+          },
+          "businessLicenseMimeType": {
+            "description": "BusinessLicenseMimeType 表示营业执照文件 MIME 类型。",
+            "type": "string"
+          },
+          "businessLicenseUrl": {
+            "description": "BusinessLicenseURL 表示营业执照文件地址。",
+            "type": "string"
+          },
           "category": {
             "description": "Category 表示客户分类。 客户、设备商、粉末商、行业朋友；固定返回 customer=客户、equipment_supplier=设备商、powder_supplier=粉末商、industry_friend=行业朋友。",
             "type": "string"
@@ -45735,6 +48409,14 @@
               "$ref": "#/components/schemas/dto.CustomerContactInput"
             },
             "type": "array"
+          },
+          "creationSource": {
+            "description": "CreationSource 表示创建来源；manual=手动添加、third_party_platform=第三方平台导入。不传默认 manual。",
+            "enum": [
+              "manual",
+              "third_party_platform"
+            ],
+            "type": "string"
           },
           "customerType": {
             "description": "CustomerType 表示客户类型。 国内、海外；固定返回 domestic=国内、overseas=海外。",
@@ -45892,6 +48574,14 @@
           },
           "contactName": {
             "description": "ContactName 表示联系人姓名。",
+            "type": "string"
+          },
+          "creationSource": {
+            "description": "CreationSource 表示创建来源；manual=手动添加、third_party_platform=第三方平台导入。不传默认 manual。",
+            "enum": [
+              "manual",
+              "third_party_platform"
+            ],
             "type": "string"
           },
           "customerIndustry": {
@@ -46408,6 +49098,22 @@
             "description": "Address 表示详细地址。",
             "type": "string"
           },
+          "businessLicenseFileName": {
+            "description": "BusinessLicenseFileName 表示营业执照文件名。",
+            "type": "string"
+          },
+          "businessLicenseFileSize": {
+            "description": "BusinessLicenseFileSize 表示营业执照文件大小。",
+            "type": "integer"
+          },
+          "businessLicenseMimeType": {
+            "description": "BusinessLicenseMimeType 表示营业执照文件 MIME 类型。",
+            "type": "string"
+          },
+          "businessLicenseUrl": {
+            "description": "BusinessLicenseURL 表示营业执照文件地址。",
+            "type": "string"
+          },
           "category": {
             "description": "Category 表示客户类别。",
             "type": "string"
@@ -46583,6 +49289,14 @@
           },
           "sourceDepartmentName": {
             "description": "SourceDepartmentName 表示来源部门名称。",
+            "type": "string"
+          },
+          "sourceLeadId": {
+            "description": "SourceLeadID 表示关联线索 ID。",
+            "type": "integer"
+          },
+          "sourceLeadNo": {
+            "description": "SourceLeadNo 表示关联线索编号。",
             "type": "string"
           },
           "updatedAt": {
@@ -46909,6 +49623,13 @@
           "enteredPoolAt": {
             "description": "EnteredPoolAt 表示进入公海时间。",
             "type": "string"
+          },
+          "executableActions": {
+            "description": "ExecutableActions 表示当前登录人对该客户可执行的动作编码列表。",
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
           },
           "expectedDealPeriod": {
             "description": "ExpectedDealPeriod 表示预计成交周期。",
@@ -48175,16 +50896,16 @@
       },
       "dto.DepartmentType": {
         "enum": [
-          "运营",
-          "销售",
-          "开发",
-          "财务",
-          "客服",
-          "人力",
-          "质检",
-          "采购",
-          "IT",
-          "其他"
+          "operation",
+          "sales",
+          "development",
+          "finance",
+          "customer_service",
+          "human_resources",
+          "quality",
+          "procurement",
+          "it",
+          "other"
         ],
         "type": "string",
         "x-enum-varnames": [
@@ -48612,6 +51333,19 @@
         },
         "type": "object"
       },
+      "dto.ExpenseRelatedCustomerItem": {
+        "properties": {
+          "id": {
+            "description": "ID 表示客户 ID。",
+            "type": "integer"
+          },
+          "name": {
+            "description": "Name 表示客户名称。",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
       "dto.ExpenseSummary": {
         "properties": {
           "totalAmount": {
@@ -48846,6 +51580,78 @@
           "startDate": {
             "description": "StartDate 表示开始日期。",
             "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "dto.FinanceDashboardResponse": {
+        "properties": {
+          "contractTrend": {
+            "items": {
+              "$ref": "#/components/schemas/dto.FinanceTrendItem"
+            },
+            "type": "array"
+          },
+          "filters": {
+            "$ref": "#/components/schemas/dto.FilterResponse"
+          },
+          "metrics": {
+            "$ref": "#/components/schemas/dto.MetricsResponse"
+          },
+          "pendingInvoices": {
+            "items": {
+              "$ref": "#/components/schemas/dto.PendingInvoiceItem"
+            },
+            "type": "array"
+          },
+          "performanceRankings": {
+            "items": {
+              "$ref": "#/components/schemas/dto.FinanceRankingItem"
+            },
+            "type": "array"
+          }
+        },
+        "type": "object"
+      },
+      "dto.FinanceRankingItem": {
+        "properties": {
+          "companyName": {
+            "type": "string"
+          },
+          "departmentName": {
+            "type": "string"
+          },
+          "employeeId": {
+            "type": "integer"
+          },
+          "employeeName": {
+            "type": "string"
+          },
+          "phone": {
+            "type": "string"
+          },
+          "rank": {
+            "type": "integer"
+          },
+          "unit": {
+            "type": "string"
+          },
+          "value": {
+            "type": "number"
+          }
+        },
+        "type": "object"
+      },
+      "dto.FinanceTrendItem": {
+        "properties": {
+          "month": {
+            "type": "string"
+          },
+          "unit": {
+            "type": "string"
+          },
+          "value": {
+            "type": "number"
           }
         },
         "type": "object"
@@ -49310,6 +52116,50 @@
               }
             ],
             "description": "Voucher 表示凭证�?"
+          }
+        },
+        "type": "object"
+      },
+      "dto.KeyCustomerFollowItem": {
+        "properties": {
+          "collaboratorNames": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "createdAt": {
+            "type": "string"
+          },
+          "expectedDealAmount": {
+            "type": "number"
+          },
+          "expectedDealDate": {
+            "type": "string"
+          },
+          "id": {
+            "type": "integer"
+          },
+          "latestFollowContent": {
+            "type": "string"
+          },
+          "latestFollowedAt": {
+            "type": "string"
+          },
+          "levelLabel": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "ownerUserName": {
+            "type": "string"
+          },
+          "phone": {
+            "type": "string"
+          },
+          "region": {
+            "type": "string"
           }
         },
         "type": "object"
@@ -49802,6 +52652,30 @@
               }
             ],
             "description": "Summary 表示汇总信息。"
+          },
+          "total": {
+            "description": "Total 表示总数。",
+            "type": "integer"
+          }
+        },
+        "type": "object"
+      },
+      "dto.ListExpenseRelatedCustomersResponse": {
+        "properties": {
+          "items": {
+            "description": "Items 表示客户选项列表。",
+            "items": {
+              "$ref": "#/components/schemas/dto.ExpenseRelatedCustomerItem"
+            },
+            "type": "array"
+          },
+          "page": {
+            "description": "Page 表示页码。",
+            "type": "integer"
+          },
+          "pageSize": {
+            "description": "PageSize 表示每页数量。",
+            "type": "integer"
           },
           "total": {
             "description": "Total 表示总数。",
@@ -50702,6 +53576,169 @@
         },
         "type": "object"
       },
+      "dto.OperationsDashboardResponse": {
+        "properties": {
+          "adFlow": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/dto.MetricsResponse"
+              }
+            ],
+            "description": "AdFlow 表示投流数据。"
+          },
+          "customerLevels": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/dto.CustomerLevelsResponse"
+              }
+            ],
+            "description": "CustomerLevels 表示客户等级分析。"
+          },
+          "filters": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/dto.FilterResponse"
+              }
+            ],
+            "description": "Filters 表示筛选条件。"
+          },
+          "leads": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/dto.MetricsResponse"
+              }
+            ],
+            "description": "Leads 表示线索数据。"
+          },
+          "overview": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/dto.MetricsResponse"
+              }
+            ],
+            "description": "Overview 表示运营总数据。"
+          },
+          "regionRankings": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/dto.RegionRankingsResponse"
+              }
+            ],
+            "description": "RegionRankings 表示区域排行。"
+          },
+          "userRankings": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/dto.UserRankingsResponse"
+              }
+            ],
+            "description": "UserRankings 表示人员排行。"
+          }
+        },
+        "type": "object"
+      },
+      "dto.OperationsDealAmountItem": {
+        "properties": {
+          "collaboratorNames": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "customerIndustry": {
+            "type": "string"
+          },
+          "customerLevel": {
+            "type": "string"
+          },
+          "customerName": {
+            "type": "string"
+          },
+          "customerWorkpiece": {
+            "type": "string"
+          },
+          "dealAt": {
+            "type": "string"
+          },
+          "dealProductNames": {
+            "type": "string"
+          },
+          "dealTotalAmount": {
+            "type": "number"
+          },
+          "dealType": {
+            "type": "string"
+          },
+          "expenseTotalAmount": {
+            "type": "number"
+          },
+          "firstDealCycleLabel": {
+            "type": "string"
+          },
+          "gunType": {
+            "type": "string"
+          },
+          "id": {
+            "type": "integer"
+          },
+          "leadOnlineAt": {
+            "type": "string"
+          },
+          "operatorName": {
+            "type": "string"
+          },
+          "ownerName": {
+            "type": "string"
+          },
+          "productQuantity": {
+            "type": "number"
+          },
+          "region": {
+            "type": "string"
+          },
+          "taxIncluded": {
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "dto.OperationsDealAmountListResponse": {
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/dto.OperationsDealAmountItem"
+            },
+            "type": "array"
+          },
+          "page": {
+            "type": "integer"
+          },
+          "pageSize": {
+            "type": "integer"
+          },
+          "summary": {
+            "$ref": "#/components/schemas/dto.OperationsDealAmountSummary"
+          },
+          "total": {
+            "type": "integer"
+          }
+        },
+        "type": "object"
+      },
+      "dto.OperationsDealAmountSummary": {
+        "properties": {
+          "averageOrderAmount": {
+            "type": "number"
+          },
+          "dealOrderCount": {
+            "type": "integer"
+          },
+          "totalAmount": {
+            "type": "number"
+          }
+        },
+        "type": "object"
+      },
       "dto.OpportunityCreateResponse": {
         "properties": {
           "collaboratorUserIds": {
@@ -51036,6 +54073,29 @@
         },
         "type": "object"
       },
+      "dto.PendingInvoiceItem": {
+        "properties": {
+          "amount": {
+            "type": "number"
+          },
+          "createdAt": {
+            "type": "string"
+          },
+          "id": {
+            "type": "integer"
+          },
+          "invoiceNo": {
+            "type": "string"
+          },
+          "relatedReceipt": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
       "dto.PerformanceApplicationDetailResponse": {
         "properties": {
           "applicationNo": {
@@ -51044,6 +54104,18 @@
           },
           "businessFeeAmount": {
             "description": "BusinessFeeAmount 表示业务费，单位分。",
+            "type": "integer"
+          },
+          "canCurrentUserConfirm": {
+            "description": "CanCurrentUserConfirm 表示当前用户是否可确认。",
+            "type": "boolean"
+          },
+          "canCurrentUserEdit": {
+            "description": "CanCurrentUserEdit 表示当前用户是否可编辑。",
+            "type": "boolean"
+          },
+          "companyId": {
+            "description": "CompanyID 表示公司 ID。",
             "type": "integer"
           },
           "confirmedAt": {
@@ -51070,6 +54142,10 @@
             "description": "ContractPerformanceTotal 表示合同业绩总金额，单位分。",
             "type": "integer"
           },
+          "currentRound": {
+            "description": "CurrentRound 表示当前确认轮次。",
+            "type": "integer"
+          },
           "customerId": {
             "description": "CustomerID 表示客户 ID�?",
             "type": "integer"
@@ -51080,6 +54156,10 @@
           },
           "customerPhone": {
             "description": "CustomerPhone 表示客户电话。",
+            "type": "string"
+          },
+          "deadlineAt": {
+            "description": "DeadlineAt 表示当前轮次确认截止时间。",
             "type": "string"
           },
           "developmentEmployeeName": {
@@ -51123,6 +54203,10 @@
           },
           "receiptId": {
             "description": "ReceiptID 表示回款 ID�?",
+            "type": "integer"
+          },
+          "remainingConfirmCount": {
+            "description": "RemainingConfirmCount 表示剩余待确认人数。",
             "type": "integer"
           },
           "remittanceVoucher": {
@@ -51244,6 +54328,18 @@
             "description": "ApplicationNo 表示申请单编号�?",
             "type": "string"
           },
+          "canCurrentUserConfirm": {
+            "description": "CanCurrentUserConfirm 表示当前用户是否可确认。",
+            "type": "boolean"
+          },
+          "canCurrentUserEdit": {
+            "description": "CanCurrentUserEdit 表示当前用户是否可编辑。",
+            "type": "boolean"
+          },
+          "companyId": {
+            "description": "CompanyID 表示公司 ID。",
+            "type": "integer"
+          },
           "confirmedAt": {
             "description": "ConfirmedAt 表示确认时间�?",
             "type": "string"
@@ -51264,6 +54360,10 @@
             "description": "ContractNo 表示合同编号�?",
             "type": "string"
           },
+          "currentRound": {
+            "description": "CurrentRound 表示当前确认轮次。",
+            "type": "integer"
+          },
           "customerId": {
             "description": "CustomerID 表示客户 ID�?",
             "type": "integer"
@@ -51274,6 +54374,10 @@
           },
           "customerPhone": {
             "description": "CustomerPhone 表示客户电话。",
+            "type": "string"
+          },
+          "deadlineAt": {
+            "description": "DeadlineAt 表示当前轮次确认截止时间。",
             "type": "string"
           },
           "developmentEmployeeName": {
@@ -51308,6 +54412,10 @@
             "description": "ReceiptAmount 表示回款金额�?",
             "type": "integer"
           },
+          "remainingConfirmCount": {
+            "description": "RemainingConfirmCount 表示剩余待确认人数。",
+            "type": "integer"
+          },
           "salesEmployeeName": {
             "description": "SalesEmployeeName 表示销售部所属人。",
             "type": "string"
@@ -51319,6 +54427,31 @@
           "submittedAt": {
             "description": "SubmittedAt 表示提交时间�?",
             "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "dto.PerformanceConfirmResponse": {
+        "properties": {
+          "allConfirmed": {
+            "description": "AllConfirmed 表示是否已全部确认。",
+            "type": "boolean"
+          },
+          "applicationStatus": {
+            "description": "ApplicationStatus 表示当前单据状态。",
+            "type": "string"
+          },
+          "id": {
+            "description": "ID 表示唯一标识。",
+            "type": "integer"
+          },
+          "message": {
+            "description": "Message 表示提示信息。",
+            "type": "string"
+          },
+          "remainingConfirmCount": {
+            "description": "RemainingConfirmCount 表示剩余待确认人数。",
+            "type": "integer"
           }
         },
         "type": "object"
@@ -53893,6 +57026,29 @@
         },
         "type": "object"
       },
+      "dto.ShareContractResponse": {
+        "properties": {
+          "expiresAt": {
+            "type": "string"
+          },
+          "miniProgramAppId": {
+            "type": "string"
+          },
+          "miniProgramPath": {
+            "type": "string"
+          },
+          "miniProgramQuery": {
+            "type": "string"
+          },
+          "shareToken": {
+            "type": "string"
+          },
+          "shareUrl": {
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
       "dto.ShipmentActionResponse": {
         "properties": {
           "message": {
@@ -54028,6 +57184,32 @@
           },
           "signStatus": {
             "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "dto.StaffDashboardResponse": {
+        "properties": {
+          "dealAmounts": {
+            "$ref": "#/components/schemas/dto.MetricsResponse"
+          },
+          "expectedDeals": {
+            "$ref": "#/components/schemas/dto.MetricsResponse"
+          },
+          "filters": {
+            "$ref": "#/components/schemas/dto.FilterResponse"
+          },
+          "followMetrics": {
+            "$ref": "#/components/schemas/dto.MetricsResponse"
+          },
+          "keyCustomerFollows": {
+            "items": {
+              "$ref": "#/components/schemas/dto.KeyCustomerFollowItem"
+            },
+            "type": "array"
+          },
+          "performance": {
+            "$ref": "#/components/schemas/dto.MetricsResponse"
           }
         },
         "type": "object"
@@ -54538,6 +57720,22 @@
             "description": "Address 表示详细地址。",
             "type": "string"
           },
+          "businessLicenseFileName": {
+            "description": "BusinessLicenseFileName 表示营业执照文件名。",
+            "type": "string"
+          },
+          "businessLicenseFileSize": {
+            "description": "BusinessLicenseFileSize 表示营业执照文件大小。",
+            "type": "integer"
+          },
+          "businessLicenseMimeType": {
+            "description": "BusinessLicenseMimeType 表示营业执照文件 MIME 类型。",
+            "type": "string"
+          },
+          "businessLicenseUrl": {
+            "description": "BusinessLicenseURL 表示营业执照文件地址。",
+            "type": "string"
+          },
           "category": {
             "description": "Category 表示客户分类。",
             "type": "string"
@@ -54758,6 +57956,85 @@
         },
         "type": "object"
       },
+      "dto.UpdateLeadRequest": {
+        "properties": {
+          "channelCode": {
+            "description": "ChannelCode 表示渠道编码。",
+            "type": "string"
+          },
+          "cityCode": {
+            "description": "CityCode 表示城市编码。",
+            "type": "string"
+          },
+          "contactName": {
+            "description": "ContactName 表示联系人姓名。",
+            "type": "string"
+          },
+          "customerIndustry": {
+            "description": "CustomerIndustry 表示客户行业英文编码。",
+            "enum": [
+              "electrical",
+              "pipeline",
+              "coil_coating",
+              "home",
+              "furniture",
+              "transportation",
+              "industry_category",
+              "aluminum",
+              "sports_goods",
+              "hardware",
+              "fire_equipment",
+              "new_energy",
+              "heavy_industry",
+              "other"
+            ],
+            "type": "string"
+          },
+          "customerName": {
+            "description": "CustomerName 表示客户名称。",
+            "type": "string"
+          },
+          "districtCode": {
+            "description": "DistrictCode 表示区县编码。",
+            "type": "string"
+          },
+          "email": {
+            "description": "Email 表示邮箱地址。",
+            "type": "string"
+          },
+          "leadLevel": {
+            "description": "LeadLevel 表示线索等级；支持 A、B、C、D。",
+            "enum": [
+              "A",
+              "B",
+              "C",
+              "D"
+            ],
+            "type": "string"
+          },
+          "phone": {
+            "description": "Phone 表示联系电话。",
+            "type": "string"
+          },
+          "provinceCode": {
+            "description": "ProvinceCode 表示省份编码。",
+            "type": "string"
+          },
+          "remark": {
+            "description": "Remark 表示备注。",
+            "type": "string"
+          },
+          "wechat": {
+            "description": "Wechat 表示微信号。",
+            "type": "string"
+          },
+          "whatsapp": {
+            "description": "Whatsapp 表示 WhatsApp 号码。",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
       "dto.UpdateLeadStatusRequest": {
         "properties": {
           "invalidReason": {
@@ -54914,6 +58191,9 @@
       },
       "dto.UploadContractReceiptRequest": {
         "properties": {
+          "receiptAmount": {
+            "type": "integer"
+          },
           "voucherUrl": {
             "type": "string"
           }
@@ -55279,7 +58559,7 @@
             "type": "integer"
           },
           "startAt": {
-            "description": "StartAt 表示开始时间。",
+            "description": "StartAt 表示开始日期，格式 YYYY-MM-DD。",
             "type": "string"
           }
         },
@@ -55567,6 +58847,10 @@
           "name": {
             "description": "Name 表示权限包名称。",
             "type": "string"
+          },
+          "ruleCount": {
+            "description": "RuleCount 表示包含的规则数量。",
+            "type": "integer"
           },
           "status": {
             "description": "Status 表示状态。",

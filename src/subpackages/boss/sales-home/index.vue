@@ -13,7 +13,7 @@
       <view class="panel-inner">
 
         <nut-collapse v-model="activeNames" expand-icon-placement="right">
-          <nut-collapse-item name="follow" :border="false">
+          <nut-collapse-item v-for="panel in dashboardPanels" :key="panel.name" :name="panel.name" :border="false">
             <template #icon>
               <image style="width: 36rpx; height: 36rpx;" :src="iconArrow" mode="aspectFit" />
             </template>
@@ -21,88 +21,25 @@
               <view class="section-head">
                 <view class="section-title-row">
                   <view class="dot" />
-                  <text class="section-title">客户跟进情况</text>
+                  <text class="section-title">{{ panel.title }}</text>
                 </view>
               </view>
             </template>
 
             <view class="s-divider" />
 
-            <view class="stats-row">
-              <view class="stat-card">
-                <text class="stat-label">客户总数量</text>
-                <text class="stat-num">2091</text>
-                <view class="stat-change up">
-                  <view class="arrow-up" />
-                  <text class="change-text">12.8%</text>
+            <view v-for="(row, ri) in panel.statsRows" :key="ri">
+              <view class="stats-row">
+                <view v-for="(stat, si) in row" :key="si" class="stat-card" :class="{ 'stat-card--hidden': !stat.label }">
+                  <text class="stat-label">{{ stat.label }}</text>
+                  <text class="stat-num">{{ stat.value }}</text>
+                  <view v-if="stat.label" class="stat-change" :class="stat.changeRate >= 0 ? 'up' : 'down'">
+                    <view :class="stat.changeRate >= 0 ? 'arrow-up' : 'arrow-down'" />
+                    <text class="change-text">{{ Math.abs(stat.changeRate) }}%</text>
+                  </view>
                 </view>
               </view>
-              <view class="v-divider" />
-              <view class="stat-card">
-                <text class="stat-label">电话沟通数量</text>
-                <text class="stat-num">289</text>
-                <view class="stat-change down">
-                  <view class="arrow-down" />
-                  <text class="change-text">4.0%</text>
-                </view>
-              </view>
-              <view class="v-divider" />
-              <view class="stat-card">
-                <text class="stat-label">微信沟通数量</text>
-                <text class="stat-num">344</text>
-                <view class="stat-change up">
-                  <view class="arrow-up" />
-                  <text class="change-text">12.8%</text>
-                </view>
-              </view>
-            </view>
-
-            <view class="s-divider" />
-
-            <view class="stats-row">
-              <view class="stat-card">
-                <text class="stat-label">接待客户数量</text>
-                <text class="stat-num">199</text>
-                <view class="stat-change down">
-                  <view class="arrow-down" />
-                  <text class="change-text">4.0%</text>
-                </view>
-              </view>
-              <view class="v-divider" />
-              <view class="stat-card">
-                <text class="stat-label">重点客户数量</text>
-                <text class="stat-num">212</text>
-                <view class="stat-change down">
-                  <view class="arrow-down" />
-                  <text class="change-text">4.0%</text>
-                </view>
-              </view>
-              <view class="v-divider" />
-              <view class="stat-card">
-                <text class="stat-label">报价客户数量</text>
-                <text class="stat-num">978</text>
-                <view class="stat-change up">
-                  <view class="arrow-up" />
-                  <text class="change-text">12.8%</text>
-                </view>
-              </view>
-            </view>
-
-            <view class="s-divider" />
-
-            <view class="stats-row">
-              <view class="stat-card">
-                <text class="stat-label">签约中客户数量</text>
-                <text class="stat-num">2091</text>
-                <view class="stat-change up">
-                  <view class="arrow-up" />
-                  <text class="change-text">12.8%</text>
-                </view>
-              </view>
-              <view class="v-divider" />
-              <view class="stat-card stat-card--hidden" />
-              <view class="v-divider v-divider--hidden" />
-              <view class="stat-card stat-card--hidden" />
+              <view v-if="ri < panel.statsRows.length - 1" class="s-divider" />
             </view>
           </nut-collapse-item>
         </nut-collapse>
@@ -125,7 +62,7 @@
             <view class="tc-info">
               <view class="tc-info-item">
                 <image class="tc-icon" :src="iconPhone" mode="aspectFit" />
-                <text class="tc-info-text tc-info-text--active">15899280987</text>
+                <text class="tc-info-text tc-info-text--active">{{ card.phone }}</text>
               </view>
               <view class="tc-info-item">
                 <image class="tc-icon" :src="card.icon2" mode="aspectFit" />
@@ -246,74 +183,16 @@
 
     <DuplicateCheckPopup v-model="showSearchPopup" />
 
-    <nut-popup v-model:visible="showNearbyPopup" position="bottom"
-      :style="{ borderRadius: '24rpx 24rpx 0 0', height: '1022rpx' }" :z-index="2000" safe-area-inset-bottom>
-      <view class="nearby-popup">
-        <view class="nearby-header">
-          <text class="nearby-header-title">搜索附近客户</text>
-        </view>
-
-        <view class="nearby-body">
-          <view class="nearby-sidebar">
-            <view class="nearby-sidebar-item nearby-sidebar-item--active">
-              <text class="nearby-sidebar-text nearby-sidebar-text--active">附近客户</text>
-            </view>
-          </view>
-
-          <scroll-view class="nearby-content" scroll-y :enhanced="true" :show-scrollbar="false">
-            <text class="nearby-cat-title">当前定位</text>
-            <view class="nearby-loc-row">
-              <text class="nearby-loc-text">广东省/深圳市/南山区</text>
-              <image class="nearby-loc-icon" :src="iconLocationPopup" mode="aspectFit" />
-            </view>
-
-            <view class="nearby-divider" />
-
-            <text class="nearby-cat-title">距离范围</text>
-            <view class="nearby-range-grid">
-              <view v-for="r in distanceRanges" :key="r" class="nearby-range-tag"
-                :class="{ 'nearby-range-tag--active': selectedDistance === r }" @tap="selectedDistance = r">
-                <text class="nearby-range-text" :class="{ 'nearby-range-text--active': selectedDistance === r }">{{ r
-                  }}</text>
-              </view>
-            </view>
-
-            <view class="nearby-divider" />
-
-            <text class="nearby-cat-title">自定义距离范围</text>
-            <view class="nearby-custom-row">
-              <view class="nearby-custom-box">
-                <text class="nearby-custom-val">0</text>
-                <text class="nearby-custom-unit">km</text>
-              </view>
-              <view class="nearby-custom-sep" />
-              <view class="nearby-custom-box">
-                <input class="nearby-custom-input" v-model="customDistance" placeholder="请输入"
-                  placeholder-style="color:#BBBEC2;font-size:26rpx" />
-                <text class="nearby-custom-unit">km</text>
-              </view>
-            </view>
-          </scroll-view>
-        </view>
-
-        <view class="nearby-footer">
-          <view class="nearby-footer-btn nearby-footer-clear" @tap="selectedDistance = ''; customDistance = ''">
-            <text class="nearby-footer-clear-text">清空选择</text>
-          </view>
-          <view class="nearby-footer-btn nearby-footer-submit" @tap="onNearbyConfirm">
-            <text class="nearby-footer-submit-text">确认</text>
-          </view>
-        </view>
-      </view>
-    </nut-popup>
   </view>
 </template>
 
 <script setup>
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import Taro from '@tarojs/taro'
 import TabBar from '../../boss/tabs/index.vue'
 import DuplicateCheckPopup from '@/subpackages/dev/customer/components/DuplicateCheckPopup.vue'
+import { getSalesDashboard } from '@/api/reporting'
+import { getCustomerList } from '@/api/customer'
 import wechatIcon from '@/assets/dev/icon-wechat.png'
 import gradeIcon from '@/assets/dev/icon-grade.png'
 import locationIcon from '@/assets/dev/icon-location.png'
@@ -330,13 +209,40 @@ import iconLocationPopup from '@/assets/dev/icon-location-popup.png'
 import iconArrow from '@/assets/dev/upArror.png'
 
 const role = ref('sales')
-const activeNames = ref(['follow'])
+const dashboardPanels = ref([])
 
-const focusCards = [
-  { name: '超凡实业技术有限公司', badge: '待跟进', badgeStyle: 'yellow', icon2: gradeIcon, label2: 'A级客户', industry: '电气行业', icon4: lineOldIcon, label4: '旧线', note: '客户有意向，但未表明哪款产品' },
-  { name: '金石科技', badge: '已拜访', badgeStyle: 'cyan', icon2: wechatIcon, label2: 'rnbujhu2818', industry: 'A级客户', icon4: locationIcon, label4: '广东省/深圳市/南山区', note: '客户有意向，但未表明哪款产品' },
-  { name: '金剑制造实业控股', badge: '已报价', badgeStyle: 'blue', icon2: wechatIcon, label2: 'rnbujhu2818', industry: 'A级客户', icon4: locationIcon, label4: '广东省/深圳市/南山区', note: '客户有意向，但未表明哪款产品' },
-]
+const PANEL_META = {
+  followMetrics:  { name: 'followMetrics',  title: '客户跟进情况' },
+  dealAmounts:    { name: 'dealAmounts',    title: '成交金额' },
+  performance:    { name: 'performance',    title: '业绩统计' },
+  expectedDeals:  { name: 'expectedDeals',  title: '预计成交' },
+}
+
+function buildStatsRows(metrics) {
+  const rows = []
+  for (let i = 0; i < metrics.length; i += 3) {
+    const row = []
+    for (let j = 0; j < 3; j++) {
+      const idx = i + j
+      if (idx >= metrics.length) {
+        row.push({ label: '', value: '', changeRate: 0 })
+      } else {
+        const m = metrics[idx]
+        row.push({
+          label: m.label,
+          value: String(m.value ?? '-'),
+          changeRate: m.changeRate || 0,
+        })
+      }
+    }
+    rows.push(row)
+  }
+  return rows
+}
+
+const activeNames = ref([])
+
+const focusCards = ref([])
 
 const showFilter = ref(false)
 const filterIdx = ref(0)
@@ -398,15 +304,11 @@ const onDateConfirm = () => {
 }
 
 const showSearchPopup = ref(false)
-
-const showNearbyPopup = ref(false)
 const selectedDistance = ref('')
 const customDistance = ref('')
 const distanceRanges = ['10km以内', '30km以内', '50km以内', '100km以内']
 
-const onNearbyConfirm = () => {
-  showNearbyPopup.value = false
-}
+
 
 const now = new Date()
 const currentYear = now.getFullYear()
@@ -425,6 +327,39 @@ const pickerValue = ref([2, now.getMonth(), now.getDate() - 1])
 const onPickerChange = (e) => {
   pickerValue.value = e.detail.value
 }
+
+onMounted(async () => {
+  try {
+    const [res, customerRes] = await Promise.all([
+      getSalesDashboard(),
+      getCustomerList({ levels: 'A' }),
+    ])
+    const panels = []
+    for (const [key, meta] of Object.entries(PANEL_META)) {
+      const metricsResp = res[key]
+      if (metricsResp?.metrics && metricsResp.metrics.length > 0) {
+        panels.push({ name: meta.name, title: meta.title, statsRows: buildStatsRows(metricsResp.metrics) })
+      }
+    }
+    dashboardPanels.value = panels
+    activeNames.value = panels.map(p => p.name)
+    focusCards.value = (customerRes.items || []).map(item => ({
+      id: item.id,
+      name: item.name || '-',
+      phone: item.phone || '-',
+      badge: item.followStatusLabel || item.levelLabel || '待跟进',
+      badgeStyle: 'cyan',
+      icon2: gradeIcon,
+      label2: item.levelLabel || '-',
+      industry: item.industryLabel || '-',
+      icon4: lineOldIcon,
+      label4: item.projectType || '-',
+      note: item.latestFollowRecord || '暂无跟进记录',
+    }))
+  } catch {
+    // 看板数据加载失败使用空列表
+  }
+})
 </script>
 
 <style>

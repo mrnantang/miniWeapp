@@ -27,19 +27,22 @@
         </view>
 
         <nut-collapse v-model="activeNames" expand-icon-placement="right">
-          <nut-collapse-item name="follow" :border="false">
+          <nut-collapse-item v-for="panel in dashboardPanels" :key="panel.name" :name="panel.name" :border="false">
+            <template #icon>
+              <image class="collapse-arrow" :src="iconExpandArrow" mode="aspectFit" />
+            </template>
             <template #title>
               <view class="section-head">
                 <view class="section-title-row">
                   <view class="dot" />
-                  <text class="section-title">客户跟进情况</text>
+                  <text class="section-title">{{ panel.title }}</text>
                 </view>
               </view>
             </template>
 
             <view class="s-divider" />
 
-            <view v-for="(row, ri) in statsRows" :key="ri">
+            <view v-for="(row, ri) in panel.statsRows" :key="ri">
               <view class="stats-row">
                 <view v-for="(stat, si) in row" :key="si" class="stat-card" :class="{ 'stat-card--hidden': !stat.label }">
                   <text class="stat-label">{{ stat.label }}</text>
@@ -50,7 +53,7 @@
                   </view>
                 </view>
               </view>
-              <view v-if="ri < statsRows.length - 1" class="s-divider" />
+              <view v-if="ri < panel.statsRows.length - 1" class="s-divider" />
             </view>
           </nut-collapse-item>
         </nut-collapse>
@@ -274,7 +277,7 @@ import { ref, computed, onMounted } from 'vue'
 import Taro from '@tarojs/taro'
 import TabBar from '../tabs/index.vue'
 import DuplicateCheckPopup from '@/subpackages/dev/customer/components/DuplicateCheckPopup.vue'
-import { getOperationsOverview } from '@/api/reporting'
+import { getDevelopmentDashboard, getSalesDashboard } from '@/api/reporting'
 import { getLeadList } from '@/api/lead'
 import { getCustomerList } from '@/api/customer'
 import { getCompanyDepartmentTree } from '@/api/system'
@@ -292,59 +295,49 @@ import iconTaskHeader from '@/assets/dev/icon-task-header.png'
 import iconPhone from '@/assets/dev/icon-phone.png'
 import iconIndustry from '@/assets/dev/icon-industry.png'
 import iconLocationPopup from '@/assets/dev/icon-location-popup.png'
+import iconExpandArrow from '@/assets/dev/upArror.png'
 
 const role = detectRole()
 
-const activeNames = ref(['follow'])
+const activeNames = ref([])
 const activeTaskTab = ref(0)
 const taskLoading = ref(false)
 
-const metrics = ref([])
+const dashboardPanels = ref([])
 const leads = ref([])
 const pendingCustomers = ref([])
 const focusCustomers = ref([])
 
-const STAT_KEY_MAP = {
-  total_customers: 0,
-  phone_communications: 1,
-  wechat_communications: 2,
-  received_customers: 3,
-  key_customers: 4,
-  quoted_customers: 5,
-  contracting_customers: 6,
+/** 面板字段 → 中文标题 */
+const PANEL_META = {
+  followMetrics:  { name: 'followMetrics',  title: '客户跟进情况' },
+  dealAmounts:    { name: 'dealAmounts',    title: '成交金额' },
+  performance:    { name: 'performance',    title: '业绩统计' },
+  expectedDeals:  { name: 'expectedDeals',  title: '预计成交' },
 }
 
-const STAT_LABELS = ['客户总数量', '电话沟通数量', '微信沟通数量', '接待客户数量', '重点客户数量', '报价客户数量', '签约中客户数量']
-
-const statsMap = computed(() => {
-  const map = {}
-  for (const m of metrics.value) {
-    map[m.key] = m
-  }
-  return map
-})
-
-const statsRows = computed(() => {
+/** 将指标数组按每行3个排版 */
+function buildStatsRows(metrics) {
   const rows = []
-  for (let i = 0; i < 7; i += 3) {
+  for (let i = 0; i < metrics.length; i += 3) {
     const row = []
     for (let j = 0; j < 3; j++) {
       const idx = i + j
-      if (idx >= 7) {
+      if (idx >= metrics.length) {
         row.push({ label: '', value: '', changeRate: 0 })
       } else {
-        const m = statsMap.value[Object.keys(STAT_KEY_MAP)[idx]]
+        const m = metrics[idx]
         row.push({
-          label: STAT_LABELS[idx],
-          value: m ? m.value : '-',
-          changeRate: m ? (m.changeRate || 0) : 0,
+          label: m.label,
+          value: String(m.value ?? '-'),
+          changeRate: m.changeRate || 0,
         })
       }
     }
     rows.push(row)
   }
   return rows
-})
+}
 
 const tabIdxCustomer = computed(() => role === 'sales' ? 0 : 1)
 const tabIdxFocus = computed(() => role === 'sales' ? 1 : 2)
@@ -573,6 +566,21 @@ onMounted(async () => {
   } catch {
     // 筛选数据加载失败使用空列表
   }
+
+  try {
+    const res = role === 'sales' ? await getSalesDashboard() : await getDevelopmentDashboard()
+    const panels = []
+    for (const [key, meta] of Object.entries(PANEL_META)) {
+      const metricsResp = res[key]
+      if (metricsResp?.metrics && metricsResp.metrics.length > 0) {
+        panels.push({ name: meta.name, title: meta.title, statsRows: buildStatsRows(metricsResp.metrics) })
+      }
+    }
+    dashboardPanels.value = panels
+    activeNames.value = panels.map(p => p.name)
+  } catch {
+    // 看板数据加载失败使用空列表
+  }
 })
 </script>
 <style>
@@ -720,6 +728,15 @@ onMounted(async () => {
   align-items: center;
   justify-content: space-between;
   padding: 28rpx 0;
+}
+.collapse-arrow {
+  width: 28rpx;
+  height: 28rpx;
+  transition: transform 0.2s;
+  transform: rotate(180deg);
+}
+.collapse-arrow--open {
+  transform: rotate(0deg);
 }
 .section-title-row {
   display: flex;

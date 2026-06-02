@@ -12,45 +12,26 @@
     <view class="boss-panel">
       <view class="boss-panel-inner">
         <nut-collapse v-model="activeNames" expand-icon-placement="right">
-          <nut-collapse-item name="ops" :border="false">
+          <nut-collapse-item v-for="panel in dashboardPanels" :key="panel.name" :name="panel.name" :border="false">
             <template #icon>
               <image style="width: 36rpx; height: 36rpx;" :src="iconArrow" mode="aspectFit" />
             </template>
             <template #title>
-              <text class="boss-section-title">运营数据</text>
+              <text class="boss-section-title">{{ panel.title }}</text>
             </template>
             <view class="boss-divider" />
-            <view class="boss-metrics-row">
-              <view class="boss-metric-card">
-                <text class="boss-metric-label">投流消费总金额</text>
-                <view class="boss-metric-value-row">
-                  <text class="boss-metric-unit">￥</text>
-                  <text class="boss-metric-value">123091102.0</text>
-                </view>
-                <view class="boss-metric-change boss-metric-change--up">
-                  <view class="boss-change-arrow boss-change-arrow--up" />
-                  <text class="boss-change-text">12.8%</text>
-                </view>
-              </view>
-              <view class="boss-col-divider" />
-              <view class="boss-metric-card">
-                <text class="boss-metric-label">有效询盘数量</text>
-                <text class="boss-metric-value boss-metric-value--standalone">2091</text>
-                <view class="boss-metric-change boss-metric-change--down">
-                  <view class="boss-change-arrow boss-change-arrow--down" />
-                  <text class="boss-change-text boss-change-text--down">4.0%</text>
-                </view>
-              </view>
-              <view class="boss-col-divider" />
-              <view class="boss-metric-card">
-                <text class="boss-metric-label">投流ROI</text>
-                <view class="boss-metric-value-row">
-                  <text class="boss-metric-value">67.8</text>
-                  <text class="boss-metric-unit">%</text>
-                </view>
-                <view class="boss-metric-change boss-metric-change--up">
-                  <view class="boss-change-arrow boss-change-arrow--up" />
-                  <text class="boss-change-text">12.8%</text>
+            <view v-for="(row, ri) in panel.statsRows" :key="ri">
+              <view v-if="ri > 0" class="boss-row-divider" />
+              <view class="boss-metrics-row">
+                <view v-for="(c, ci) in row" :key="ci" class="boss-metric-card" :class="{ 'boss-metric-card--empty': !c.label }">
+                  <text class="boss-metric-label">{{ c.label }}</text>
+                  <view class="boss-metric-value-row">
+                    <text class="boss-metric-value">{{ c.value }}</text>
+                  </view>
+                  <view v-if="c.label" class="boss-metric-change" :class="c.up ? 'boss-metric-change--up' : 'boss-metric-change--down'">
+                    <view class="boss-change-arrow" :class="c.up ? 'boss-change-arrow--up' : 'boss-change-arrow--down'" />
+                    <text class="boss-change-text" :class="c.up ? '' : 'boss-change-text--down'">{{ c.change }}</text>
+                  </view>
                 </view>
               </view>
             </view>
@@ -103,59 +84,12 @@
             </view>
           </nut-collapse-item>
 
-          <nut-collapse-item name="lead" :border="false">
-            <template #icon>
-              <image style="width: 36rpx; height: 36rpx;" :src="iconArrow" mode="aspectFit" />
-            </template>
-            <template #title>
-              <text class="boss-section-title">线索数据</text>
-            </template>
-            <view class="boss-divider" />
-            <view class="boss-metrics-row">
-              <view v-for="(c, ci) in leadRow1" :key="ci" class="boss-metric-card">
-                <text class="boss-metric-label">{{ c.label }}</text>
-                <view class="boss-metric-value-row">
-                  <text v-if="c.prefix" class="boss-metric-unit">{{ c.prefix }}</text>
-                  <text class="boss-metric-value">{{ c.value }}</text>
-                  <text v-if="c.suffix" class="boss-metric-unit">{{ c.suffix }}</text>
-                </view>
-                <view class="boss-metric-change" :class="c.up ? 'boss-metric-change--up' : 'boss-metric-change--down'">
-                  <view class="boss-change-arrow" :class="c.up ? 'boss-change-arrow--up' : 'boss-change-arrow--down'" />
-                  <text class="boss-change-text" :class="c.up ? '' : 'boss-change-text--down'">{{ c.change }}</text>
-                </view>
-              </view>
-              <template v-if="leadRow1.length === 2">
-                <view class="boss-col-divider" />
-                <view class="boss-metric-card boss-metric-card--empty" />
-              </template>
-            </view>
-            <view class="boss-row-divider" />
-            <view class="boss-metrics-row">
-              <view v-for="(c, ci) in leadRow2" :key="ci" class="boss-metric-card">
-                <text class="boss-metric-label">{{ c.label }}</text>
-                <view class="boss-metric-value-row">
-                  <text v-if="c.prefix" class="boss-metric-unit">{{ c.prefix }}</text>
-                  <text class="boss-metric-value">{{ c.value }}</text>
-                  <text v-if="c.suffix" class="boss-metric-unit">{{ c.suffix }}</text>
-                </view>
-                <view class="boss-metric-change" :class="c.up ? 'boss-metric-change--up' : 'boss-metric-change--down'">
-                  <view class="boss-change-arrow" :class="c.up ? 'boss-change-arrow--up' : 'boss-change-arrow--down'" />
-                  <text class="boss-change-text" :class="c.up ? '' : 'boss-change-text--down'">{{ c.change }}</text>
-                </view>
-              </view>
-              <template v-if="leadRow2.length === 2">
-                <view class="boss-col-divider" />
-                <view class="boss-metric-card boss-metric-card--empty" />
-              </template>
-            </view>
-          </nut-collapse-item>
-
           <nut-collapse-item name="region" :border="false">
             <template #icon>
               <image style="width: 36rpx; height: 36rpx;" :src="iconArrow" mode="aspectFit" />
             </template>
             <template #title>
-              <text class="boss-section-title">区域成交数据 | 前五</text>
+              <text class="boss-section-title">区域成交数据</text>
             </template>
             <view class="boss-divider" />
             <view v-for="(row, ri) in regionRows" :key="ri">
@@ -186,7 +120,7 @@
               <image style="width: 36rpx; height: 36rpx;" :src="iconArrow" mode="aspectFit" />
             </template>
             <template #title>
-              <text class="boss-section-title">运营个人成交数据 | 前五</text>
+              <text class="boss-section-title">运营个人成交数据</text>
             </template>
             <view class="boss-divider" />
             <view v-for="(row, ri) in personalRows" :key="ri">
@@ -231,7 +165,7 @@
             <view class="tc-info">
               <view class="tc-info-item">
                 <image class="tc-icon" :src="iconPhone" mode="aspectFit" />
-                <text class="tc-info-text tc-info-text--active">15899280987</text>
+                <text class="tc-info-text tc-info-text--active">{{ card.phone }}</text>
               </view>
               <view class="tc-info-item">
                 <image class="tc-icon" :src="card.icon2" mode="aspectFit" />
@@ -347,9 +281,11 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import Taro from '@tarojs/taro'
 import TabBar from '../../boss/tabs/index.vue'
+import { getOperationsDashboard } from '@/api/reporting'
+import { getCustomerList } from '@/api/customer'
 import devBannerImg from '@/assets/login/bossBG.jpg'
 import iconFilter from '@/assets/dev/icon-filter.png'
 import iconTaskHeader from '@/assets/dev/icon-task-header.png'
@@ -361,7 +297,37 @@ import locationIcon from '@/assets/dev/icon-location.png'
 import lineOldIcon from '@/assets/dev/icon-line-old.png'
 import iconArrow from '@/assets/dev/upArror.png'
 
-const activeNames = ref(['ops', 'deal', 'lead', 'region', 'personal'])
+const dashboardPanels = ref([])
+
+const PANEL_META = {
+  overview: { name: 'overview', title: '运营数据' },
+  leads:    { name: 'leads',    title: '线索数据' },
+}
+
+function buildStatsRows(metrics) {
+  const rows = []
+  for (let i = 0; i < metrics.length; i += 3) {
+    const row = []
+    for (let j = 0; j < 3; j++) {
+      const idx = i + j
+      if (idx >= metrics.length) {
+        row.push({ label: '', value: '', change: '', up: true })
+      } else {
+        const m = metrics[idx]
+        row.push({
+          label: m.label,
+          value: String(m.value ?? '-'),
+          change: `${Math.abs(m.changeRate || 0)}%`,
+          up: (m.changeRate || 0) >= 0,
+        })
+      }
+    }
+    rows.push(row)
+  }
+  return rows
+}
+
+const activeNames = ref([])
 
 const dealRow1 = [
   { label: '意向成交总金额', prefix: '￥', value: '5739400.0', change: '12.8%', up: true },
@@ -421,11 +387,7 @@ const personalRows = [
   ],
 ]
 
-const focusCards = [
-  { name: '超凡实业技术有限公司', badge: '待跟进', badgeStyle: 'yellow', icon2: gradeIcon, label2: 'A级客户', industry: '电气行业', icon4: lineOldIcon, label4: '旧线', note: '客户有意向，但未表明哪款产品' },
-  { name: '金石科技', badge: '已拜访', badgeStyle: 'cyan', icon2: wechatIcon, label2: 'rnbujhu2818', industry: 'A级客户', icon4: locationIcon, label4: '广东省/深圳市/南山区', note: '客户有意向，但未表明哪款产品' },
-  { name: '金剑制造实业控股', badge: '已报价', badgeStyle: 'blue', icon2: wechatIcon, label2: 'rnbujhu2818', industry: 'A级客户', icon4: locationIcon, label4: '广东省/深圳市/南山区', note: '客户有意向，但未表明哪款产品' },
-]
+const focusCards = ref([])
 
 const showFilter = ref(false)
 const filterIdx = ref(0)
@@ -496,6 +458,39 @@ const pickerValue = ref([2, now.getMonth(), now.getDate() - 1])
 const onPickerChange = (e) => {
   pickerValue.value = e.detail.value
 }
+
+onMounted(async () => {
+  try {
+    const [res, customerRes] = await Promise.all([
+      getOperationsDashboard(),
+      getCustomerList({ levels: 'A' }),
+    ])
+    const panels = []
+    for (const [key, meta] of Object.entries(PANEL_META)) {
+      const metricsResp = res[key]
+      if (metricsResp?.metrics && metricsResp.metrics.length > 0) {
+        panels.push({ name: meta.name, title: meta.title, statsRows: buildStatsRows(metricsResp.metrics) })
+      }
+    }
+    dashboardPanels.value = panels
+    activeNames.value = [...panels.map(p => p.name), 'deal', 'region', 'personal']
+    focusCards.value = (customerRes.items || []).map(item => ({
+      id: item.id,
+      name: item.name || '-',
+      phone: item.phone || '-',
+      badge: item.followStatusLabel || item.levelLabel || '待跟进',
+      badgeStyle: 'cyan',
+      icon2: gradeIcon,
+      label2: item.levelLabel || '-',
+      industry: item.industryLabel || '-',
+      icon4: lineOldIcon,
+      label4: item.projectType || '-',
+      note: item.latestFollowRecord || '暂无跟进记录',
+    }))
+  } catch {
+    // 看板数据加载失败使用空列表
+  }
+})
 </script>
 
 <style>
@@ -561,13 +556,37 @@ const onPickerChange = (e) => {
 .boss-panel-inner {
   padding: 40rpx;
 }
-
+.section {
+  display: flex;
+  flex-direction: column;
+}
+.section-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 28rpx 0;
+}
+.task-title-row {
+  display: flex;
+  align-items: center;
+  gap: 8rpx;
+}
+.task-header-icon {
+  width: 38rpx;
+  height: 38rpx;
+  flex-shrink: 0;
+}
 .boss-section-title {
   font-size: 30rpx;
   font-weight: 500;
   color: #1A1D24;
 }
-
+.task-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-bottom: 28rpx;
+}
 .boss-divider {
   height: 1rpx;
   background: #DEE8FA;

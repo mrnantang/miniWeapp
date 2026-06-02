@@ -1,4 +1,5 @@
 import { get, post, put } from '@/utils/request'
+import type { CustomerItem } from './customer'
 
 // ========== 类型定义 ==========
 
@@ -217,4 +218,19 @@ export function updateExpense(id: number, data: UpsertExpenseRequest): Promise<E
 /** 撤销费用单 */
 export function cancelExpense(id: number): Promise<ExpenseActionResponse> {
   return post<ExpenseActionResponse>(`/finance/expenses/${id}/cancel`)
+}
+
+// ========== 关联客户 ==========
+
+/** 关联客户列表响应 */
+export interface RelatedCustomersResponse {
+  items: CustomerItem[]
+  page: number
+  pageSize: number
+  total: number
+}
+
+/** 获取关联客户列表 */
+export function getRelatedCustomers(): Promise<CustomerItem[]> {
+  return get<RelatedCustomersResponse>('/finance/expenses/related-customers').then(res => res.items)
 }

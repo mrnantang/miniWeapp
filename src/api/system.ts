@@ -22,6 +22,11 @@ export const getCompanyDepartmentTree = (permissionCode: string, companyId?: num
   return get<CompanyDepartmentTreeResponse>('/system/companies/departments/tree', params)
 }
 
+/** 获取公司组织架构树（公司→部门） */
+export const getCompanyTree = (): Promise<CompanyDepartmentTreeResponse> => {
+  return get<CompanyDepartmentTreeResponse>('/system/companies/tree?permissionCode=opportunity.create')
+}
+
 // 公司-用户级联选择器节点
 export interface UserCascaderNode {
   companyId?: number
