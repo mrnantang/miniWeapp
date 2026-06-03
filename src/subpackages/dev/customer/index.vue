@@ -102,7 +102,7 @@ import iconIndustry from '@/assets/dev/icon-industry.png'
 
 const TAB_MAP: Record<string, string> = {
   all: 'all',
-  pending_followup: 'pending_followup',
+  pending_follow: 'pending_follow',
   soon_recycle: 'soon_recycle',
   operation: 'operation',
   sales: 'sales',
@@ -119,7 +119,7 @@ const FOLLOW_STATUS_STYLE: Record<string, string> = {
 
 const customerTabs = [
   { label: '全部', value: 'all' },
-  { label: '待跟进客户', value: 'pending_followup' },
+  { label: '待跟进客户', value: 'pending_follow' },
   { label: '即将回收客户', value: 'soon_recycle' },
   { label: '运营公海', value: 'operation' },
   { label: '销售公海', value: 'sales' },
@@ -346,6 +346,7 @@ useDidShow(() => {
   font-size: 28rpx;
   font-weight: 600;
   color: #1A1D24;
+  width: 80%;
 }
 .cc-badge {
   border-radius: 6rpx;

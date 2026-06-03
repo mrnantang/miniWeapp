@@ -266,9 +266,9 @@
         <text class="checkin-title">签到打卡</text>
         <view class="checkin-addr-box" @tap="onCheckinAddrTap">
           <image class="checkin-loc-icon" :src="iconCheckinLocation" mode="aspectFit" />
-          <text class="checkin-addr">广东省深圳市南山区晟成智慧制造有限公司</text>
+          <text class="checkin-addr">{{ checkinCurrentAddr || '定位中...' }}</text>
         </view>
-      <!-- <view v-if="checkinDistance !== null" class="checkin-distance-row">
+        <view v-if="checkinDistance !== null" class="checkin-distance-row">
           <view class="checkin-dist-col">
             <image class="checkin-route-icon" :src="iconCheckinRoute" mode="aspectFit" />
             <text class="checkin-dist-label">相距约：</text>
@@ -276,16 +276,17 @@
           </view>
           <view class="checkin-current-col">
             <image class="checkin-current-icon" :src="iconCheckinLocation" mode="aspectFit" />
-            <text class="checkin-current-addr">广东省深圳市南山区科技大厦119号（当前位置）</text>
+            <text class="checkin-current-addr">{{ checkinCurrentAddr || '定位中...' }}（当前位置）</text>
           </view>
-        </view> -->
+        </view>
         <view class="checkin-purpose" @tap="showPurposePopup = true">
           <text class="checkin-purpose-text" :class="{ 'checkin-purpose-text--set': checkinPurpose }">{{ checkinPurpose || '请选择拜访目的' }}</text>
           <image class="checkin-purpose-arrow" :src="rightArrowIcon" mode="aspectFit" />
         </view>
-        <view class="checkin-upload" @tap="onCheckinUpload">
-          <image class="checkin-plus-icon" :src="iconCheckinPlus" mode="aspectFit" />
-          <text class="checkin-upload-text">拍摄</text>
+        <view class="checkin-upload-box" @tap="onCheckinUpload">
+          <image v-if="checkinImage" class="checkin-upload-preview" :src="checkinImage" mode="aspectFill" />
+          <image v-else class="checkin-plus-icon" :src="iconCheckinPlus" mode="aspectFit" />
+          <text v-if="!checkinImage" class="checkin-upload-text">拍摄</text>
         </view>
         <view class="checkin-btns">
           <view class="checkin-btn checkin-btn--cancel" @tap="showCheckinPopup = false">
@@ -338,7 +339,8 @@
 import NavBar from '@/components/NavBar.vue'
 import { ref, reactive, onMounted, watch } from 'vue'
 import Taro from '@tarojs/taro'
-import { getOpportunityFollowRecords, getOpportunityVisitRecords, createOpportunityFollowRecord } from '@/api/opportunity'
+import { getOpportunityFollowRecords, getOpportunityVisitRecords, createOpportunityFollowRecord, checkInVisitRecord } from '@/api/opportunity'
+import { uploadFile } from '@/api/material'
 import iconEdit from '@/assets/dev/edit.png'
 import iconDelete from '@/assets/dev/delete.png'
 import rightArrowIcon from '@/assets/dev/rightArror.png'
@@ -346,6 +348,32 @@ import iconCheckinLocation from '@/assets/dev/icon-checkin-location.svg'
 import iconCheckinArrowDown from '@/assets/dev/icon-checkin-arrow-down.svg'
 import iconCheckinPlus from '@/assets/dev/icon-checkin-plus.svg'
 import iconCheckinRoute from '@/assets/dev/icon-checkin-route.svg'
+
+/** 腾讯地图 Key */
+const TENCENT_MAP_KEY = 'GKSBZ-LS464-5ZOUV-KYTZG-VLVBT-E5BXO'
+
+/** 逆地理编码：经纬度 → 地址文本 */
+async function reverseGeocode(lat, lng) {
+  try {
+    const res = await Taro.request({
+      url: `https://apis.map.qq.com/ws/geocoder/v1/?location=${lat},${lng}&key=${TENCENT_MAP_KEY}&get_poi=0`,
+    })
+    return res.data?.result?.address || ''
+  } catch {
+    return ''
+  }
+}
+
+/** Haversine 公式计算两经纬度间直线距离（km） */
+function calcDistance(lat1, lng1, lat2, lng2) {
+  const R = 6371
+  const dLat = (lat2 - lat1) * Math.PI / 180
+  const dLng = (lng2 - lng1) * Math.PI / 180
+  const a = Math.sin(dLat / 2) ** 2
+    + Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180)
+    * Math.sin(dLng / 2) ** 2
+  return (R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a))).toFixed(1)
+}
 import iconWarning from '@/assets/dev/icon-warning.svg'
 
 function formatTime(val) {
@@ -530,8 +558,13 @@ const failReason = ref('')
 const showCheckinPopup = ref(false)
 const showDistanceWarnPopup = ref(false)
 const showPurposePopup = ref(false)
-const checkinDistance = ref(89)
+const checkinCurrentAddr = ref('')
+const checkinDistance = ref(null)
 const checkinPurpose = ref('')
+const checkinImage = ref('')
+const checkinFile = ref(null)
+const checkinLat = ref(0)
+const checkinLng = ref(0)
 const purposeList = ['打样试枪', '合同签订', '面谈沟通', '售后处理', '日常回访', '调试试机', '其他']
 
 const onCheckinAddrTap = () => {
@@ -543,11 +576,31 @@ const selectPurpose = (purpose) => {
   showPurposePopup.value = false
 }
 
-const onCheckinUpload = () => {
-  Taro.showToast({ title: '拍照上传', icon: 'none' })
+const onCheckinUpload = async () => {
+  try {
+    const res = await Taro.chooseImage({
+      count: 1,
+      sizeType: ['compressed'],
+      sourceType: ['camera', 'album'],
+    })
+    const filePath = res.tempFilePaths[0]
+    Taro.showLoading({ title: '上传中...' })
+    const uploadRes = await uploadFile(filePath, 'checkin')
+    Taro.hideLoading()
+    checkinImage.value = uploadRes.url
+    checkinFile.value = {
+      fileName: uploadRes.fileName,
+      fileSize: uploadRes.fileSize,
+      fileUrl: uploadRes.url,
+      mimeType: uploadRes.mimeType,
+    }
+  } catch (e) {
+    Taro.hideLoading()
+    if (e && e.errMsg && e.errMsg.includes('cancel')) return
+  }
 }
 
-const onCheckinConfirm = () => {
+const onCheckinConfirm = async () => {
   if (!checkinPurpose.value) {
     Taro.showToast({ title: '请选择拜访目的', icon: 'none' })
     return
@@ -557,8 +610,23 @@ const onCheckinConfirm = () => {
     showDistanceWarnPopup.value = true
     return
   }
-  Taro.showToast({ title: '签到成功', icon: 'none' })
-  showCheckinPopup.value = false
+  try {
+    const data = {
+      checkInAddress: checkinCurrentAddr.value,
+      checkInLatitude: checkinLat.value,
+      checkInLongitude: checkinLng.value,
+      checkInPurpose: checkinPurpose.value,
+    }
+    if (checkinFile.value) {
+      data.photos = [checkinFile.value]
+    }
+    await checkInVisitRecord(opportunityId.value, data)
+    Taro.showToast({ title: '签到成功', icon: 'success' })
+    showCheckinPopup.value = false
+    fetchVisitRecords()
+  } catch {
+    // 错误已在 request 层处理
+  }
 }
 
 const onWarnConfirm = () => {
@@ -580,10 +648,26 @@ const onAddFollow = () => {
   showAddFollowPopup.value = true
 }
 
-const onCheckIn = () => {
+const onCheckIn = async () => {
   checkinPurpose.value = ''
-  checkinDistance.value = 89
+  checkinDistance.value = null
+  checkinCurrentAddr.value = ''
   showCheckinPopup.value = true
+
+  // 异步获取当前位置
+  try {
+    const locRes = await Taro.getLocation({ type: 'gcj02' })
+    const { latitude, longitude } = locRes
+    checkinLat.value = latitude
+    checkinLng.value = longitude
+    checkinCurrentAddr.value = await reverseGeocode(latitude, longitude)
+    // 客户有经纬度时计算距离
+    if (detail.latitude && detail.longitude) {
+      checkinDistance.value = parseFloat(calcDistance(latitude, longitude, detail.latitude, detail.longitude))
+    }
+  } catch (e) {
+    console.error('[签到] 定位失败', e)
+  }
 }
 
 watch(followTab, (tab) => {
@@ -1222,16 +1306,17 @@ onMounted(() => {
   flex-shrink: 0;
 }
 
-.checkin-upload {
+.checkin-upload-box {
+  width: 156rpx;
+  height: 156rpx;
+  border-radius: 8rpx;
+  background: #F9F9F9;
   display: flex;
-  flex-direction: column;
   align-items: center;
   justify-content: center;
   gap: 8rpx;
-  padding: 24rpx;
-  background: #FBFBFB;
-  border: 2rpx dashed #ECEBEB;
-  border-radius: 8rpx;
+  flex-direction: column;
+  flex-shrink: 0;
 }
 
 .checkin-plus-icon {
@@ -1242,6 +1327,12 @@ onMounted(() => {
 .checkin-upload-text {
   font-size: 28rpx;
   color: #62687D;
+}
+
+.checkin-upload-preview {
+  width: 100%;
+  height: 100%;
+  border-radius: 8rpx;
 }
 
 .checkin-btns {

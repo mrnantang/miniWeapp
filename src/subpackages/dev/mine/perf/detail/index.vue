@@ -12,57 +12,58 @@
       <view class="pd-card">
         <view class="pd-field">
           <text class="pd-label">合同名称</text>
-          <text class="pd-value pd-value--green">超凡科技有限公司购销合同</text>
+          <text class="pd-value pd-value--green">{{ detail.contractName || '-' }}</text>
         </view>
         <view class="pd-divider" />
         <view class="pd-field">
           <text class="pd-label">客户名称</text>
-          <text class="pd-value pd-value--green">超凡科技有限公司</text>
+          <text class="pd-value pd-value--green">{{ detail.customerName || '-' }}</text>
         </view>
         <view class="pd-divider" />
         <view class="pd-field">
           <text class="pd-label">联系电话</text>
-          <text class="pd-value">19800287765</text>
+          <text class="pd-value">{{ detail.customerPhone || '-' }}</text>
         </view>
         <view class="pd-divider" />
         <view class="pd-field">
           <text class="pd-label">合同总金额</text>
-          <text class="pd-value pd-value--medium">￥100,000</text>
+          <text class="pd-value pd-value--medium">{{ fmtFen(detail.contractAmount) }}</text>
         </view>
         <view class="pd-divider" />
         <view class="pd-field">
           <text class="pd-label">税点</text>
-          <text class="pd-value">3%</text>
+          <text class="pd-value">{{ detail.taxRate != null ? detail.taxRate + '%' : '-' }}</text>
         </view>
         <view class="pd-divider" />
         <view class="pd-field">
           <text class="pd-label">税额</text>
-          <text class="pd-value pd-value--medium">￥100,000</text>
+          <text class="pd-value pd-value--medium">{{ fmtFen(detail.taxAmount) }}</text>
         </view>
         <view class="pd-divider" />
         <view class="pd-field">
           <text class="pd-label">业务费</text>
-          <text class="pd-value pd-value--medium">￥100,000</text>
+          <text class="pd-value pd-value--medium">{{ fmtFen(detail.businessFeeAmount) }}</text>
         </view>
         <view class="pd-divider" />
         <view class="pd-field">
           <text class="pd-label">业绩总金额</text>
-          <text class="pd-value pd-value--medium">￥1200,000</text>
+          <text class="pd-value pd-value--medium">{{ fmtFen(detail.contractPerformanceTotal) }}</text>
         </view>
         <view class="pd-divider" />
         <view class="pd-field">
           <text class="pd-label">关联商机</text>
-          <text class="pd-value pd-value--green">超凡科技有限公司自动报价单</text>
+          <text class="pd-value pd-value--green">{{ detail.opportunityName || '-' }}</text>
         </view>
         <view class="pd-divider" />
         <view class="pd-field">
           <text class="pd-label">本次回款金额</text>
-          <text class="pd-value pd-value--medium">￥10,000</text>
+          <text class="pd-value pd-value--medium">{{ fmtFen(detail.receiptAmount) }}</text>
         </view>
         <view class="pd-divider" />
         <view class="pd-field pd-field--voucher">
           <text class="pd-label">回款凭证</text>
-          <image class="pd-voucher-img" src="https://via.placeholder.com/96x66" mode="aspectFill" />
+          <image v-if="detail.remittanceVoucher" class="pd-voucher-img" :src="detail.remittanceVoucher.fileUrl" mode="aspectFill" />
+          <text v-else class="pd-value">-</text>
         </view>
       </view>
 
@@ -70,89 +71,41 @@
         <text class="pd-section-title">业绩分配细则</text>
         <view class="pd-divider" />
         <view class="pd-timeline">
-          <view class="pd-timeline-item">
+          <view v-for="(item, idx) in detail.items" :key="idx" class="pd-timeline-item">
             <view class="pd-timeline-indicator">
-              <view class="pd-timeline-line pd-timeline-line--top" />
-              <view class="pd-timeline-dot pd-timeline-dot--filled" />
-              <view class="pd-timeline-line pd-timeline-line--bottom" />
+              <view class="pd-timeline-line" :class="idx === 0 ? 'pd-timeline-line--top' : ''" />
+              <view class="pd-timeline-dot" :class="{ 'pd-timeline-dot--filled': item.confirmStatus === 'confirmed' }" />
+              <view v-if="idx < detail.items.length - 1" class="pd-timeline-line pd-timeline-line--bottom" />
+              <view v-else class="pd-timeline-line pd-timeline-line--end" />
             </view>
             <view class="pd-timeline-content">
-              <text class="pd-timeline-dept">运营部</text>
+              <text class="pd-timeline-dept">{{ item.departmentType === 'sales' ? '销售部' : item.departmentType === 'operation' ? '运营部' : item.departmentType === 'development' ? '开发部' : item.departmentType }}</text>
               <view class="pd-timeline-card">
                 <view class="pd-timeline-row">
                   <text class="pd-timeline-label">所属人：</text>
-                  <text class="pd-timeline-val">张三</text>
+                  <text class="pd-timeline-val">{{ item.employeeName || '-' }}</text>
                   <text class="pd-timeline-label">比例：</text>
-                  <text class="pd-timeline-val">10%</text>
+                  <text class="pd-timeline-val">{{ item.performanceRatio != null ? item.performanceRatio + '%' : '-' }}</text>
                 </view>
                 <view class="pd-timeline-row">
                   <text class="pd-timeline-label">金额：</text>
-                  <text class="pd-timeline-val pd-timeline-val--bold">￥1,000</text>
+                  <text class="pd-timeline-val pd-timeline-val--bold">{{ fmtFen(item.performanceAmount) }}</text>
                   <view class="pd-timeline-status">
-                    <view class="pd-status-dot pd-status-dot--green" />
-                    <text class="pd-status-text">已确认</text>
+                    <view class="pd-status-dot" :class="item.confirmStatus === 'confirmed' ? 'pd-status-dot--green' : 'pd-status-dot--yellow'" />
+                    <text class="pd-status-text">{{ item.confirmStatus === 'confirmed' ? '已确认' : item.confirmStatus === 'no_confirm' ? '无需确认' : '待确认' }}</text>
                   </view>
                 </view>
               </view>
             </view>
           </view>
-          <view class="pd-timeline-item">
-            <view class="pd-timeline-indicator">
-              <view class="pd-timeline-line pd-timeline-line--top" />
-              <view class="pd-timeline-dot" />
-              <view class="pd-timeline-line pd-timeline-line--bottom" />
-            </view>
-            <view class="pd-timeline-content">
-              <text class="pd-timeline-dept">销售部</text>
-              <view class="pd-timeline-card">
-                <view class="pd-timeline-row">
-                  <text class="pd-timeline-label">所属人：</text>
-                  <text class="pd-timeline-val">孙星星</text>
-                  <text class="pd-timeline-label">比例：</text>
-                  <text class="pd-timeline-val">20%</text>
-                </view>
-                <view class="pd-timeline-row">
-                  <text class="pd-timeline-label">金额：</text>
-                  <text class="pd-timeline-val pd-timeline-val--bold">￥2,000</text>
-                  <view class="pd-timeline-status">
-                    <view class="pd-status-dot pd-status-dot--yellow" />
-                    <text class="pd-status-text">待确认</text>
-                  </view>
-                </view>
-              </view>
-            </view>
-          </view>
-          <view class="pd-timeline-item">
-            <view class="pd-timeline-indicator">
-              <view class="pd-timeline-line pd-timeline-line--top" />
-              <view class="pd-timeline-dot" />
-              <view class="pd-timeline-line pd-timeline-line--end" />
-            </view>
-            <view class="pd-timeline-content">
-              <text class="pd-timeline-dept">开发部</text>
-              <view class="pd-timeline-card">
-                <view class="pd-timeline-row">
-                  <text class="pd-timeline-label">所属人：</text>
-                  <text class="pd-timeline-val">刘子惠</text>
-                  <text class="pd-timeline-label">比例：</text>
-                  <text class="pd-timeline-val">20%</text>
-                </view>
-                <view class="pd-timeline-row">
-                  <text class="pd-timeline-label">金额：</text>
-                  <text class="pd-timeline-val pd-timeline-val--bold">￥2,000</text>
-                  <view class="pd-timeline-status">
-                    <view class="pd-status-dot pd-status-dot--yellow" />
-                    <text class="pd-status-text">待确认</text>
-                  </view>
-                </view>
-              </view>
-            </view>
+          <view v-if="!detail.items || detail.items.length === 0" class="pd-timeline-empty">
+            <text class="pd-value">暂无分配明细</text>
           </view>
         </view>
       </view>
     </scroll-view>
 
-    <view class="pd-actions">
+    <view v-if="detail.canCurrentUserEdit" class="pd-actions">
       <view class="pd-btn pd-btn--edit" @tap="onEdit">编辑</view>
       <view class="pd-btn pd-btn--confirm" @tap="onConfirm">确认</view>
     </view>
@@ -160,15 +113,43 @@
 </template>
 
 <script setup>
+import { ref, onMounted } from 'vue'
 import Taro from '@tarojs/taro'
+import { getPerfDetail } from '@/api/perf'
 import iconBack from '@/assets/dev/icon-back.png'
+
+/** 金额：分 → 元 */
+function fmtFen(val) {
+  if (val == null) return '-'
+  return '￥' + (val / 100).toLocaleString('zh-CN', { minimumFractionDigits: 0, maximumFractionDigits: 2 })
+}
+
+const detail = ref({})
+const appId = ref(0)
+
+onMounted(() => {
+  const instance = Taro.getCurrentInstance()
+  const id = Number(instance.router?.params?.id) || 0
+  if (id) {
+    appId.value = id
+    loadDetail(id)
+  }
+})
+
+async function loadDetail(id) {
+  try {
+    detail.value = await getPerfDetail(id)
+  } catch {
+    Taro.showToast({ title: '加载失败', icon: 'none' })
+  }
+}
 
 const goBack = () => {
   Taro.navigateBack()
 }
 
 const onEdit = () => {
-  Taro.navigateTo({ url: '/subpackages/dev/mine/perf/add/index' })
+  Taro.navigateTo({ url: `/subpackages/dev/mine/perf/add/index?id=${appId.value}` })
 }
 
 const onConfirm = () => {
@@ -279,6 +260,12 @@ const onConfirm = () => {
 .pd-timeline {
   display: flex;
   flex-direction: column;
+}
+
+.pd-timeline-empty {
+  display: flex;
+  justify-content: center;
+  padding: 40rpx 0;
 }
 
 .pd-timeline-item {

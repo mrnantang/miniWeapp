@@ -108,8 +108,8 @@ const handleLogin = async () => {
 
     const role = detectRole(res.permissions)
     // Taro.reLaunch({ url: '/' + getRoleHomePath(role) })
-    // Taro.reLaunch({ url: '/subpackages/dev/home/index'})
-    Taro.reLaunch({ url: '/subpackages/boss/dev-home/index'})
+    Taro.reLaunch({ url: '/subpackages/dev/home/index'})
+    // Taro.reLaunch({ url: '/subpackages/boss/dev-home/index'})
     // Taro.reLaunch({ url: '/subpackages/ops/home/index'})
   } catch (e) {
     errorMsg.value = (e instanceof Error) ? e.message : '账号或密码错误，请重新输入'

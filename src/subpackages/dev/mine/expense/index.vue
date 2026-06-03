@@ -23,7 +23,6 @@
           <view class="reimb-card-top">
             <view class="reimb-card-left">
               <text class="reimb-card-no">{{ item.expenseNo }}</text>
-              <text class="reimb-card-sub">(费用编号)</text>
             </view>
             <view class="reimb-badge" :class="'reimb-badge--' + getBadgeType(item.status)">
               <text class="reimb-badge-text">{{ EXPENSE_STATUS_MAP[item.status] || item.status }}</text>

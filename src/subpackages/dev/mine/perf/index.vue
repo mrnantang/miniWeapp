@@ -4,14 +4,11 @@
     <view class="perf-wrap">
       <view class="perf-search-row">
         <view class="perf-search-box">
-          <input class="perf-search-input" placeholder="请输入业绩编号/关联客户" placeholder-style="color:#9292A5" />
+          <input class="perf-search-input" v-model="searchKeyword" placeholder="请输入业绩编号/关联客户" placeholder-style="color:#9292A5" @confirm="loadList" />
           <image class="perf-search-icon" :src="iconSearch" mode="aspectFit" />
         </view>
         <view class="perf-btn" @tap="onFilter">
           <image :src="iconFilter" mode="aspectFit" />
-        </view>
-        <view class="perf-btn" @tap="onAdd">
-          <image :src="iconAdd" mode="aspectFit" />
         </view>
       </view>
       <scroll-view class="perf-scroll" scroll-y :enhanced="true" :show-scrollbar="false">
@@ -91,9 +88,10 @@
 </template>
 
 <script setup>
-import { ref, reactive } from 'vue'
+import { ref, reactive, onMounted } from 'vue'
 import NavBar from '@/components/NavBar.vue'
 import Taro from '@tarojs/taro'
+import { getPerfList } from '@/api/perf'
 import iconSearch from '@/assets/dev/icon-search.png'
 import iconFilter from '@/assets/dev/icon-filter.png'
 import iconAdd from '@/assets/dev/icon-add.png'
@@ -125,22 +123,70 @@ const toggleFilterTag = (key, tag) => {
   }
 }
 
-const perfList = ref([
-  { name: '金石信息科技有限公司', badge: '待确认', badgeType: 'yellow', opportunity: '金石科技高端机采购书', contract: '智能设备购销合同', totalAmount: '￥200000', paidAmount: '￥100000', btnText: '编辑业绩分配' },
-  { name: '及时设计文化传媒有限公司', badge: '已确认', badgeType: 'green', opportunity: '金石科技高端机采购书', contract: '智能设备购销合同', totalAmount: '￥200000', paidAmount: '￥100000', btnText: '查看业绩分配' },
-  { name: '超凡实业有限公司', badge: '待确认', badgeType: 'yellow', opportunity: '喷粉设备采购项目', contract: '设备购销合同', totalAmount: '￥128000', paidAmount: '￥68000', btnText: '编辑业绩分配' },
-])
+/** 金额格式化：分 → 元 */
+function fmtFen(val) {
+  if (val == null) return '-'
+  return '￥' + (val / 100).toLocaleString('zh-CN', { minimumFractionDigits: 0, maximumFractionDigits: 2 })
+}
+
+const perfList = ref([])
+const loading = ref(false)
+
+const STATUS_MAP = {
+  pending_confirm: { badge: '待确认', badgeType: 'yellow' },
+  confirmed: { badge: '已确认', badgeType: 'green' },
+}
+
+async function loadList() {
+  loading.value = true
+  try {
+    const params = {}
+    if (!filterTags.status.includes('全部')) {
+      if (filterTags.status.includes('待确认')) params.status = 'pending_confirm'
+      else if (filterTags.status.includes('已确认')) params.status = 'confirmed'
+    }
+    const keyword = searchKeyword.value.trim()
+    if (keyword) {
+      if (/^\d+$/.test(keyword)) params.phone = keyword
+      else params.customerName = keyword
+    }
+    const res = await getPerfList(params)
+    perfList.value = (res.items || []).map(item => {
+      const info = STATUS_MAP[item.status] || { badge: item.status, badgeType: 'yellow' }
+      return {
+        id: item.id,
+        name: item.customerName || '-',
+        badge: info.badge,
+        badgeType: info.badgeType,
+        opportunity: item.opportunityName || '-',
+        contract: item.contractName || '-',
+        totalAmount: fmtFen(item.contractAmount),
+        paidAmount: fmtFen(item.receiptAmount),
+        btnText: item.canCurrentUserEdit ? '编辑业绩分配' : '查看业绩分配',
+      }
+    })
+  } catch {
+    // 加载失败保持空列表
+  } finally {
+    loading.value = false
+  }
+}
+
+const searchKeyword = ref('')
 
 const onFilter = () => {
   showFilter.value = true
 }
 
 const clearFilter = () => {
+  filterTags.status = ['全部']
+  loadList()
   showFilter.value = false
 }
 
 const onFilterConfirm = () => {
   showFilter.value = false
+  loadList()
 }
 
 const onAdd = () => {
@@ -148,8 +194,12 @@ const onAdd = () => {
 }
 
 const onView = (item) => {
-  Taro.navigateTo({ url: '/subpackages/dev/mine/perf/detail/index' })
+  Taro.navigateTo({ url: `/subpackages/dev/mine/perf/detail/index?id=${item.id}` })
 }
+
+onMounted(() => {
+  loadList()
+})
 </script>
 
 <style>

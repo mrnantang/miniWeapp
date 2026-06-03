@@ -346,6 +346,7 @@ useDidShow(() => {
   font-size: 28rpx;
   font-weight: 600;
   color: #1A1D24;
+  width: 80%;
 }
 .oc-badge {
   border-radius: 6rpx;

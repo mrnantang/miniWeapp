@@ -16,12 +16,6 @@ export interface CompanyDepartmentTreeResponse {
   items: CompanyDepartmentTreeNode[]
 }
 
-export const getCompanyDepartmentTree = (permissionCode: string, companyId?: number): Promise<CompanyDepartmentTreeResponse> => {
-  const params: Record<string, unknown> = { permissionCode }
-  if (companyId) params.companyId = companyId
-  return get<CompanyDepartmentTreeResponse>('/system/companies/departments/tree', params)
-}
-
 /** 获取公司组织架构树（公司→部门） */
 export const getCompanyTree = (): Promise<CompanyDepartmentTreeResponse> => {
   return get<CompanyDepartmentTreeResponse>('/system/companies/tree?permissionCode=opportunity.create')

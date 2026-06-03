@@ -280,7 +280,6 @@ import DuplicateCheckPopup from '@/subpackages/dev/customer/components/Duplicate
 import { getDevelopmentDashboard, getSalesDashboard } from '@/api/reporting'
 import { getLeadList } from '@/api/lead'
 import { getCustomerList } from '@/api/customer'
-import { getCompanyDepartmentTree } from '@/api/system'
 import { detectRole } from '@/utils/role'
 import wechatIcon from '@/assets/dev/icon-wechat.png'
 import gradeIcon from '@/assets/dev/icon-grade.png'
@@ -555,17 +554,6 @@ onMounted(async () => {
     taskLoading.value = false
   }
 
-  try {
-    const treeRes = await getCompanyDepartmentTree('lead.create')
-    if (treeRes.items) {
-      const { companies, depts, subDepts } = parseTreeToLists(treeRes.items)
-      companyList.value = companies
-      deptList.value = depts
-      subDeptList.value = subDepts
-    }
-  } catch {
-    // 筛选数据加载失败使用空列表
-  }
 
   try {
     const res = role === 'sales' ? await getSalesDashboard() : await getDevelopmentDashboard()

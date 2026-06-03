@@ -397,27 +397,6 @@
         </view>
       </view>
 
-      <nut-popup v-model:visible="showLogisticsPopup" position="bottom" :style="{ borderRadius: '24rpx 24rpx 0 0', height: '1128rpx' }" :z-index="2000">
-        <view class="lg-popup">
-          <view class="lg-header">
-            <view class="lg-header-side" />
-            <text class="lg-header-title">查看物流</text>
-            <view class="lg-header-side lg-header-close" @tap="showLogisticsPopup = false">
-              <image class="lg-close-icon" :src="iconClose" mode="aspectFit" />
-            </view>
-          </view>
-          <scroll-view class="lg-body" scroll-y :enhanced="true" :show-scrollbar="false">
-            <nut-steps direction="vertical" progress-dot :current="1">
-              <nut-step
-                v-for="(step, idx) in logisticsSteps"
-                :key="idx"
-                :title="step.content"
-                :content="step.time"
-              />
-            </nut-steps>
-          </scroll-view>
-        </view>
-      </nut-popup>
 
       <view class="cd-card cd-card--dynamic">
         <view class="cd-dynamic-body">
@@ -763,17 +742,6 @@ const goContractDetail = (card) => {
 }
 
 const showLogisticsPopup = ref(false)
-
-const logisticsSteps = [
-  { content: '[上海市]已签收，签收人是姚明，感谢使用天天快递，期待再次为您服务', time: '2017-12-20 14:08:54' },
-  { content: '[上海市]快件已经到达 上海嘉定转运中心', time: '2017-12-20 14:08:54' },
-  { content: '[上海转运中心]，正发往【上海嘉定转运中心]', time: '2017-12-20 14:08:54' },
-  { content: '[上海市]快件已经到达ZY上海杨浦集散仓A', time: '2017-12-20 14:08:54' },
-  { content: '[上海市]快件已经到达上海-应急代派', time: '2017-12-20 14:08:54' },
-  { content: '包裹正在等待揽收', time: '2017-12-20 14:08:54' },
-  { content: '您的订单已出库', time: '2017-12-20 14:08:54' },
-  { content: '您的订单开始处理', time: '2017-12-20 14:08:54' },
-]
 
 const goLogistics = (orderNo) => {
   showLogisticsPopup.value = true

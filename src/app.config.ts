@@ -23,6 +23,12 @@ export default {
       packages: ['subpackages/dev']
     }
   },
+  permission: {
+    'scope.userLocation': {
+      desc: '用于签到打卡获取您的位置信息'
+    }
+  },
+  requiredPrivateInfos: ['getLocation'],
   window: {
     backgroundTextStyle: 'light',
     navigationBarBackgroundColor: '#fff',

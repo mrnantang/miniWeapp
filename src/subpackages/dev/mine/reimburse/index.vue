@@ -403,6 +403,7 @@ fetchList(true)
   display: flex;
   align-items: baseline;
   gap: 6rpx;
+  width: 80%;
 }
 
 .reimb-card-no {

@@ -95,6 +95,32 @@ export interface OpportunityPageResponse {
   total: number
 }
 
+/** 签到打卡请求 */
+export interface CheckInRequest {
+  checkInAddress: string
+  checkInLatitude: number
+  checkInLongitude: number
+  checkInPurpose: string
+  checkInRemark?: string
+  photos?: {
+    fileName: string
+    fileSize: number
+    fileUrl: string
+    mimeType: string
+  }[]
+}
+
+/** 商机拜访签到打卡 */
+export function checkInVisitRecord(
+  opportunityId: number,
+  data: CheckInRequest
+): Promise<VisitRecordItem> {
+  return post<VisitRecordItem>(
+    `/opportunities/${opportunityId}/visit-records/check-in`,
+    data as unknown as Record<string, unknown>
+  )
+}
+
 /** 签退打卡请求 */
 export interface CheckOutRequest {
   checkOutSummary?: string
