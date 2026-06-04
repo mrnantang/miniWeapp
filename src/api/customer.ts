@@ -51,7 +51,7 @@ export interface CustomerListParams {
 }
 
 export function getCustomerList(params?: CustomerListParams): Promise<CustomerListResponse> {
-  return get<CustomerListResponse>('/customers/pools', params as Record<string, unknown>)
+  return get<CustomerListResponse>('/customers/query-page', params as Record<string, unknown>)
 }
 
 /** 查询客户详情 */

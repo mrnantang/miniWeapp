@@ -46,14 +46,14 @@
         <view v-if="item.startMileage || item.endMileage" class="rd-upload-field">
           <text class="rd-label">开始公里数图片</text>
           <view class="rd-upload-list">
-            <view v-for="att in getAttachments(item, 'mileage_start')" :key="att.id" class="rd-upload-thumb" />
+            <image v-for="att in getAttachments(item, 'mileage_start')" :key="att.id" class="rd-upload-thumb" :src="att.fileUrl" mode="aspectFill" />
           </view>
         </view>
         <view v-if="item.startMileage || item.endMileage" class="rd-divider" />
         <view v-if="item.startMileage || item.endMileage" class="rd-upload-field">
           <text class="rd-label">结束公里数图片</text>
           <view class="rd-upload-list">
-            <view v-for="att in getAttachments(item, 'mileage_end')" :key="att.id" class="rd-upload-thumb" />
+            <image v-for="att in getAttachments(item, 'mileage_end')" :key="att.id" class="rd-upload-thumb" :src="att.fileUrl" mode="aspectFill" />
           </view>
         </view>
         <view class="rd-divider" />
@@ -65,14 +65,14 @@
         <view class="rd-upload-field">
           <text class="rd-label">上传支付凭证</text>
           <view class="rd-upload-list">
-            <view v-for="att in getAttachments(item, 'payment_voucher')" :key="att.id" class="rd-upload-thumb" />
+            <image v-for="att in getAttachments(item, 'payment_voucher')" :key="att.id" class="rd-upload-thumb" :src="att.fileUrl" mode="aspectFill" />
           </view>
         </view>
         <view class="rd-divider" />
         <view class="rd-upload-field">
           <text class="rd-label">上传发票</text>
           <view class="rd-upload-list">
-            <view v-for="att in getAttachments(item, 'invoice')" :key="att.id" class="rd-upload-thumb" />
+            <image v-for="att in getAttachments(item, 'invoice')" :key="att.id" class="rd-upload-thumb" :src="att.fileUrl" mode="aspectFill" />
           </view>
         </view>
       </view>

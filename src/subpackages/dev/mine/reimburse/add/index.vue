@@ -109,69 +109,14 @@
       <view class="ar-submit" @tap="onSubmit">提交审批</view>
     </view>
 
-    <!-- 费用承担部门选择弹窗（userCascader：公司→部门→用户） -->
-    <nut-popup v-model:visible="showDeptPopup" position="bottom" :style="{ borderRadius: '24rpx 24rpx 0 0', height: '1022rpx' }" :z-index="2200" safe-area-inset-bottom>
-      <view class="filter-popup">
-        <view class="filter-header">
-          <text class="filter-header-title">费用承担部门</text>
-        </view>
-        <view class="filter-body">
-          <scroll-view class="filter-content" scroll-y="true" :enhanced="true" :show-scrollbar="false">
-            <view class="region-section">
-              <view class="region-breadcrumb">
-                <text class="region-breadcrumb-item" :class="{ 'region-breadcrumb-item--active': userDrillStack.length === 0 }" @tap="userCascaderBackTo(0)">{{ userDrillStack.length > 0 ? userDrillStack[0].name : '请选择公司' }}</text>
-                <template v-for="(node, idx) in userDrillStack.slice(1)" :key="getUserCascaderNodeKey(node)">
-                  <text class="region-breadcrumb-sep">/</text>
-                  <text class="region-breadcrumb-item" :class="{ 'region-breadcrumb-item--active': idx + 1 === userDrillStack.length - 1 }" @tap="userCascaderBackTo(idx + 1)">{{ node.name }}</text>
-                </template>
-                <template v-if="selectedUserId">
-                  <text class="region-breadcrumb-sep">/</text>
-                  <text class="region-breadcrumb-item region-breadcrumb-item--active">{{ selectedUserName }}</text>
-                </template>
-              </view>
-              <view v-if="cascaderLoading" class="region-loading"><text class="region-loading-text">加载中...</text></view>
-              <view v-else class="org-tag-row">
-                <view v-for="item in currentUserCascaderItems" :key="getUserCascaderNodeKey(item)" class="org-tag" :class="{ 'org-tag--active': isUserCascaderSelected(item) }" @tap="onUserCascaderTap(item)">
-                  <text class="org-tag-text" :class="{ 'org-tag-text--active': isUserCascaderSelected(item) }">{{ item.name }}</text>
-                </view>
-              </view>
-            </view>
-          </scroll-view>
-        </view>
-        <view class="filter-footer">
-          <view class="filter-footer-btn filter-footer-clear" @tap="showDeptPopup = false">
-            <text class="filter-footer-clear-text">取消</text>
-          </view>
-          <view class="filter-footer-btn filter-footer-submit" @tap="onDeptConfirm">
-            <text class="filter-footer-submit-text">确认</text>
-          </view>
-        </view>
-      </view>
-    </nut-popup>
+    <!-- 费用承担部门选择弹窗 -->
+    <DeptSelectionPopup v-model="showDeptPopup" title="费用承担部门" @confirm="onDeptConfirm" />
 
     <!-- 关联客户选择弹窗 -->
-    <nut-popup v-model:visible="showCustomerPopup" position="bottom" :style="{ borderRadius: '24rpx 24rpx 0 0', height: '1022rpx' }" :z-index="2100" safe-area-inset-bottom>
-      <view class="customer-popup">
-        <view class="customer-header">
-          <text class="customer-header-btn" @tap="showCustomerPopup = false">取消</text>
-          <text class="customer-header-title">选择关联客户</text>
-          <text class="customer-header-btn customer-header-confirm" @tap="showCustomerPopup = false">确认</text>
-        </view>
-        <scroll-view class="customer-list" scroll-y>
-          <view v-if="customerLoading" class="customer-loading">加载中...</view>
-          <view v-else-if="customerList.length === 0" class="customer-empty">暂无关联客户</view>
-          <template v-else v-for="item in customerList" :key="item.id">
-            <view class="customer-row" @tap="onCustomerSelect(item)">
-              <text class="customer-name">{{ item.name }}</text>
-            </view>
-            <view class="customer-divider" />
-          </template>
-        </scroll-view>
-      </view>
-    </nut-popup>
+    <CustomerSelectPopup v-model="showCustomerPopup" @select="onCustomerSelect" />
 
     <!-- 报销类型选择弹窗 -->
-    <nut-popup v-model:visible="showTypePopup" position="bottom" :style="{ borderRadius: '24rpx 24rpx 0 0' }" :z-index="2100" safe-area-inset-bottom>
+    <nut-popup v-model:visible="showTypePopup" position="bottom" :style="{ borderRadius: '24rpx 24rpx 0 0' }" :z-index="2100" portal-disable safe-area-inset-bottom>
       <view class="type-popup">
         <view class="type-header">
           <text class="type-header-btn" @tap="showTypePopup = false">取消</text>
@@ -192,14 +137,14 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from 'vue'
+import { ref, onMounted } from 'vue'
 import Taro from '@tarojs/taro'
 import NavBar from '@/components/NavBar.vue'
-import { createReimburse, type UpsertReimbursementRequest, type ReimbursementItemInput, type AttachmentInput } from '@/api/reimburse'
-import { getRelatedCustomers } from '@/api/expense'
+import { createReimburse, updateReimburse, getReimburseDetail, type UpsertReimbursementRequest, type ReimbursementItemInput, type AttachmentInput } from '@/api/reimburse'
 import type { CustomerItem } from '@/api/customer'
 import { uploadFile } from '@/api/material'
-import { getUserCascader, type UserCascaderNode } from '@/api/system'
+import DeptSelectionPopup from '@/components/DeptSelectionPopup.vue'
+import CustomerSelectPopup from '@/components/CustomerSelectPopup.vue'
 import iconArrow from '@/assets/dev/rightArror.png'
 import iconPlus from '@/assets/dev/plus.png'
 
@@ -237,6 +182,50 @@ const emptyCard = (): CardData => ({
 const labelMap = ['一', '二', '三', '四', '五', '六', '七', '八', '九', '十']
 
 const cards = ref<CardData[]>([emptyCard()])
+const editId = ref(0)
+
+// 编辑模式下加载详情数据填充表单
+async function loadEditData(id: number) {
+  try {
+    const detail = await getReimburseDetail(id)
+    cards.value = detail.items.map(item => {
+      const atts = item.attachments || []
+      return {
+        expenseUserId: item.expenseDepartmentId || 0,
+        expenseUserName: item.expenseDepartmentName || '',
+        expenseDepartmentId: item.expenseDepartmentId || 0,
+        expenseDepartmentName: item.expenseDepartmentName || '',
+        reimbursementType: item.reimbursementType || '',
+        customerId: item.customerId || 0,
+        customerName: item.customerName || '',
+        startMileage: item.startMileage != null ? String(item.startMileage) : '',
+        endMileage: item.endMileage != null ? String(item.endMileage) : '',
+        amount: item.amount != null ? String(item.amount / 100) : '',
+        mileageStartFile: pickAtt(atts, 'mileage_start'),
+        mileageEndFile: pickAtt(atts, 'mileage_end'),
+        paymentVoucherFile: pickAtt(atts, 'payment_voucher'),
+        invoiceFile: pickAtt(atts, 'invoice'),
+      }
+    })
+    if (cards.value.length === 0) cards.value.push(emptyCard())
+  } catch {
+    cards.value = [emptyCard()]
+  }
+}
+
+function pickAtt(atts: AttachmentInput[], type: string): UploadedFile | null {
+  const a = atts.find(a => a.attachmentType === type)
+  return a ? { fileName: a.fileName, fileUrl: a.fileUrl, fileExt: a.fileExt, fileSize: a.fileSize } : null
+}
+
+onMounted(() => {
+  const instance = Taro.getCurrentInstance()
+  const id = Number(instance.router?.params?.id)
+  if (id) {
+    editId.value = id
+    loadEditData(id)
+  }
+})
 
 function cardLabel(idx: number): string {
   return labelMap[idx] || String(idx + 1)
@@ -251,80 +240,21 @@ function removeCard(idx: number) {
   cards.value.splice(idx, 1)
 }
 
-// ========== 费用承担部门选择弹窗（userCascader：公司→部门→用户） ==========
+// ========== 费用承担部门选择弹窗 ==========
 const showDeptPopup = ref(false)
-const cascaderLoading = ref(false)
-const userCascaderTree = ref<UserCascaderNode[]>([])
-const userDrillStack = ref<UserCascaderNode[]>([])
-const selectedUserId = ref(0)
-const selectedUserName = ref('')
 let currentDeptCardIdx = 0
 
-const currentUserCascaderItems = computed(() => {
-  if (userDrillStack.value.length === 0) return userCascaderTree.value
-  const last = userDrillStack.value[userDrillStack.value.length - 1]
-  return last.children || []
-})
-
-function getUserCascaderNodeKey(node: UserCascaderNode): string {
-  if (node.nodeType === 'user') return `u-${node.userId}`
-  if (node.nodeType === 'department') return `d-${node.departmentId || node.name}`
-  return `c-${node.companyId || node.name}`
-}
-
-function isUserCascaderSelected(item: UserCascaderNode): boolean {
-  return selectedUserId.value > 0 && selectedUserId.value === item.userId
-}
-
-async function fetchUserCascader() {
-  if (userCascaderTree.value.length > 0 || cascaderLoading.value) return
-  cascaderLoading.value = true
-  try {
-    const res = await getUserCascader({ companyId: 1 })
-    userCascaderTree.value = res.items || []
-  } catch {
-    // 错误已在 request 层统一处理
-  } finally {
-    cascaderLoading.value = false
-  }
-}
-
-function onUserCascaderTap(item: UserCascaderNode) {
-  if (item.nodeType === 'user') {
-    // 选中用户（单选）
-    selectedUserId.value = item.userId || 0
-    selectedUserName.value = item.name
-  } else {
-    // 公司或部门 → 下钻
-    userDrillStack.value.push(item)
-    selectedUserId.value = 0
-    selectedUserName.value = ''
-  }
-}
-
-function userCascaderBackTo(index: number) {
-  userDrillStack.value = userDrillStack.value.slice(0, index)
-  selectedUserId.value = 0
-  selectedUserName.value = ''
-}
-
-function onDeptConfirm() {
+function onDeptConfirm(payload: { id: number; name: string }) {
   const card = cards.value[currentDeptCardIdx]
-  card.expenseUserId = selectedUserId.value
-  card.expenseUserName = selectedUserName.value
-  // 从级联路径提取部门信息（userDrillStack 最后一项是用户所属部门）
-  if (userDrillStack.value.length > 0) {
-    const deptNode = userDrillStack.value[userDrillStack.value.length - 1]
-    card.expenseDepartmentId = deptNode.departmentId || 0
-    card.expenseDepartmentName = deptNode.name
-  }
-  showDeptPopup.value = false
+  card.expenseDepartmentId = payload.id
+  card.expenseDepartmentName = payload.name
+  card.expenseUserName = payload.name
+  card.expenseUserId = payload.id
 }
 
 function onSelectDept(ci: number) {
   currentDeptCardIdx = ci
   showDeptPopup.value = true
-  fetchUserCascader()
 }
 
 // ========== 报销类型选择弹窗 ==========
@@ -345,31 +275,18 @@ function onTypeSelect(typeName: string) {
 
 // ========== 客户选择弹窗 ==========
 const showCustomerPopup = ref(false)
-const customerLoading = ref(false)
-const customerList = ref<CustomerItem[]>([])
 /** 当前正在编辑的卡片索引 */
 let currentCardIdx = 0
 
-async function onSelectCustomer(ci: number) {
+function onSelectCustomer(ci: number) {
   currentCardIdx = ci
   showCustomerPopup.value = true
-  if (customerList.value.length === 0) {
-    customerLoading.value = true
-    try {
-      customerList.value = await getRelatedCustomers()
-    } catch {
-      // 错误已在 request 层统一处理
-    } finally {
-      customerLoading.value = false
-    }
-  }
 }
 
 function onCustomerSelect(customer: CustomerItem) {
   const card = cards.value[currentCardIdx]
   card.customerId = customer.id
   card.customerName = customer.name
-  showCustomerPopup.value = false
 }
 
 // ========== 文件上传 ==========
@@ -463,16 +380,16 @@ async function onSubmit() {
   }))
 
   const data: UpsertReimbursementRequest = {
-    departmentId: 0,
-    customerId: 0,
-    customerName: '',
-    attachments: [],
     items,
   }
 
   try {
-    await createReimburse(data)
-    Taro.showToast({ title: '提交成功', icon: 'success' })
+    if (editId.value) {
+      await updateReimburse(editId.value, data)
+    } else {
+      await createReimburse(data)
+    }
+    Taro.showToast({ title: editId.value ? '保存成功' : '提交成功', icon: 'success' })
     setTimeout(() => {
       Taro.navigateBack()
     }, 1500)
@@ -645,69 +562,6 @@ async function onSubmit() {
   border-radius: 8rpx;
 }
 
-/* 客户选择弹窗 */
-.customer-popup {
-  display: flex;
-  flex-direction: column;
-  height: 100%;
-  background: #FFFFFF;
-}
-
-.customer-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 24rpx 40rpx;
-  flex-shrink: 0;
-}
-
-.customer-header-btn {
-  font-size: 28rpx;
-  color: #9292A5;
-}
-
-.customer-header-title {
-  font-size: 32rpx;
-  font-weight: 500;
-  color: #1A1D24;
-}
-
-.customer-header-confirm {
-  color: #37AE7E;
-}
-
-.customer-list {
-  flex: 1;
-  padding: 0 40rpx;
-  overflow-y: auto;
-}
-
-.customer-loading,
-.customer-empty {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 40rpx 0;
-  font-size: 28rpx;
-  color: #9292A5;
-}
-
-.customer-row {
-  display: flex;
-  align-items: center;
-  padding: 28rpx 0;
-}
-
-.customer-name {
-  font-size: 30rpx;
-  color: #1A1D24;
-}
-
-.customer-divider {
-  height: 1rpx;
-  background: #F4F4F4;
-}
-
 /* 报销类型选择弹窗 */
 .type-popup {
   display: flex;
@@ -758,145 +612,5 @@ async function onSubmit() {
 .type-divider {
   height: 1rpx;
   background: #F4F4F4;
-}
-
-/* 部门级联选择器（复用 expense 页面样式） */
-.filter-popup {
-  display: flex;
-  flex-direction: column;
-  height: 100%;
-}
-
-.filter-header {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  padding: 24rpx 40rpx;
-  position: relative;
-}
-
-.filter-header-title {
-  flex: 1;
-  text-align: center;
-  font-size: 32rpx;
-  font-weight: 500;
-  color: #1A1D24;
-}
-
-.filter-body {
-  display: flex;
-  flex: 1;
-  overflow: hidden;
-}
-
-.filter-content {
-  flex: 1;
-  background: #FFFFFF;
-  padding: 24rpx;
-}
-
-.filter-footer {
-  display: flex;
-  gap: 28rpx;
-  padding: 20rpx 40rpx;
-}
-
-.filter-footer-btn {
-  flex: 1;
-  height: 76rpx;
-  border-radius: 8rpx;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.filter-footer-clear {
-  background: #EFFDF7;
-  border: 2rpx solid #5CC79C;
-}
-
-.filter-footer-clear-text {
-  font-size: 32rpx;
-  font-weight: 500;
-  color: #5CC79C;
-}
-
-.filter-footer-submit {
-  background: linear-gradient(270deg, rgba(102, 220, 166, 1) 0%, rgba(88, 188, 150, 1) 100%);
-}
-
-.filter-footer-submit-text {
-  font-size: 32rpx;
-  font-weight: 500;
-  color: #FFFFFF;
-}
-
-.region-section {
-  display: flex;
-  flex-direction: column;
-}
-
-.region-breadcrumb {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 4rpx;
-  margin-bottom: 24rpx;
-}
-
-.region-breadcrumb-item {
-  font-size: 28rpx;
-  color: #9292A5;
-}
-
-.region-breadcrumb-item--active {
-  color: #37AE7E;
-  font-weight: 500;
-}
-
-.region-breadcrumb-sep {
-  font-size: 28rpx;
-  color: #9292A5;
-  margin: 0 4rpx;
-}
-
-.region-loading {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 40rpx 0;
-}
-
-.region-loading-text {
-  font-size: 26rpx;
-  color: #9292A5;
-}
-
-.org-tag-row {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 24rpx;
-}
-
-.org-tag {
-  width: 208rpx;
-  padding: 12rpx 10rpx;
-  background: #F6F7FB;
-  border-radius: 6rpx;
-  box-sizing: border-box;
-  text-align: center;
-}
-
-.org-tag--active {
-  background: #EDFAF5;
-}
-
-.org-tag-text {
-  font-size: 26rpx;
-  color: #62687D;
-}
-
-.org-tag-text--active {
-  color: #37AE7E;
 }
 </style>

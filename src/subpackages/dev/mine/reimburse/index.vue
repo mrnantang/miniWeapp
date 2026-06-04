@@ -130,7 +130,7 @@
 
 <script setup lang="ts">
 import { ref, reactive, computed } from 'vue'
-import Taro from '@tarojs/taro'
+import Taro, { useDidShow } from '@tarojs/taro'
 import NavBar from '@/components/NavBar.vue'
 import { getReimburseList, cancelReimburse, REIMB_STATUS_MAP, REIMB_STATUS_BADGE_MAP, type ReimbursementListItem } from '@/api/reimburse'
 import iconSearch from '@/assets/dev/icon-search.png'
@@ -309,7 +309,9 @@ const onPickerChange = (e: { detail: { value: number[] } }) => {
   pickerValue.value = e.detail.value
 }
 
-fetchList(true)
+useDidShow(() => {
+  fetchList(true)
+})
 </script>
 
 <style>

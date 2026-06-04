@@ -54,7 +54,7 @@
     </view>
 
     <!-- 新增费用弹窗 -->
-    <nut-popup v-model:visible="showAddPopup" position="bottom" :style="{ borderRadius: '24rpx 24rpx 0 0' }" :z-index="2100">
+    <nut-popup v-model:visible="showAddPopup" position="bottom" :style="{ borderRadius: '24rpx 24rpx 0 0' }" :z-index="2100" portal-disable>
       <view class="exp-add-popup">
         <view class="exp-add-header">
           <text class="exp-add-header-btn" @tap="showAddPopup = false">取消</text>
@@ -113,7 +113,7 @@
     </nut-popup>
 
     <!-- 费用项目选择弹窗 -->
-    <nut-popup v-model:visible="showItemPopup" position="bottom" :style="{ borderRadius: '24rpx 24rpx 0 0' }" :z-index="2200">
+    <nut-popup v-model:visible="showItemPopup" position="bottom" :style="{ borderRadius: '24rpx 24rpx 0 0' }" :z-index="2200" portal-disable>
       <view class="exp-item-popup">
         <view class="exp-add-header">
           <text class="exp-add-header-btn" @tap="showItemPopup = false">取消</text>
@@ -134,49 +134,15 @@
       </view>
     </nut-popup>
 
+    <!-- 客户选择弹窗 -->
+    <CustomerSelectPopup v-model="showCustomerPopup" @select="onCustomerSelect" />
+
     <!-- 部门选择弹窗 -->
-    <nut-popup v-model:visible="showDeptPopup" position="bottom" :style="{ borderRadius: '24rpx 24rpx 0 0', height: '1022rpx' }" :z-index="2200" safe-area-inset-bottom>
-      <view class="filter-popup">
-        <view class="filter-header">
-          <text class="filter-header-title">选择部门</text>
-        </view>
-        <view class="filter-body">
-          <scroll-view class="filter-content" scroll-y="true" :enhanced="true" :show-scrollbar="false">
-            <view class="region-section">
-              <view class="region-breadcrumb">
-                <text class="region-breadcrumb-item" :class="{ 'region-breadcrumb-item--active': deptDrillStack.length === 0 }" @tap="deptBackTo(0)">{{ deptDrillStack.length > 0 ? deptDrillStack[0].name : '请选择公司' }}</text>
-                <template v-for="(node, idx) in deptDrillStack.slice(1)" :key="node.name">
-                  <text class="region-breadcrumb-sep">/</text>
-                  <text class="region-breadcrumb-item" :class="{ 'region-breadcrumb-item--active': idx + 1 === deptDrillStack.length - 1 }" @tap="deptBackTo(idx + 1)">{{ node.name }}</text>
-                </template>
-                <template v-if="selectedDeptName">
-                  <text class="region-breadcrumb-sep">/</text>
-                  <text class="region-breadcrumb-item region-breadcrumb-item--active">{{ selectedDeptName }}</text>
-                </template>
-              </view>
-              <view v-if="deptLoading" class="region-loading"><text class="region-loading-text">加载中...</text></view>
-              <view v-else class="org-tag-row">
-                <view v-for="item in currentDeptItems" :key="getDeptNodeKey(item)" class="org-tag" :class="{ 'org-tag--active': isDeptSelected(item) }" @tap="onDeptTap(item)">
-                  <text class="org-tag-text" :class="{ 'org-tag-text--active': isDeptSelected(item) }">{{ item.name }}</text>
-                </view>
-              </view>
-            </view>
-          </scroll-view>
-        </view>
-        <view class="filter-footer">
-          <view class="filter-footer-btn filter-footer-clear" @tap="showDeptPopup = false">
-            <text class="filter-footer-clear-text">取消</text>
-          </view>
-          <view class="filter-footer-btn filter-footer-submit" @tap="onDeptConfirm">
-            <text class="filter-footer-submit-text">确认</text>
-          </view>
-        </view>
-      </view>
-    </nut-popup>
+    <DeptSelectionPopup v-model="showDeptPopup" title="选择部门" @confirm="onDeptConfirm" />
 
     <!-- 筛选弹窗 -->
     <nut-popup v-model:visible="showFilter" position="bottom"
-      :style="{ borderRadius: '24rpx 24rpx 0 0', height: '1022rpx' }" :z-index="2000" safe-area-inset-bottom>
+      :style="{ borderRadius: '24rpx 24rpx 0 0', height: '1022rpx' }" :z-index="2000" portal-disable safe-area-inset-bottom>
       <view class="filter-popup">
         <view class="filter-header">
           <text class="filter-header-title">全部筛选</text>
@@ -231,7 +197,7 @@
     </nut-popup>
 
     <!-- 日期选择弹窗 -->
-    <nut-popup v-model:visible="showDatePopup" position="bottom" :style="{ borderRadius: '24rpx 24rpx 0 0' }" :z-index="2100" safe-area-inset-bottom>
+    <nut-popup v-model:visible="showDatePopup" position="bottom" :style="{ borderRadius: '24rpx 24rpx 0 0' }" :z-index="2100" portal-disable safe-area-inset-bottom>
       <view class="date-popup">
         <view class="filter-header">
           <text class="filter-header-btn" @tap="showDatePopup = false">取消</text>
@@ -258,12 +224,14 @@
 import { ref, reactive, computed } from 'vue'
 import Taro from '@tarojs/taro'
 import NavBar from '@/components/NavBar.vue'
+import DeptSelectionPopup from '@/components/DeptSelectionPopup.vue'
+import CustomerSelectPopup from '@/components/CustomerSelectPopup.vue'
 import {
   getExpenseList, createExpense, cancelExpense,
   EXPENSE_STATUS_MAP, EXPENSE_STATUS_BADGE_MAP, EXPENSE_ITEM_MAP, EXPENSE_ITEM_OPTIONS,
   type ExpenseListItem,
 } from '@/api/expense'
-import { getUserCascader, type UserCascaderNode } from '@/api/system'
+import type { CustomerItem } from '@/api/customer'
 import iconSearch from '@/assets/dev/icon-search.png'
 import iconFilter from '@/assets/dev/icon-filter.png'
 import iconAdd from '@/assets/dev/icon-add.png'
@@ -365,81 +333,30 @@ function onAdd() {
 
 // 部门级联选择
 const showDeptPopup = ref(false)
-const deptLoading = ref(false)
-const deptTree = ref<UserCascaderNode[]>([])
-const deptDrillStack = ref<UserCascaderNode[]>([])
-const selectedDeptId = ref(0)
-const selectedDeptName = ref('')
 
-const currentDeptItems = computed(() => {
-  if (deptDrillStack.value.length === 0) return deptTree.value
-  const last = deptDrillStack.value[deptDrillStack.value.length - 1]
-  return last.children || []
-})
-
-function getDeptNodeKey(node: UserCascaderNode): string {
-  return `${node.nodeType}_${node.companyId || node.departmentId || node.userId || node.name}`
-}
-
-function isDeptSelected(node: UserCascaderNode): boolean {
-  if (node.nodeType === 'department') {
-    return selectedDeptId.value === node.departmentId
-  }
-  return false
-}
-
-async function fetchDeptTree() {
-  if (deptTree.value.length > 0 || deptLoading.value) return
-  deptLoading.value = true
-  try {
-    const res = await getUserCascader({ companyId: 1 })
-    deptTree.value = res.items || []
-  } catch {
-    // 错误已在 request 层统一处理
-  } finally {
-    deptLoading.value = false
-  }
-}
-
-function onDeptTap(node: UserCascaderNode) {
-  if (node.nodeType === 'department') {
-    if (selectedDeptId.value === node.departmentId) {
-      selectedDeptId.value = 0
-      selectedDeptName.value = ''
-    } else {
-      selectedDeptId.value = node.departmentId || 0
-      selectedDeptName.value = node.name
-    }
-  } else if (node.nodeType === 'company') {
-    deptDrillStack.value.push(node)
-    selectedDeptId.value = 0
-    selectedDeptName.value = ''
-  }
-}
-
-function deptBackTo(index: number) {
-  deptDrillStack.value = deptDrillStack.value.slice(0, index)
-  selectedDeptId.value = 0
-  selectedDeptName.value = ''
-}
-
-function onDeptConfirm() {
-  addForm.deptId = selectedDeptId.value
-  addForm.dept = selectedDeptName.value
-  showDeptPopup.value = false
+function onDeptConfirm(payload: { id: number; name: string }) {
+  addForm.deptId = payload.id
+  addForm.dept = payload.name
 }
 
 function onSelectDept() {
   showDeptPopup.value = true
-  fetchDeptTree()
 }
 
 function onSelectItem() {
   showItemPopup.value = true
 }
 
+// 客户选择
+const showCustomerPopup = ref(false)
+
 function onSelectCustomer() {
-  Taro.showToast({ title: '选择客户-开发中', icon: 'none' })
+  showCustomerPopup.value = true
+}
+
+function onCustomerSelect(item: CustomerItem) {
+  addForm.customerId = item.id
+  addForm.customer = item.name
 }
 
 function onItemSelect(it: { value: string; label: string }) {
@@ -1123,75 +1040,5 @@ fetchList(true)
   height: 20rpx;
   border-radius: 50%;
   background: #37AE7E;
-}
-
-/* 部门级联选择器 */
-.region-section {
-  display: flex;
-  flex-direction: column;
-}
-
-.region-breadcrumb {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 4rpx;
-  margin-bottom: 24rpx;
-}
-
-.region-breadcrumb-item {
-  font-size: 28rpx;
-  color: #9292A5;
-}
-
-.region-breadcrumb-item--active {
-  color: #37AE7E;
-  font-weight: 500;
-}
-
-.region-breadcrumb-sep {
-  font-size: 28rpx;
-  color: #9292A5;
-  margin: 0 4rpx;
-}
-
-.region-loading {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 40rpx 0;
-}
-
-.region-loading-text {
-  font-size: 26rpx;
-  color: #9292A5;
-}
-
-.org-tag-row {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 24rpx;
-}
-
-.org-tag {
-  width: 208rpx;
-  padding: 12rpx 10rpx;
-  background: #F6F7FB;
-  border-radius: 6rpx;
-  box-sizing: border-box;
-  text-align: center;
-}
-
-.org-tag--active {
-  background: #EDFAF5;
-}
-
-.org-tag-text {
-  font-size: 26rpx;
-  color: #62687D;
-}
-
-.org-tag-text--active {
-  color: #37AE7E;
 }
 </style>

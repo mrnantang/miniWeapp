@@ -156,8 +156,8 @@
       <view class="detail-bottom-btn detail-bottom-btn--primary" @tap="onAddFollow">
         <text class="detail-bottom-btn-text detail-bottom-btn-text--primary">新增跟进记录</text>
       </view>
-      <view class="detail-bottom-btn detail-bottom-btn--primary" @tap="onCheckIn">
-        <text class="detail-bottom-btn-text detail-bottom-btn-text--primary">签到打卡</text>
+      <view class="detail-bottom-btn detail-bottom-btn--primary" @tap="hasCheckedIn ? onCheckOut() : onCheckIn()">
+        <text class="detail-bottom-btn-text detail-bottom-btn-text--primary">{{ hasCheckedIn ? '签退打卡' : '签到打卡' }}</text>
       </view>
     </view>
 
@@ -332,15 +332,40 @@
         </view>
       </view>
     </nut-popup>
+    <nut-popup v-model:visible="showCheckOutPopup" position="center" :style="{ borderRadius: '24rpx' }" :z-index="2100">
+      <view class="checkout-card">
+        <text class="checkout-title">签退打卡</text>
+        <view class="checkout-textarea-box">
+          <textarea class="checkout-textarea" v-model="checkOutSummary" placeholder="请输入拜访结果" placeholder-style="color:#9292A5;font-size:30rpx" />
+        </view>
+        <view v-if="!audioFile" class="checkout-voice-btn" :class="{ 'checkout-voice-btn--recording': isRecording }" @touchstart="onVoiceTouchStart" @touchend="onVoiceTouchEnd">
+          <image class="checkout-voice-icon" :src="iconVoice" mode="aspectFit" />
+          <text class="checkout-voice-text">{{ isRecording ? '正在录音...' : '按住开始录音' }}</text>
+        </view>
+        <view v-else class="checkout-voice-done">
+          <text class="checkout-voice-done-text">已录制 {{ audioFile.duration }}s</text>
+          <text class="checkout-voice-retry" @tap="audioFile = null">重新录制</text>
+        </view>
+        <view class="checkout-btns">
+          <view class="checkout-btn checkout-btn--cancel" @tap="showCheckOutPopup = false">
+            <text class="checkout-btn-text checkout-btn-text--cancel">取消</text>
+          </view>
+          <view class="checkout-btn" :class="{ 'checkout-btn--confirm': checkOutSummary, 'checkout-btn--disabled': !checkOutSummary }" @tap="onCheckOutConfirm">
+            <text class="checkout-btn-text" :class="{ 'checkout-btn-text--confirm': checkOutSummary, 'checkout-btn-text--disabled': !checkOutSummary }">确认打卡</text>
+          </view>
+        </view>
+      </view>
+    </nut-popup>
   </view>
 </template>
 
 <script setup>
 import NavBar from '@/components/NavBar.vue'
-import { ref, reactive, onMounted, watch } from 'vue'
+import { ref, reactive, computed, onMounted, watch } from 'vue'
 import Taro from '@tarojs/taro'
-import { getOpportunityFollowRecords, getOpportunityVisitRecords, createOpportunityFollowRecord, checkInVisitRecord } from '@/api/opportunity'
+import { getOpportunityFollowRecords, getOpportunityVisitRecords, createOpportunityFollowRecord, checkInVisitRecord, checkOutVisitRecord } from '@/api/opportunity'
 import { uploadFile } from '@/api/material'
+import iconVoice from '@/assets/dev/icon-voice.svg'
 import iconEdit from '@/assets/dev/edit.png'
 import iconDelete from '@/assets/dev/delete.png'
 import rightArrowIcon from '@/assets/dev/rightArror.png'
@@ -436,13 +461,16 @@ async function fetchFollowRecords() {
 }
 
 const visitRecords = ref([])
+const rawVisitRecords = ref([])
 const visitLoading = ref(false)
+const hasCheckedIn = computed(() => rawVisitRecords.value.some(r => r.status === 'checked_in'))
 
 async function fetchVisitRecords() {
   if (visitLoading.value) return
   visitLoading.value = true
   try {
     const list = await getOpportunityVisitRecords(opportunityId.value)
+    rawVisitRecords.value = list
     visitRecords.value = list.map(item => ({
       checkInTime: formatTime(item.checkInAt),
       checkOutTime: formatTime(item.checkOutAt),
@@ -566,6 +594,78 @@ const checkinFile = ref(null)
 const checkinLat = ref(0)
 const checkinLng = ref(0)
 const purposeList = ['打样试枪', '合同签订', '面谈沟通', '售后处理', '日常回访', '调试试机', '其他']
+
+// ========== 签退打卡 ==========
+const showCheckOutPopup = ref(false)
+const checkOutSummary = ref('')
+const audioFile = ref(null)
+const isRecording = ref(false)
+let recorderManager = null
+
+const getRecorder = () => {
+  if (!recorderManager) {
+    recorderManager = Taro.getRecorderManager()
+    recorderManager.onStop(async (res) => {
+      isRecording.value = false
+      if (!res.tempFilePath) return
+      Taro.showLoading({ title: '上传录音...' })
+      try {
+        const uploadRes = await uploadFile(res.tempFilePath, 'audio')
+        audioFile.value = {
+          fileName: uploadRes.fileName,
+          fileSize: uploadRes.fileSize,
+          fileUrl: uploadRes.url,
+          mimeType: uploadRes.mimeType,
+          duration: Math.round(res.duration / 1000),
+        }
+      } catch {
+        Taro.showToast({ title: '上传失败', icon: 'none' })
+      }
+      Taro.hideLoading()
+    })
+  }
+  return recorderManager
+}
+
+const onVoiceTouchStart = () => {
+  audioFile.value = null
+  isRecording.value = true
+  getRecorder().start({ format: 'mp3' })
+}
+const onVoiceTouchEnd = () => {
+  getRecorder().stop()
+}
+
+const activeCheckInRecord = computed(() => {
+  return rawVisitRecords.value.find(r => r.status === 'checked_in')
+})
+
+const onCheckOut = () => {
+  if (!activeCheckInRecord.value) {
+    Taro.showToast({ title: '暂未签到，无法签退', icon: 'none' })
+    return
+  }
+  checkOutSummary.value = ''
+  audioFile.value = null
+  showCheckOutPopup.value = true
+}
+
+const onCheckOutConfirm = async () => {
+  if (!checkOutSummary.value.trim()) {
+    Taro.showToast({ title: '请输入拜访结果', icon: 'none' })
+    return
+  }
+  try {
+    const data = { checkOutSummary: checkOutSummary.value }
+    if (audioFile.value) data.audio = audioFile.value
+    await checkOutVisitRecord(opportunityId.value, activeCheckInRecord.value.id, data)
+    Taro.showToast({ title: '签退成功', icon: 'success' })
+    showCheckOutPopup.value = false
+    fetchVisitRecords()
+  } catch {
+    Taro.showToast({ title: '签退失败', icon: 'none' })
+  }
+}
 
 const onCheckinAddrTap = () => {
   Taro.showToast({ title: '查看地址', icon: 'none' })
@@ -1570,5 +1670,128 @@ onMounted(() => {
 
 .detail-bottom-btn-text--primary {
   color: #5CC79C;
+}
+.checkout-card {
+  width: 582rpx;
+  background: #FFFFFF;
+  border-radius: 24rpx;
+  padding: 40rpx;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 32rpx;
+}
+
+.checkout-title {
+  font-size: 34rpx;
+  font-weight: 500;
+  color: #333333;
+}
+
+.checkout-textarea-box {
+  width: 502rpx;
+  height: 108rpx;
+  background: #FBFBFB;
+  border: 1rpx solid #E4E9EF;
+  border-radius: 6rpx;
+  padding: 12rpx 20rpx;
+  box-sizing: border-box;
+}
+
+.checkout-textarea {
+  width: 100%;
+  height: 100%;
+  font-size: 30rpx;
+  color: #1A1D24;
+}
+
+.checkout-voice-btn {
+  width: 502rpx;
+  height: 64rpx;
+  background: #EDFAF5;
+  border-radius: 6rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8rpx;
+}
+
+.checkout-voice-icon {
+  width: 32rpx;
+  height: 32rpx;
+  flex-shrink: 0;
+}
+
+.checkout-voice-btn--recording {
+  background: #FFF0F0;
+}
+
+.checkout-voice-text {
+  font-size: 28rpx;
+  color: #37AE7E;
+}
+
+.checkout-voice-done {
+  width: 502rpx;
+  height: 64rpx;
+  background: #EDFAF5;
+  border-radius: 6rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16rpx;
+}
+
+.checkout-voice-done-text {
+  font-size: 28rpx;
+  color: #37AE7E;
+}
+
+.checkout-voice-retry {
+  font-size: 26rpx;
+  color: #9292A5;
+}
+
+.checkout-btns {
+  display: flex;
+  gap: 32rpx;
+  width: 502rpx;
+}
+
+.checkout-btn {
+  flex: 1;
+  height: 68rpx;
+  border-radius: 8rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.checkout-btn--cancel {
+  background: #EDFAF5;
+  border: 2rpx solid #37AE7E;
+}
+
+.checkout-btn-text--cancel {
+  font-size: 32rpx;
+  color: #37AE7E;
+}
+
+.checkout-btn--confirm {
+  background: #37AE7E;
+}
+
+.checkout-btn--disabled {
+  background: #BBBDC2;
+}
+
+.checkout-btn-text--confirm {
+  font-size: 32rpx;
+  color: #FFFFFF;
+}
+
+.checkout-btn-text--disabled {
+  font-size: 32rpx;
+  color: #FFFFFF;
 }
 </style>

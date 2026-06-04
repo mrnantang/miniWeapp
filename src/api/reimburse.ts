@@ -53,10 +53,10 @@ export interface ReimbursementItemInput {
 
 /** 创建/编辑报销请求 */
 export interface UpsertReimbursementRequest {
-  departmentId: number
-  customerId: number
-  customerName: string
-  attachments: AttachmentInput[]
+  departmentId?: number
+  customerId?: number
+  customerName?: string
+  attachments?: AttachmentInput[]
   items: ReimbursementItemInput[]
 }
 
