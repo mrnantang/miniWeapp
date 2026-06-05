@@ -217,17 +217,7 @@ const goAddOpp = () => {
 }
 
 const goDetail = (card: OpportunityPageItem) => {
-  const params = [
-    `id=${card.id}`,
-    `name=${encodeURIComponent(card.opportunityName)}`,
-    `oppNo=${encodeURIComponent(card.opportunityNo)}`,
-    `customer=${encodeURIComponent('-')}`,
-    `amount=${encodeURIComponent(card.expectedSalesAmountBandLabel || '-')}`,
-    `signDate=${encodeURIComponent(formatTime(card.expectedDealDate))}`,
-    `status=${encodeURIComponent(card.followStatusLabel || '-')}`,
-    `product=${encodeURIComponent(card.requiredProductLabel || '-')}`,
-  ].join('&')
-  Taro.navigateTo({ url: `/subpackages/dev/opportunity/detail/index?${params}` })
+  Taro.navigateTo({ url: `/subpackages/dev/opportunity/detail/index?id=${card.id}` })
 }
 
 onMounted(() => {

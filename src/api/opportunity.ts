@@ -70,6 +70,27 @@ export function createOpportunityFollowRecord(opportunityId: number, data: Creat
   return post<FollowRecordItem>(`/opportunities/${opportunityId}/follow-records`, data as Record<string, unknown>)
 }
 
+/** 商机详情 */
+export interface OpportunityDetailResponse {
+  id: number
+  name: string
+  oppNo: string
+  customer: string
+  amount: string
+  signDate: string
+  status: string
+  product: string
+  owner: string
+  visitSignStatus: string  // 'not_checked_in' 表示未签到
+  latitude?: number
+  longitude?: number
+}
+
+/** 查询商机详情 */
+export function getOpportunityDetail(id: number): Promise<OpportunityDetailResponse> {
+  return get<OpportunityDetailResponse>(`/opportunities/${id}`)
+}
+
 /** 商机分页列表项 */
 export interface OpportunityPageItem {
   id: number

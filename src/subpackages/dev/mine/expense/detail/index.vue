@@ -1,12 +1,14 @@
 <template>
   <view class="rd-page">
-    <view class="rd-bg" :class="'rd-bg--' + approvalStatus" />
-    <view class="rd-nav-bar">
-      <view class="rd-nav-back" @tap="goBack">
-        <image class="rd-nav-back-icon" :src="iconBack" mode="aspectFit" />
+    <view style="position: relative;">
+      <view class="rd-bg" :class="'rd-bg--' + approvalStatus" />
+      <view class="rd-nav-bar">
+        <view class="rd-nav-back" @tap="goBack">
+          <image class="rd-nav-back-icon" :src="iconBack" mode="aspectFit" />
+        </view>
+        <text class="rd-nav-title">费用详情</text>
+        <view class="rd-nav-right" />
       </view>
-      <text class="rd-nav-title">费用详情</text>
-      <view class="rd-nav-right" />
     </view>
     <view style="height: 176rpx;width: 100%;" />
     <scroll-view class="rd-scroll" scroll-y :enhanced="true" :show-scrollbar="false">
@@ -101,17 +103,117 @@
       <view v-if="detail.canCancel" class="rd-btn rd-btn--cancel" @tap="onCancel">撤销申请</view>
       <view v-if="detail.canEdit" class="rd-btn rd-btn--submit" @tap="onEdit">编辑</view>
     </view>
+
+    <!-- 编辑费用弹窗 -->
+    <view v-if="showEditPopup">
+      <nut-popup v-model:visible="showEditPopup" position="bottom" :style="{ borderRadius: '24rpx 24rpx 0 0' }"
+        :z-index="2100" portal-disable>
+        <view class="exp-add-popup">
+          <view class="exp-add-header">
+            <text class="exp-add-header-btn" @tap="showEditPopup = false">取消</text>
+            <text class="exp-add-header-title">编辑费用</text>
+            <text class="exp-add-header-btn exp-add-header-confirm" @tap="onSubmitEdit">确认</text>
+          </view>
+          <scroll-view class="exp-add-body" scroll-y>
+            <view class="exp-add-field">
+              <text class="exp-add-label">费用编号</text>
+              <text class="exp-add-value">{{ editForm.expenseNo || '自动生成' }}</text>
+            </view>
+            <view class="exp-add-divider" />
+            <view class="exp-add-field">
+              <text class="exp-add-label">费用承担部门</text>
+              <view class="exp-add-value-row" @tap="onSelectDept">
+                <text :class="editForm.dept ? 'exp-add-value' : 'exp-add-value exp-add-value--placeholder'">{{
+                  editForm.dept || '请选择' }}</text>
+                <image class="exp-add-arrow" :src="iconArrow" mode="aspectFit" />
+              </view>
+            </view>
+            <view class="exp-add-divider" />
+            <view class="exp-add-field">
+              <text class="exp-add-label">申请金额</text>
+              <view class="exp-add-value-row">
+                <input class="exp-add-input" v-model="editForm.amount" placeholder="请输入"
+                  placeholder-style="color:#BBBEC2;font-size:30rpx" type="digit" />
+                <text class="exp-add-unit">元</text>
+              </view>
+            </view>
+            <view class="exp-add-divider" />
+            <view class="exp-add-field">
+              <text class="exp-add-label">费用项目</text>
+              <view class="exp-add-value-row" @tap="onSelectItem">
+                <text class="exp-add-value">{{ editForm.itemLabel || '请选择' }}</text>
+                <image class="exp-add-arrow" :src="iconArrow" mode="aspectFit" />
+              </view>
+            </view>
+            <view class="exp-add-divider" />
+            <view class="exp-add-field">
+              <text class="exp-add-label">关联客户</text>
+              <view class="exp-add-value-row" @tap="onSelectCustomer">
+                <text :class="editForm.customer ? 'exp-add-value' : 'exp-add-value exp-add-value--placeholder'">{{
+                  editForm.customer || '请选择' }}</text>
+                <image class="exp-add-arrow" :src="iconArrow" mode="aspectFit" />
+              </view>
+            </view>
+            <view class="exp-add-divider" />
+            <view class="exp-add-field">
+              <text class="exp-add-label">费用说明</text>
+              <input class="exp-add-input exp-add-input--right" v-model="editForm.remark" placeholder="请输入"
+                placeholder-style="color:#BBBEC2;font-size:30rpx;text-align:right" />
+            </view>
+            <view class="exp-add-divider" />
+            <view class="exp-add-field">
+              <text class="exp-add-label">收款账户</text>
+              <input class="exp-add-input exp-add-input--right" v-model="editForm.account" placeholder="请输入"
+                placeholder-style="color:#BBBEC2;font-size:30rpx;text-align:right" />
+            </view>
+          </scroll-view>
+        </view>
+      </nut-popup>
+    </view>
+    <!-- 部门选择 -->
+    <DeptSelectionPopup v-model="showDeptPopup" title="选择部门" @confirm="onDeptConfirm" />
+
+    <!-- 客户选择 -->
+    <CustomerSelectPopup v-model="showCustomerPopup" @select="onCustomerSelect" />
+
+    <!-- 费用项目选择 -->
+    <nut-popup v-model:visible="showItemPopup" position="bottom" :style="{ borderRadius: '24rpx 24rpx 0 0' }"
+      :z-index="2200" portal-disable>
+      <view class="exp-item-popup">
+        <view class="exp-add-header">
+          <text class="exp-add-header-btn" @tap="showItemPopup = false">取消</text>
+          <text class="exp-add-header-title">选择费用项目</text>
+          <text class="exp-add-header-btn exp-add-header-confirm" @tap="showItemPopup = false">确认</text>
+        </view>
+        <view class="exp-item-list">
+          <template v-for="(it, idx) in EXPENSE_ITEM_OPTIONS" :key="it.value">
+            <view class="exp-item-row" @tap="onItemSelect(it)">
+              <text class="exp-item-text">{{ it.label }}</text>
+              <view class="exp-item-radio" :class="{ 'exp-item-radio--checked': editForm.item === it.value }">
+                <view v-if="editForm.item === it.value" class="exp-item-radio-dot" />
+              </view>
+            </view>
+            <view v-if="idx < EXPENSE_ITEM_OPTIONS.length - 1" class="exp-add-divider" />
+          </template>
+        </view>
+      </view>
+    </nut-popup>
   </view>
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from 'vue'
+import { ref, computed, reactive } from 'vue'
 import Taro from '@tarojs/taro'
 import {
-  getExpenseDetail, cancelExpense, EXPENSE_ITEM_MAP,
+  getExpenseDetail, cancelExpense, updateExpense,
+  EXPENSE_ITEM_MAP, EXPENSE_ITEM_OPTIONS,
   type ExpenseDetailResponse,
 } from '@/api/expense'
+import type { CustomerItem } from '@/api/customer'
+import DeptSelectionPopup from '@/components/DeptSelectionPopup.vue'
+import CustomerSelectPopup from '@/components/CustomerSelectPopup.vue'
 import iconBack from '@/assets/dev/icon-back.png'
+import iconArrow from '@/assets/dev/rightArror.png'
 
 const APPROVER_STATUS_MAP: Record<string, string> = {
   pending: '待审批',
@@ -221,8 +323,97 @@ async function onCancel() {
   }
 }
 
+// 编辑弹窗
+const showEditPopup = ref(false)
+const showDeptPopup = ref(false)
+const showCustomerPopup = ref(false)
+const showItemPopup = ref(false)
+
+const editForm = reactive({
+  expenseNo: '',
+  dept: '', deptId: 0,
+  amount: '',
+  item: '', itemLabel: '',
+  customer: '', customerId: 0,
+  remark: '',
+  account: '',
+})
+
+function onSelectDept() {
+  showDeptPopup.value = true
+}
+
+function onDeptConfirm(payload: { id: number; name: string }) {
+  editForm.deptId = payload.id
+  editForm.dept = payload.name
+}
+
+function onSelectCustomer() {
+  showCustomerPopup.value = true
+}
+
+function onCustomerSelect(customer: CustomerItem) {
+  editForm.customerId = customer.id
+  editForm.customer = customer.name
+}
+
+function onSelectItem() {
+  showItemPopup.value = true
+}
+
+function onItemSelect(it: { value: string; label: string }) {
+  editForm.item = it.value
+  editForm.itemLabel = it.label
+}
+
 function onEdit() {
-  Taro.showToast({ title: '编辑功能开发中', icon: 'none' })
+  editForm.expenseNo = detail.value.expenseNo
+  editForm.dept = detail.value.expenseDepartmentName || ''
+  editForm.deptId = detail.value.expenseDepartmentId || 0
+  editForm.amount = detail.value.amount ? String(detail.value.amount / 100) : ''
+  editForm.item = detail.value.expenseItem || ''
+  editForm.itemLabel = EXPENSE_ITEM_MAP[detail.value.expenseItem] || ''
+  editForm.customer = detail.value.customerName || ''
+  editForm.customerId = detail.value.customerId || 0
+  editForm.remark = detail.value.description || ''
+  editForm.account = detail.value.payeeAccount || ''
+  showEditPopup.value = true
+}
+
+async function onSubmitEdit() {
+  if (!editForm.item) {
+    Taro.showToast({ title: '请选择费用项目', icon: 'none' })
+    return
+  }
+  if (!editForm.amount || Number(editForm.amount) <= 0) {
+    Taro.showToast({ title: '请输入申请金额', icon: 'none' })
+    return
+  }
+  if (!editForm.remark) {
+    Taro.showToast({ title: '请输入费用说明', icon: 'none' })
+    return
+  }
+  if (!editForm.account) {
+    Taro.showToast({ title: '请输入收款账户', icon: 'none' })
+    return
+  }
+  try {
+    await updateExpense(detail.value.id, {
+      amount: Math.round(Number(editForm.amount) * 100),
+      expenseDepartmentId: editForm.deptId || 0,
+      expenseItem: editForm.item,
+      customerId: editForm.customerId || 0,
+      customerName: editForm.customer || '',
+      description: editForm.remark,
+      payeeAccount: editForm.account,
+      attachments: [],
+    })
+    Taro.showToast({ title: '修改成功', icon: 'success' })
+    showEditPopup.value = false
+    fetchDetail()
+  } catch {
+    // 错误已在 request 层处理
+  }
 }
 
 fetchDetail()
@@ -232,7 +423,6 @@ fetchDetail()
 .rd-page {
   min-height: 100vh;
   background: #F5F7F9;
-  position: relative;
 }
 
 .rd-bg {
@@ -498,5 +688,147 @@ fetchDetail()
   background: #EFFDF7;
   border: 1rpx solid #5CC79C;
   color: #5CC79C;
+}
+
+/* 编辑弹窗 */
+.exp-add-popup {
+  display: flex;
+  flex-direction: column;
+  max-height: 75vh;
+  padding: 40rpx 0 0;
+  background: #FFFFFF;
+}
+
+.exp-add-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20rpx;
+  padding: 0 40rpx 40rpx;
+}
+
+.exp-add-header-btn {
+  font-size: 32rpx;
+  color: #828593;
+}
+
+.exp-add-header-title {
+  font-size: 34rpx;
+  font-weight: 500;
+  color: #333333;
+}
+
+.exp-add-header-confirm {
+  color: #37AE7E;
+}
+
+.exp-add-body {
+  padding: 0 40rpx 40rpx;
+  box-sizing: border-box;
+}
+
+.exp-add-field {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.exp-add-label {
+  font-size: 30rpx;
+  color: #505361;
+  flex-shrink: 0;
+}
+
+.exp-add-value-row {
+  display: flex;
+  align-items: center;
+  gap: 6rpx;
+}
+
+.exp-add-value {
+  font-size: 30rpx;
+  color: #1A1D24;
+  text-align: right;
+}
+
+.exp-add-value--placeholder {
+  color: #BBBEC2;
+}
+
+.exp-add-unit {
+  font-size: 30rpx;
+  color: #9292A5;
+}
+
+.exp-add-input {
+  font-size: 30rpx;
+  color: #1A1D24;
+  text-align: right;
+  border: none;
+  outline: none;
+  background: transparent;
+  width: 240rpx;
+}
+
+.exp-add-input--right {
+  text-align: right;
+}
+
+.exp-add-arrow {
+  width: 28rpx;
+  height: 28rpx;
+  flex-shrink: 0;
+}
+
+.exp-add-divider {
+  height: 1rpx;
+  background: #F4F4F4;
+  margin: 28rpx 0;
+}
+
+.exp-item-popup {
+  display: flex;
+  flex-direction: column;
+  max-height: 75vh;
+  padding: 40rpx 0 0;
+  background: #FFFFFF;
+}
+
+.exp-item-list {
+  padding: 0 40rpx 40rpx;
+}
+
+.exp-item-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.exp-item-text {
+  font-size: 30rpx;
+  color: #1A1D24;
+}
+
+.exp-item-radio {
+  width: 36rpx;
+  height: 36rpx;
+  border-radius: 50%;
+  border: 2rpx solid #D9D9D9;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  box-sizing: border-box;
+}
+
+.exp-item-radio--checked {
+  border-color: #37AE7E;
+}
+
+.exp-item-radio-dot {
+  width: 20rpx;
+  height: 20rpx;
+  border-radius: 50%;
+  background: #37AE7E;
 }
 </style>

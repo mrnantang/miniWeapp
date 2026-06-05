@@ -667,17 +667,7 @@ const onEdit = () => {
 }
 
 const goOppDetail = (card) => {
-  const params = [
-    `id=${card.id}`,
-    `name=${encodeURIComponent(card.name)}`,
-    `oppNo=${encodeURIComponent(card.oppNo)}`,
-    `amount=${encodeURIComponent(card.amount)}`,
-    `signDate=${encodeURIComponent(card.signDate)}`,
-    `status=${encodeURIComponent(card.badge)}`,
-    `product=${encodeURIComponent(card.product)}`,
-    `customer=${encodeURIComponent(customer.value?.name || '')}`,
-  ].join('&')
-  Taro.navigateTo({ url: `/subpackages/dev/opportunity/detail/index?${params}` })
+  Taro.navigateTo({ url: `/subpackages/dev/opportunity/detail/index?id=${card.id}` })
 }
 
 const onAddQuote = () => {

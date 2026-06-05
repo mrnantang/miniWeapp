@@ -156,8 +156,8 @@
       <view class="detail-bottom-btn detail-bottom-btn--primary" @tap="onAddFollow">
         <text class="detail-bottom-btn-text detail-bottom-btn-text--primary">新增跟进记录</text>
       </view>
-      <view class="detail-bottom-btn detail-bottom-btn--primary" @tap="hasCheckedIn ? onCheckOut() : onCheckIn()">
-        <text class="detail-bottom-btn-text detail-bottom-btn-text--primary">{{ hasCheckedIn ? '签退打卡' : '签到打卡' }}</text>
+      <view class="detail-bottom-btn detail-bottom-btn--primary" @tap="visitSignStatus !== 'not_checked_in' ? onCheckOut() : onCheckIn()">
+        <text class="detail-bottom-btn-text detail-bottom-btn-text--primary">{{ visitSignStatus !== 'not_checked_in' ? '签退打卡' : '签到打卡' }}</text>
       </view>
     </view>
 
@@ -363,7 +363,7 @@
 import NavBar from '@/components/NavBar.vue'
 import { ref, reactive, computed, onMounted, watch } from 'vue'
 import Taro from '@tarojs/taro'
-import { getOpportunityFollowRecords, getOpportunityVisitRecords, createOpportunityFollowRecord, checkInVisitRecord, checkOutVisitRecord } from '@/api/opportunity'
+import { getOpportunityFollowRecords, getOpportunityVisitRecords, createOpportunityFollowRecord, checkInVisitRecord, checkOutVisitRecord, getOpportunityDetail } from '@/api/opportunity'
 import { uploadFile } from '@/api/material'
 import iconVoice from '@/assets/dev/icon-voice.svg'
 import iconEdit from '@/assets/dev/edit.png'
@@ -436,6 +436,8 @@ const detail = reactive({
   status: '',
   product: '',
   owner: '-',
+  latitude: 0,
+  longitude: 0,
 })
 
 const followRecords = ref([])
@@ -463,7 +465,7 @@ async function fetchFollowRecords() {
 const visitRecords = ref([])
 const rawVisitRecords = ref([])
 const visitLoading = ref(false)
-const hasCheckedIn = computed(() => rawVisitRecords.value.some(r => r.status === 'checked_in'))
+const visitSignStatus = ref('not_checked_in')
 
 async function fetchVisitRecords() {
   if (visitLoading.value) return
@@ -778,20 +780,29 @@ watch(followTab, (tab) => {
   }
 })
 
-onMounted(() => {
-  const pages = Taro.getCurrentPages()
-  const current = pages[pages.length - 1]
-  const opts = current?.options || {}
-  if (opts.id) {
-    opportunityId.value = Number(opts.id)
-    detail.name = decodeURIComponent(opts.name || '') || '-'
-    detail.oppNo = decodeURIComponent(opts.oppNo || '') || '-'
-    detail.customer = decodeURIComponent(opts.customer || '') || '-'
-    detail.amount = decodeURIComponent(opts.amount || '') || '-'
-    detail.signDate = decodeURIComponent(opts.signDate || '') || '-'
-    detail.status = decodeURIComponent(opts.status || '') || '-'
-    detail.product = decodeURIComponent(opts.product || '') || '-'
+onMounted(async () => {
+  const instance = Taro.getCurrentInstance()
+  const id = Number(instance.router?.params?.id)
+  if (!id) return
+  opportunityId.value = id
+  try {
+    const res = await getOpportunityDetail(id)
+    detail.name = res.opportunityName || '-'
+    detail.oppNo = res.opportunityNo || '-'
+    detail.customer = res.customer || '-'
+    detail.amount = res.expectedSalesAmountBandLabel || '-'
+    detail.signDate = res.expectedDealDate || '-'
+    detail.status = res.statusLabel || '-'
+    detail.product = res.requiredProductLabel || '-'
+    detail.owner = res.ownerUserName || '-'
+    visitSignStatus.value = res.visitSignStatus || 'not_checked_in'
+    // 保存经纬度用于签到距离计算
+    if (res.latitude) detail.latitude = res.latitude
+    if (res.longitude) detail.longitude = res.longitude
     fetchFollowRecords()
+    fetchVisitRecords()
+  } catch {
+    // 错误已在 request 层处理
   }
 })
 </script>

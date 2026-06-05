@@ -16,7 +16,7 @@
             <view class="mine-user-meta-sep" />
             <text class="mine-user-meta-text">{{ userRole }}</text>
             <view class="mine-user-meta-sep" />
-            <text class="mine-user-meta-text">工号{{ userCode }}</text>
+            <text class="mine-user-meta-text">{{ userCode }}</text>
           </view>
         </view>
       </view>
@@ -49,9 +49,11 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { ref, onMounted } from 'vue'
 import Taro from '@tarojs/taro'
 import TabBar from '../tabs/index.vue'
+import { getCompanyTree } from '@/api/system'
+import { getUserInfo } from '@/utils/storage'
 import rightArrowIcon from '@/assets/mine/right.png'
 import iconNotify from '@/assets/dev/mine/icon-mine-notify.svg'
 import iconProduct from '@/assets/dev/mine/icon-mine-product.svg'
@@ -60,11 +62,46 @@ import iconReimburse from '@/assets/dev/mine/icon-mine-reimburse.svg'
 import iconExpense from '@/assets/dev/mine/icon-mine-expense.svg'
 import iconPerf from '@/assets/dev/mine/icon-mine-perf.svg'
 
-const userName = ref('张群立')
-const userDept = ref('销售部')
-const userRole = ref('线上销售')
-const userCode = ref('0091')
+const userName = ref('')
+const userDept = ref('')
+const userRole = ref('')
+const userCode = ref('')
 const avatarUrl = ref('')
+
+/** 从公司架构树中匹配公司名和部门名 */
+function resolveCompanyAndDept(tree, companyId, departmentId) {
+  console.log("test",tree, companyId, departmentId)
+  for (const company of tree) {
+    if (company.companyId === companyId) {
+      const dept = company.children?.find(d => d.departmentId === departmentId)
+      return { companyName: company.name, deptName: dept?.name || '' }
+    }
+  }
+  return { companyName: '', deptName: '' }
+}
+
+onMounted(async () => {
+  const userInfo = getUserInfo()
+  if (userInfo) {
+    userName.value = userInfo.name || ''
+    userCode.value = userInfo.status || ''
+    avatarUrl.value = userInfo.avatar || userInfo.avatarUrl || ''
+  }
+
+  // 通过公司架构树获取公司名称和部门名称
+  try {
+    const res = await getCompanyTree()
+    const companyId = Number(userInfo?.companyId) || 0
+    const departmentId = Number(userInfo?.departmentId) || 0
+    if (companyId && res.items?.length) {
+      const { companyName, deptName } = resolveCompanyAndDept(res.items, companyId, departmentId)
+      if (companyName) userDept.value = companyName
+      if (deptName) userRole.value = deptName
+    }
+  } catch {
+    // 错误已在 request 层处理
+  }
+})
 
 const funcList = ref([
   { name: '消息通知', icon: iconNotify, tag: '', onTap: () => Taro.navigateTo({ url: '/subpackages/dev/mine/notice/index' }) },

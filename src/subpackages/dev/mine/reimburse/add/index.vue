@@ -1,5 +1,5 @@
 <template>
-  <view class="add-reimb-page">
+  <view v-if="isDone" class="add-reimb-page">
     <NavBar title="我要报销" />
 
     <scroll-view class="add-reimb-scroll" scroll-y :enhanced="true" :show-scrollbar="false">
@@ -183,7 +183,7 @@ const labelMap = ['一', '二', '三', '四', '五', '六', '七', '八', '九',
 
 const cards = ref<CardData[]>([emptyCard()])
 const editId = ref(0)
-
+const isDone = ref(false)
 // 编辑模式下加载详情数据填充表单
 async function loadEditData(id: number) {
   try {
@@ -207,7 +207,8 @@ async function loadEditData(id: number) {
         invoiceFile: pickAtt(atts, 'invoice'),
       }
     })
-    if (cards.value.length === 0) cards.value.push(emptyCard())
+    if (cards.value.length === 0) cards.value.push(emptyCard()) 
+    isDone.value = true
   } catch {
     cards.value = [emptyCard()]
   }
@@ -391,7 +392,8 @@ async function onSubmit() {
     }
     Taro.showToast({ title: editId.value ? '保存成功' : '提交成功', icon: 'success' })
     setTimeout(() => {
-      Taro.navigateBack()
+      // 编辑模式需要跳过详情页回到列表页
+      Taro.navigateBack({ delta: editId.value ? 2 : 1 })
     }, 1500)
   } catch {
     // 错误已在 request 层统一处理

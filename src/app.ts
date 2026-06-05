@@ -7,6 +7,13 @@ import { detectRole, getRoleHomePath } from '@/utils/role'
 
 import './app.scss'
 
+// 修复 NutUI Popup 在 Taro 小程序环境中 getRootNode 不存在的问题
+if (typeof Node !== 'undefined' && !Node.prototype.getRootNode) {
+  Node.prototype.getRootNode = function () {
+    return this
+  }
+}
+
 async function tryAutoLogin() {
   const token = getToken()
   if (!token) return

@@ -222,7 +222,7 @@
 
 <script setup lang="ts">
 import { ref, reactive, computed } from 'vue'
-import Taro from '@tarojs/taro'
+import Taro, { useDidShow } from '@tarojs/taro'
 import NavBar from '@/components/NavBar.vue'
 import DeptSelectionPopup from '@/components/DeptSelectionPopup.vue'
 import CustomerSelectPopup from '@/components/CustomerSelectPopup.vue'
@@ -495,6 +495,11 @@ function onPickerChange(e: { detail: { value: number[] } }) {
 }
 
 fetchList(true)
+
+// 从详情页返回时自动刷新
+useDidShow(() => {
+  fetchList(true)
+})
 </script>
 
 <style>
