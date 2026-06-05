@@ -263,26 +263,26 @@
           </view>
         </view>
         <view v-if="infoTab === 'quote'" class="cd-quote-list">
-          <view v-for="card in quoteCards" :key="card.no" class="cd-quote-card">
+          <view v-for="card in quoteCards" :key="card.id" class="cd-quote-card" @tap="goQuotationDetail(card)">
             <view class="cd-quote-card-head">
               <text class="cd-quote-card-name">{{ card.name }}</text>
-              <view class="cd-quote-badge" :class="'cd-quote-badge--' + card.badgeStyle">
-                <text class="cd-quote-badge-text">{{ card.badge }}</text>
+              <view class="cd-quote-badge" :class="'cd-quote-badge--' + quotBadgeStyle(card)">
+                <text class="cd-quote-badge-text">{{ quotBadgeText(card) }}</text>
               </view>
             </view>
             <view class="cd-quote-card-info">
               <view class="cd-quote-info-col">
                 <text class="cd-quote-info-label">报价单号</text>
-                <text class="cd-quote-info-value">{{ card.no }}</text>
+                <text class="cd-quote-info-value">{{ card.quotationNo }}</text>
               </view>
               <view class="cd-quote-info-col">
                 <text class="cd-quote-info-label">金额</text>
-                <text class="cd-quote-info-value cd-quote-info-value--price">{{ card.amount }}</text>
+                <text class="cd-quote-info-value cd-quote-info-value--price">{{ formatAmount(card.totalAmount) }}</text>
               </view>
             </view>
             <view class="cd-quote-time">
               <text class="cd-quote-time-label">发起时间：</text>
-              <text class="cd-quote-time-value">{{ card.time }}</text>
+              <text class="cd-quote-time-value">{{ formatTime(card.quotedAt) }}</text>
             </view>
           </view>
           <view class="cd-quote-add-btn" @tap="onAddQuote">
@@ -317,27 +317,27 @@
           </view>
         </view>
         <view v-if="infoTab === 'expense'" class="cd-quote-list">
-           <view v-for="card in expenseCards" :key="card.no" class="cd-quote-card" @tap="goExpenseDetail(card)">
+           <view v-for="card in expenseCards" :key="card.id" class="cd-quote-card" @tap="goExpenseDetail(card)">
             <view class="cd-ex-head">
-              <view class="cd-ex-type-badge">{{ card.typeLabel }}</view>
-              <text class="cd-ex-number">{{ card.no }}</text>
-              <view class="cd-quote-badge" :class="'cd-quote-badge--' + card.badgeStyle">
-                <text class="cd-quote-badge-text">{{ card.badge }}</text>
+              <view class="cd-ex-type-badge">{{ EXPENSE_ITEM_MAP[card.expenseItem] || card.expenseItem || '-' }}</view>
+              <text class="cd-ex-number">{{ card.expenseNo }}</text>
+              <view class="cd-quote-badge" :class="'cd-quote-badge--' + expBadgeStyle(card)">
+                <text class="cd-quote-badge-text">{{ EXPENSE_STATUS_MAP[card.status] || card.status || '-' }}</text>
               </view>
             </view>
             <view class="cd-ex-info">
               <view class="cd-ex-info-col">
                 <text class="cd-ex-info-label">金额</text>
-                <text class="cd-ex-info-value">{{ card.amount }}</text>
+                <text class="cd-ex-info-value">{{ formatAmount(card.amount) }}</text>
               </view>
               <view class="cd-ex-info-col">
-                <text class="cd-ex-info-label">类型</text>
-                <text class="cd-ex-info-value">{{ card.typeDetail }}</text>
+                <text class="cd-ex-info-label">部门</text>
+                <text class="cd-ex-info-value">{{ card.expenseDepartmentName || '-' }}</text>
               </view>
             </view>
             <view class="cd-ex-time">
               <text class="cd-ex-time-label">发起时间：</text>
-              <text class="cd-ex-time-value">{{ card.time }}</text>
+              <text class="cd-ex-time-value">{{ formatTime(card.submittedAt || card.createdAt) }}</text>
             </view>
           </view>
         </view>
@@ -556,6 +556,8 @@ import Taro from '@tarojs/taro'
 import NavBar from '@/components/NavBar.vue'
 import { getCustomerDetail, getCustomerOpportunities, type CustomerItem } from '@/api/customer'
 import { getOpportunityFollowRecords, getOpportunityVisitRecords, type VisitRecordItem } from '@/api/opportunity'
+import { getCustomerQuotations, type CustomerQuotationItem } from '@/api/quote'
+import { getExpenseList, EXPENSE_STATUS_MAP, EXPENSE_STATUS_BADGE_MAP, EXPENSE_ITEM_MAP, type ExpenseListItem } from '@/api/expense'
 import iconEdit from '@/assets/dev/edit.png'
 import iconDelete from '@/assets/dev/delete.png'
 import iconClose from '@/assets/dev/icon-close.png'
@@ -564,6 +566,34 @@ import rightArrow from '@/assets/dev/rightArror.png'
 function formatTime(val?: string) {
   if (!val) return '-'
   return val.replace('T', ' ').slice(0, 19)
+}
+
+function formatAmount(cent: number): string {
+  if (cent === undefined || cent === null) return '-'
+  return '￥' + (cent / 100).toLocaleString('zh-CN', { minimumFractionDigits: 0, maximumFractionDigits: 2 })
+}
+
+function quotBadgeStyle(item: CustomerQuotationItem): string {
+  const s = item.approvalStatus || ''
+  if (s === 'rejected') return 'red'
+  if (s === 'approved' || s === 'approved_finished' || s === 'no_approval') return 'green'
+  return 'yellow'
+}
+
+const QUOTATION_STATUS_MAP: Record<string, string> = {
+  no_approval: '无需审批',
+  pending: '待审批',
+  pending_approval: '待审批',
+  approved: '审批通过',
+  approved_finished: '审批通过',
+  rejected: '已驳回',
+}
+
+function quotBadgeText(item: CustomerQuotationItem): string {
+  if (item.approvalStatus) {
+    return QUOTATION_STATUS_MAP[item.approvalStatus] || item.approvalStatus
+  }
+  return item.bizStatus || '-'
 }
 
 const customerId = ref(0)
@@ -611,11 +641,39 @@ async function fetchOpportunities() {
   }
 }
 
-const quoteCards = ref([])
+const quoteCards = ref<CustomerQuotationItem[]>([])
+const canCreateQuote = ref(false)
+
+/** 获取报价列表 */
+async function fetchQuotations() {
+  if (!customerId.value) return
+  try {
+    const res = await getCustomerQuotations(customerId.value)
+    quoteCards.value = res.items || []
+    canCreateQuote.value = res.canCreate
+  } catch {
+    quoteCards.value = []
+  }
+}
 
 const contractCards = ref([])
 
-const expenseCards = ref([])
+const expenseCards = ref<ExpenseListItem[]>([])
+
+function expBadgeStyle(item: ExpenseListItem): string {
+  return EXPENSE_STATUS_BADGE_MAP[item.status] || 'gray'
+}
+
+/** 获取关联费用列表 */
+async function fetchExpenses() {
+  if (!customerId.value) return
+  try {
+    const res = await getExpenseList({ customerId: customerId.value, page: 1, pageSize: 50 } as any)
+    expenseCards.value = res.items || []
+  } catch {
+    expenseCards.value = []
+  }
+}
 
 const logisticsCards = ref([])
 
@@ -674,12 +732,16 @@ const onAddQuote = () => {
   Taro.navigateTo({ url: '/subpackages/dev/quote/index' })
 }
 
+const goQuotationDetail = (card) => {
+  Taro.navigateTo({ url: '/subpackages/dev/quote/detail/index?id=' + card.id })
+}
+
 const onAddContract = () => {
   Taro.navigateTo({ url: '/subpackages/dev/contract/index' })
 }
 
-const goExpenseDetail = (card) => {
-  Taro.navigateTo({ url: '/subpackages/dev/mine/reimburse/detail/index' })
+const goExpenseDetail = (card: ExpenseListItem) => {
+  Taro.navigateTo({ url: '/subpackages/dev/mine/expense/detail/index?id=' + card.id })
 }
 
 const goContractDetail = (card) => {
@@ -705,6 +767,10 @@ const activeOpp = computed(() => oppCards.value[activeOppIdx.value] || null)
 watch(infoTab, (tab) => {
   if (tab === 'opportunity') {
     fetchOpportunities()
+  } else if (tab === 'quote') {
+    fetchQuotations()
+  } else if (tab === 'expense') {
+    fetchExpenses()
   }
 })
 

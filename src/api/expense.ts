@@ -127,6 +127,7 @@ export interface ExpenseListParams {
   pageSize?: number
   expenseNo?: string
   customerName?: string
+  customerId?: number
   status?: string
   submittedAtStart?: string
   submittedAtEnd?: string

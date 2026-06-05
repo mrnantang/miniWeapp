@@ -25,7 +25,7 @@
         {
           "name": "客户详情",
           "pathName": "subpackages/dev/customer/detail/index",
-          "query": "id=2",
+          "query": "id=5",
           "scene": null,
           "launchMode": "default"
         },
@@ -88,13 +88,6 @@
         {
           "name": "新建合同",
           "pathName": "subpackages/dev/contract/index",
-          "query": "",
-          "launchMode": "default",
-          "scene": null
-        },
-        {
-          "name": "客户详情",
-          "pathName": "subpackages/dev/customer/detail/index",
           "query": "",
           "launchMode": "default",
           "scene": null
