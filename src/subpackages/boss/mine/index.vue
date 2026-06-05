@@ -21,6 +21,30 @@
     <view class="mine-func-card">
       <text class="mine-card-title">常用功能</text>
       <view class="mine-card-divider" />
+
+      <!-- 切换角色行 -->
+      <view class="mine-role-row">
+        <view class="mine-role-left">
+          <view class="mine-role-icon">
+            <image class="mine-role-icon-img" :src="iconCheck" mode="aspectFit" />
+          </view>
+          <text class="mine-role-label">切换角色</text>
+        </view>
+        <view class="mine-role-radios">
+          <view class="mine-role-radio" @tap="onSwitchRole('boss')">
+            <view class="mine-role-radio-box" :class="{ 'mine-role-radio-box--checked': currentRole === 'boss' }">
+              <view v-if="currentRole === 'boss'" class="mine-role-radio-check" />
+            </view>
+            <text class="mine-role-radio-text">老板</text>
+          </view>
+          <view class="mine-role-radio" @tap="onSwitchRole('sales')">
+            <view class="mine-role-radio-box" :class="{ 'mine-role-radio-box--checked': currentRole === 'sales' }">
+              <view v-if="currentRole === 'sales'" class="mine-role-radio-check" />
+            </view>
+            <text class="mine-role-radio-text">销售</text>
+          </view>
+        </view>
+      </view>
     </view>
 
     <view class="mine-logout" @tap="onLogout">
@@ -32,15 +56,33 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { ref, onMounted } from 'vue'
 import Taro from '@tarojs/taro'
 import TabBar from '../tabs/index.vue'
+import { getUserInfo } from '@/utils/storage'
 import rightArrowIcon from '@/assets/mine/right.png'
 import iconNotify from '@/assets/dev/mine/icon-mine-notify.svg'
 import iconPerf from '@/assets/dev/mine/icon-mine-perf.svg'
+import iconCheck from '@/assets/mine/check.png'
 
-const userName = ref('运营管理员')
+const userName = ref('')
 const avatarUrl = ref('')
+const currentRole = ref('boss')
+
+onMounted(() => {
+  const userInfo = getUserInfo()
+  if (userInfo) {
+    userName.value = userInfo.name || ''
+    avatarUrl.value = userInfo.avatar || userInfo.avatarUrl || ''
+  }
+})
+
+function onSwitchRole(role) {
+  currentRole.value = role
+  if (role === 'sales') {
+    Taro.navigateTo({ url: '/subpackages/dev/mine/index' })
+  }
+}
 
 const onLogout = () => {
   Taro.reLaunch({ url: '/pages/login/index' })
@@ -198,6 +240,82 @@ const onLogout = () => {
   width: 24rpx;
   height: 24rpx;
   flex-shrink: 0;
+}
+
+/* 切换角色 */
+.mine-role-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.mine-role-left {
+  display: flex;
+  align-items: center;
+  gap: 12rpx;
+}
+
+.mine-role-icon {
+  width: 40rpx;
+  height: 40rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.mine-role-icon-img {
+  width: 40rpx;
+  height: 40rpx;
+}
+
+.mine-role-label {
+  font-size: 30rpx;
+  color: #25293B;
+}
+
+.mine-role-radios {
+  display: flex;
+  align-items: center;
+  gap: 32rpx;
+}
+
+.mine-role-radio {
+  display: flex;
+  align-items: center;
+  gap: 8rpx;
+}
+
+.mine-role-radio-box {
+  width: 28rpx;
+  height: 28rpx;
+  border-radius: 50%;
+  border: 2rpx solid #E5E6EB;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  box-sizing: border-box;
+}
+
+.mine-role-radio-box--checked {
+  background: #37AE7E;
+  border-color: #37AE7E;
+}
+
+.mine-role-radio-check {
+  width: 10rpx;
+  height: 6rpx;
+  border-left: 2rpx solid #FFFFFF;
+  border-bottom: 2rpx solid #FFFFFF;
+  transform: rotate(-45deg);
+  margin-top: -2rpx;
+  flex-shrink: 0;
+}
+
+.mine-role-radio-text {
+  font-size: 28rpx;
+  color: #1A1D24;
 }
 
 .mine-logout {
