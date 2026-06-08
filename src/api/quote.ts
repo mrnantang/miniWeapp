@@ -1,4 +1,4 @@
-import { get } from '@/utils/request'
+import { get, post } from '@/utils/request'
 
 /** 客户报价列表项 */
 export interface CustomerQuotationItem {
@@ -79,4 +79,28 @@ export function getCustomerQuotations(customerId: number): Promise<CustomerQuota
 /** 查询报价详情 */
 export function getQuotationDetail(id: number): Promise<QuotationDetailResponse> {
   return get<QuotationDetailResponse>(`/quotations/${id}`)
+}
+
+/** 新建报价请求 */
+export interface CreateQuotationRequest {
+  name: string
+  customerId?: number
+  opportunityId?: number
+  templateId?: number
+  items: {
+    productId?: number
+    productName: string
+    modelName?: string
+    quantity: number
+    unitPrice: number
+    amount: number
+  }[]
+  summarySnapshot?: Record<string, unknown>
+  paymentTerms?: Record<string, unknown>
+  buyerSnapshot?: Record<string, unknown>
+}
+
+/** 新建报价 */
+export function createQuotation(data: CreateQuotationRequest): Promise<QuotationDetailResponse> {
+  return post<QuotationDetailResponse>('/quotations', data as unknown as Record<string, unknown>)
 }
