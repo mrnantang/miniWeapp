@@ -4,210 +4,234 @@
       <view class="q-nav-back" @tap="goBack">
         <image class="q-nav-back-icon" :src="iconBack" mode="aspectFit" />
       </view>
-      <text class="q-nav-title">我要报价</text>
+      <text class="q-nav-title">{{ editId ? '编辑报价' : '我要报价' }}</text>
       <view class="q-nav-right" />
     </view>
 
-    <scroll-view class="q-scroll" scroll-y="true" :enhanced="true" :show-scrollbar="false">
-      <view class="q-card">
-        <view class="q-field" @tap="onSelectTemplate">
-          <text class="q-field-label">报价模板</text>
-          <view class="q-field-right">
-            <text :class="form.templateName ? 'q-field-value' : 'q-field-placeholder'">{{ form.templateName || '请选择模板' }}</text>
-            <image class="q-arrow" :src="rightArrow" mode="aspectFit" />
-          </view>
-        </view>
-        <view class="q-divider" />
-        <view class="q-field">
-          <text class="q-field-label">模板编号</text>
-          <text class="q-field-value">{{ form.templateNo || '-' }}</text>
-        </view>
-      </view>
-
-      <view class="q-card">
-        <view class="q-field" @tap="onSelectBuyer">
-          <text class="q-field-label">需方信息</text>
-          <view class="q-field-right">
-            <text :class="form.customerName ? 'q-field-value' : 'q-field-placeholder'">{{ form.customerName || '请选择客户' }}</text>
-            <image class="q-arrow" :src="rightArrow" mode="aspectFit" />
-          </view>
-        </view>
-        <view class="q-divider" />
-        <view class="q-field">
-          <text class="q-field-label">联系人</text>
-          <input class="q-input" v-model="form.contactName" placeholder="请输入" placeholder-style="color:#BBBEC2;font-size:28rpx" />
-        </view>
-        <view class="q-divider" />
-        <view class="q-field">
-          <text class="q-field-label">手机号</text>
-          <input class="q-input" v-model="form.phone" placeholder="请输入" placeholder-style="color:#BBBEC2;font-size:28rpx" type="number" />
-        </view>
-      </view>
-
-      <view class="q-card">
-        <view class="q-field">
-          <text class="q-field-label" style="color:#1A1D24;font-size: 32rpx;">报价单号</text>
-          <text class="q-field-placeholder">自动生成，无需输入</text>
-        </view>
-        <view class="q-divider" />
-        <view class="q-field">
-          <text class="q-field-label">报价名称</text>
-          <input class="q-input" v-model="form.name" placeholder="请输入" placeholder-style="color:#BBBEC2;font-size:28rpx" />
-        </view>
-        <view class="q-divider" />
-        <view class="q-field">
-          <text class="q-field-label">报价时效</text>
-          <view class="q-field-row">
-            <input class="q-input" v-model="form.validity" placeholder="请输入" placeholder-style="color:#BBBEC2;font-size:28rpx" />
-            <text class="q-suffix">月</text>
-          </view>
-        </view>
-        <view class="q-divider" />
-        <view class="q-field">
-          <text class="q-field-label">保修时限</text>
-          <view class="q-field-row">
-            <input class="q-input" v-model="form.warranty" placeholder="请输入" placeholder-style="color:#BBBEC2;font-size:28rpx" />
-            <text class="q-suffix">年</text>
-          </view>
-        </view>
-        <view class="q-divider" />
-        <view class="q-field">
-          <text class="q-field-label">交货期限</text>
-          <view class="q-field-row">
-            <input class="q-input" v-model="form.delivery" placeholder="请输入" placeholder-style="color:#BBBEC2;font-size:28rpx" />
-            <text class="q-suffix">天</text>
-          </view>
-        </view>
-        <view class="q-divider" />
-        <view class="q-field">
-          <text class="q-field-label">签约完成后付款金额</text>
-          <view class="q-field-row">
-            <input class="q-input" v-model="form.payAfterSign" placeholder="请输入" placeholder-style="color:#BBBEC2;font-size:28rpx" />
-            <text class="q-suffix">元</text>
-          </view>
-        </view>
-        <view class="q-divider" />
-        <view class="q-field">
-          <text class="q-field-label">货物打包后付款金额</text>
-          <view class="q-field-row">
-            <input class="q-input" v-model="form.payAfterPack" placeholder="请输入" placeholder-style="color:#BBBEC2;font-size:28rpx" />
-            <text class="q-suffix">元</text>
-          </view>
-        </view>
-        <view class="q-divider" />
-        <view class="q-field">
-          <text class="q-field-label">安装调试后付款金额</text>
-          <view class="q-field-row">
-            <input class="q-input" v-model="form.payAfterInstall" placeholder="请输入" placeholder-style="color:#BBBEC2;font-size:28rpx" />
-            <text class="q-suffix">元</text>
-          </view>
-        </view>
-        <view class="q-divider" />
-        <view class="q-field">
-          <text class="q-field-label">验收完成后付款金额</text>
-          <view class="q-field-row">
-            <input class="q-input" v-model="form.payAfterCheck" placeholder="请输入" placeholder-style="color:#BBBEC2;font-size:28rpx" />
-            <text class="q-suffix">元</text>
-          </view>
-        </view>
-      </view>
-
-      <view class="q-card">
-        <view class="q-field" @tap="onSelectOpportunity">
-          <text class="q-field-label" style="color:#1A1D24;font-size: 32rpx;">关联商机</text>
-          <view class="q-field-right">
-            <text :class="form.opportunityName ? 'q-field-value' : 'q-field-placeholder'">{{ form.opportunityName || '请选择商机' }}</text>
-            <image class="q-arrow" :src="rightArrow" mode="aspectFit" />
-          </view>
-        </view>
-      </view>
-
-      <view class="q-card">
-        <view class="q-section-head">
-          <text class="q-section-title">产品明细</text>
-          <view class="q-add-row" @tap="onAddProduct">
-            <image class="q-add-icon" :src="iconPlus" mode="aspectFit" />
-            <text class="q-add-text">添加产品</text>
-          </view>
-        </view>
-        <view class="q-divider" />
-        <scroll-view class="q-table-scroll" scroll-x="true" :enhanced="true" :show-scrollbar="false">
-          <view class="q-table">
-            <view class="q-tr q-tr--head">
-              <view class="q-th" style="width:72rpx">序号</view>
-              <view class="q-th" style="width:280rpx">产品名称</view>
-              <view class="q-th" style="width:318rpx">型号</view>
-              <view class="q-th" style="width:160rpx">单位</view>
-              <view class="q-th" style="width:160rpx">数量</view>
-              <view class="q-th" style="width:160rpx">折扣率</view>
-              <view class="q-th" style="width:160rpx">税率</view>
-              <view class="q-th" style="width:118rpx">单价</view>
-              <view class="q-th" style="width:120rpx">小计</view>
-              <view class="q-th" style="width:82rpx">操作</view>
+    <view v-if="!editId || idEditId" style="display:flex;flex-direction:column;flex:1">
+      <scroll-view class="q-scroll" scroll-y="true" :enhanced="true" :show-scrollbar="false">
+        <view class="q-card">
+          <view class="q-field" @tap="onSelectTemplate">
+            <text class="q-field-label">报价模板</text>
+            <view class="q-field-right">
+              <text :class="form.templateName ? 'q-field-value' : 'q-field-placeholder'">{{ form.templateName || '请选择模板'
+                }}</text>
+              <image class="q-arrow" :src="rightArrow" mode="aspectFit" />
             </view>
-            <view v-for="(item, idx) in form.products" :key="idx" class="q-tr">
-              <view class="q-td" style="width:72rpx">{{ padIdx(idx + 1) }}</view>
-              <view class="q-td" style="width:280rpx">{{ item.productName }}</view>
-              <view class="q-td" style="width:318rpx">{{ item.modelName || '-' }}</view>
-              <view class="q-td" style="width:160rpx">-</view>
-              <view class="q-td" style="width:160rpx">{{ item.quantity }}</view>
-              <view class="q-td" style="width:160rpx">-</view>
-              <view class="q-td" style="width:160rpx">-</view>
-              <view class="q-td" style="width:118rpx">￥{{ item.unitPrice.toLocaleString() }}</view>
-              <view class="q-td q-td--bold" style="width:120rpx">￥{{ item.amount.toLocaleString() }}</view>
-              <view class="q-td" style="width:82rpx">
-                <image class="q-delete-icon" :src="iconDelete" mode="aspectFit" @tap="removeProduct(idx)" />
+          </view>
+          <view class="q-divider" />
+          <view class="q-field">
+            <text class="q-field-label">模板编号</text>
+            <text class="q-field-value">{{ form.templateNo || '-' }}</text>
+          </view>
+        </view>
+
+        <view class="q-card">
+          <view class="q-field" @tap="onSelectBuyer">
+            <text class="q-field-label">需方信息</text>
+            <view class="q-field-right">
+              <text :class="form.customerName ? 'q-field-value' : 'q-field-placeholder'">{{ form.customerName || '请选择客户'
+                }}</text>
+              <image class="q-arrow" :src="rightArrow" mode="aspectFit" />
+            </view>
+          </view>
+          <view class="q-divider" />
+          <view class="q-field">
+            <text class="q-field-label">联系人</text>
+            <input class="q-input" v-model="form.contactName" placeholder="请输入"
+              placeholder-style="color:#BBBEC2;font-size:28rpx" />
+          </view>
+          <view class="q-divider" />
+          <view class="q-field">
+            <text class="q-field-label">手机号</text>
+            <input class="q-input" v-model="form.phone" placeholder="请输入"
+              placeholder-style="color:#BBBEC2;font-size:28rpx" type="number" />
+          </view>
+        </view>
+
+        <view class="q-card">
+          <view class="q-field">
+            <text class="q-field-label" style="color:#1A1D24;font-size: 32rpx;">报价单号</text>
+            <text class="q-field-placeholder">自动生成，无需输入</text>
+          </view>
+          <view class="q-divider" />
+          <view class="q-field">
+            <text class="q-field-label">报价名称</text>
+            <input class="q-input" v-model="form.name" placeholder="请输入"
+              placeholder-style="color:#BBBEC2;font-size:28rpx" />
+          </view>
+          <view class="q-divider" />
+          <view class="q-field">
+            <text class="q-field-label">报价时效</text>
+            <view class="q-field-row">
+              <input class="q-input" v-model="form.validity" placeholder="请输入"
+                placeholder-style="color:#BBBEC2;font-size:28rpx" />
+              <text class="q-suffix">月</text>
+            </view>
+          </view>
+          <view class="q-divider" />
+          <view class="q-field">
+            <text class="q-field-label">保修时限</text>
+            <view class="q-field-row">
+              <input class="q-input" v-model="form.warranty" placeholder="请输入"
+                placeholder-style="color:#BBBEC2;font-size:28rpx" />
+              <text class="q-suffix">年</text>
+            </view>
+          </view>
+          <view class="q-divider" />
+          <view class="q-field">
+            <text class="q-field-label">交货期限</text>
+            <view class="q-field-row">
+              <input class="q-input" v-model="form.delivery" placeholder="请输入"
+                placeholder-style="color:#BBBEC2;font-size:28rpx" />
+              <text class="q-suffix">天</text>
+            </view>
+          </view>
+          <view class="q-divider" />
+          <view class="q-field">
+            <text class="q-field-label">签约完成后付款金额</text>
+            <view class="q-field-row">
+              <input class="q-input" v-model="form.payAfterSign" placeholder="请输入"
+                placeholder-style="color:#BBBEC2;font-size:28rpx" />
+              <text class="q-suffix">元</text>
+            </view>
+          </view>
+          <view class="q-divider" />
+          <view class="q-field">
+            <text class="q-field-label">货物打包后付款金额</text>
+            <view class="q-field-row">
+              <input class="q-input" v-model="form.payAfterPack" placeholder="请输入"
+                placeholder-style="color:#BBBEC2;font-size:28rpx" />
+              <text class="q-suffix">元</text>
+            </view>
+          </view>
+          <view class="q-divider" />
+          <view class="q-field">
+            <text class="q-field-label">安装调试后付款金额</text>
+            <view class="q-field-row">
+              <input class="q-input" v-model="form.payAfterInstall" placeholder="请输入"
+                placeholder-style="color:#BBBEC2;font-size:28rpx" />
+              <text class="q-suffix">元</text>
+            </view>
+          </view>
+          <view class="q-divider" />
+          <view class="q-field">
+            <text class="q-field-label">验收完成后付款金额</text>
+            <view class="q-field-row">
+              <input class="q-input" v-model="form.payAfterCheck" placeholder="请输入"
+                placeholder-style="color:#BBBEC2;font-size:28rpx" />
+              <text class="q-suffix">元</text>
+            </view>
+          </view>
+        </view>
+
+        <view class="q-card">
+          <view class="q-field" @tap="onSelectOpportunity">
+            <text class="q-field-label" style="color:#1A1D24;font-size: 32rpx;">关联商机</text>
+            <view class="q-field-right">
+              <text :class="form.opportunityName ? 'q-field-value' : 'q-field-placeholder'">{{ form.opportunityName ||
+                '请选择商机' }}</text>
+              <image class="q-arrow" :src="rightArrow" mode="aspectFit" />
+            </view>
+          </view>
+        </view>
+
+        <view class="q-card">
+          <view class="q-section-head">
+            <text class="q-section-title">产品明细</text>
+            <view class="q-add-row" @tap="onAddProduct">
+              <image class="q-add-icon" :src="iconPlus" mode="aspectFit" />
+              <text class="q-add-text">添加产品</text>
+            </view>
+          </view>
+          <view class="q-divider" />
+          <scroll-view class="q-table-scroll" scroll-x="true" :enhanced="true" :show-scrollbar="false">
+            <view class="q-table">
+              <view class="q-tr q-tr--head">
+                <view class="q-th" style="width:72rpx">序号</view>
+                <view class="q-th" style="width:280rpx">产品名称</view>
+                <view class="q-th" style="width:318rpx">型号</view>
+                <view class="q-th" style="width:160rpx">单位</view>
+                <view class="q-th" style="width:160rpx">数量</view>
+                <view class="q-th" style="width:160rpx">折扣率</view>
+                <view class="q-th" style="width:160rpx">税率</view>
+                <view class="q-th" style="width:118rpx">单价</view>
+                <view class="q-th" style="width:120rpx">小计</view>
+                <view class="q-th" style="width:82rpx">操作</view>
+              </view>
+              <view v-for="(item, idx) in form.products" :key="idx" class="q-tr">
+                <view class="q-td" style="width:72rpx">{{ padIdx(idx + 1) }}</view>
+                <view class="q-td" style="width:280rpx">{{ item.productName }}</view>
+                <view class="q-td" style="width:318rpx">{{ item.modelName || '-' }}</view>
+                <view class="q-td" style="width:160rpx">-</view>
+                <view class="q-td" style="width:160rpx">{{ item.quantity }}</view>
+                <view class="q-td" style="width:160rpx">-</view>
+                <view class="q-td" style="width:160rpx">-</view>
+                <view class="q-td" style="width:118rpx">￥{{ item.unitPrice.toLocaleString() }}</view>
+                <view class="q-td q-td--bold" style="width:120rpx">￥{{ item.amount.toLocaleString() }}</view>
+                <view class="q-td" style="width:82rpx">
+                  <image class="q-delete-icon" :src="iconDelete" mode="aspectFit" @tap="removeProduct(idx)" />
+                </view>
+              </view>
+              <view v-if="form.products.length === 0" class="q-tr">
+                <view class="q-td" style="width:100%;border:0;justify-content:center;color:#BBBEC2">暂无产品，请点击上方"添加产品"
+                </view>
               </view>
             </view>
-            <view v-if="form.products.length === 0" class="q-tr">
-              <view class="q-td" style="width:100%;border:0;justify-content:center;color:#BBBEC2">暂无产品，请点击上方"添加产品"</view>
+          </scroll-view>
+          <view class="q-divider" />
+          <view class="q-total-row">
+            <text class="q-total-label">产品总价</text>
+            <text class="q-total-value">{{ totalProductAmount }}</text>
+            <text class="q-total-unit">元</text>
+          </view>
+        </view>
+
+        <view class="q-card">
+          <view class="q-field">
+            <text class="q-field-label">产品总额</text>
+            <text class="q-field-value q-field-value--amount">￥{{ totalProductAmountRaw.toLocaleString() }}</text>
+          </view>
+          <view class="q-divider" />
+          <view class="q-field">
+            <text class="q-field-label">税点</text>
+            <view class="q-field-row">
+              <input class="q-input" v-model="form.taxRate" placeholder="请输入"
+                placeholder-style="color:#BBBEC2;font-size:28rpx" type="digit" />
+              <text class="q-suffix">%</text>
             </view>
           </view>
-        </scroll-view>
-        <view class="q-divider" />
-        <view class="q-total-row">
-          <text class="q-total-label">产品总价</text>
-          <text class="q-total-value">{{ totalProductAmount }}</text>
-          <text class="q-total-unit">元</text>
-        </view>
-      </view>
-
-      <view class="q-card">
-        <view class="q-field">
-          <text class="q-field-label">产品总额</text>
-          <text class="q-field-value q-field-value--amount">￥{{ totalProductAmountRaw.toLocaleString() }}</text>
-        </view>
-        <view class="q-divider" />
-        <view class="q-field">
-          <text class="q-field-label">税点</text>
-          <view class="q-field-row">
-            <input class="q-input" v-model="form.taxRate" placeholder="请输入" placeholder-style="color:#BBBEC2;font-size:28rpx" type="digit" />
-            <text class="q-suffix">%</text>
+          <view class="q-divider" />
+          <view class="q-field">
+            <text class="q-field-label">税额</text>
+            <text class="q-field-value q-field-value--amount">￥{{ taxAmountRaw.toLocaleString() }}</text>
+          </view>
+          <view class="q-divider" />
+          <view class="q-field">
+            <text class="q-field-label">应收总额</text>
+            <text class="q-field-value q-field-value--total">￥{{ totalReceivableRaw.toLocaleString() }}</text>
+          </view>
+          <view class="q-divider" />
+          <view class="q-field">
+            <text class="q-field-label">优惠后总价</text>
+            <view class="q-field-row">
+              <input class="q-input" v-model="form.discountedTotal" placeholder="请输入"
+                placeholder-style="color:#BBBEC2;font-size:28rpx" type="digit" />
+              <text class="q-suffix">元</text>
+            </view>
           </view>
         </view>
-        <view class="q-divider" />
-        <view class="q-field">
-          <text class="q-field-label">税额</text>
-          <text class="q-field-value q-field-value--amount">￥{{ taxAmountRaw.toLocaleString() }}</text>
-        </view>
-        <view class="q-divider" />
-        <view class="q-field">
-          <text class="q-field-label">应收总额</text>
-          <text class="q-field-value q-field-value--total">￥{{ totalReceivableRaw.toLocaleString() }}</text>
-        </view>
-        <view class="q-divider" />
-        <view class="q-field">
-          <text class="q-field-label">优惠后总价</text>
-          <view class="q-field-row">
-            <input class="q-input" v-model="form.discountedTotal" placeholder="请输入" placeholder-style="color:#BBBEC2;font-size:28rpx" type="digit" />
-            <text class="q-suffix">元</text>
-          </view>
-        </view>
-      </view>
-    </scroll-view>
+      </scroll-view>
+    
 
-    <!-- 模板选择弹窗 -->
-    <nut-popup v-model:visible="showTemplatePopup" position="bottom" :style="{ borderRadius: '24rpx 24rpx 0 0', height: '1022rpx' }" :z-index="2100" portal-disable safe-area-inset-bottom>
+    </view>
+
+    <!-- 弹窗（编辑模式下等待数据加载完成后渲染） -->
+    <template v-if="!editId || idEditId">
+      <!-- 模板选择弹窗 -->
+    <nut-popup v-model:visible="showTemplatePopup" position="bottom"
+      :style="{ borderRadius: '24rpx 24rpx 0 0', height: '1022rpx' }" :z-index="2100" portal-disable
+      safe-area-inset-bottom>
       <view class="q-popup">
         <view class="q-popup-header">
           <text class="q-popup-cancel" @tap="showTemplatePopup = false">取消</text>
@@ -234,34 +258,38 @@
     </nut-popup>
 
     <!-- 客户选择弹窗 -->
-    <nut-popup v-model:visible="showCustomerPopup" position="bottom" :style="{ borderRadius: '24rpx 24rpx 0 0', height: '1022rpx' }" :z-index="2100" portal-disable safe-area-inset-bottom>
-      <view class="q-popup">
-        <view class="q-popup-header">
-          <text class="q-popup-cancel" @tap="showCustomerPopup = false">取消</text>
-          <text class="q-popup-title">选择客户</text>
-          <text class="q-popup-confirm" @tap="showCustomerPopup = false">确认</text>
+   
+      <nut-popup v-model:visible="showCustomerPopup" position="bottom"
+        :style="{ borderRadius: '24rpx 24rpx 0 0', height: '1022rpx' }" :z-index="2100" portal-disable
+        safe-area-inset-bottom>
+        <view class="q-popup">
+          <view class="q-popup-header">
+            <text class="q-popup-cancel" @tap="showCustomerPopup = false">取消</text>
+            <text class="q-popup-title">选择客户</text>
+            <text class="q-popup-confirm" @tap="showCustomerPopup = false">确认</text>
+          </view>
+          <scroll-view class="q-popup-body" scroll-y :enhanced="true" :show-scrollbar="false">
+            <view v-if="customerLoading" class="q-popup-tip">加载中...</view>
+            <view v-else-if="customerList.length === 0" class="q-popup-tip">暂无客户</view>
+            <template v-else v-for="item in customerList" :key="item.id">
+              <view class="q-sel-item" @tap="onCustomerSelect(item)">
+                <view class="q-sel-info">
+                  <text class="q-sel-name">{{ item.name }}</text>
+                  <text class="q-sel-no">{{ item.phone || '-' }}</text>
+                </view>
+                <view class="q-sel-radio" :class="{ 'q-sel-radio--checked': form.customerId === item.id }">
+                  <view v-if="form.customerId === item.id" class="q-sel-radio-dot" />
+                </view>
+              </view>
+              <view class="q-divider" />
+            </template>
+          </scroll-view>
         </view>
-        <scroll-view class="q-popup-body" scroll-y :enhanced="true" :show-scrollbar="false">
-          <view v-if="customerLoading" class="q-popup-tip">加载中...</view>
-          <view v-else-if="customerList.length === 0" class="q-popup-tip">暂无客户</view>
-          <template v-else v-for="item in customerList" :key="item.id">
-            <view class="q-sel-item" @tap="onCustomerSelect(item)">
-              <view class="q-sel-info">
-                <text class="q-sel-name">{{ item.name }}</text>
-                <text class="q-sel-no">{{ item.phone || '-' }}</text>
-              </view>
-              <view class="q-sel-radio" :class="{ 'q-sel-radio--checked': form.customerId === item.id }">
-                <view v-if="form.customerId === item.id" class="q-sel-radio-dot" />
-              </view>
-            </view>
-            <view class="q-divider" />
-          </template>
-        </scroll-view>
-      </view>
-    </nut-popup>
-
+      </nut-popup>
     <!-- 商机选择弹窗 -->
-    <nut-popup v-model:visible="showOppPopup" position="bottom" :style="{ borderRadius: '24rpx 24rpx 0 0', height: '1022rpx' }" :z-index="2100" portal-disable safe-area-inset-bottom>
+    <nut-popup v-model:visible="showOppPopup" position="bottom"
+      :style="{ borderRadius: '24rpx 24rpx 0 0', height: '1022rpx' }" :z-index="2100" portal-disable
+      safe-area-inset-bottom>
       <view class="q-popup">
         <view class="q-popup-header">
           <text class="q-popup-cancel" @tap="showOppPopup = false">取消</text>
@@ -274,8 +302,9 @@
           <template v-else v-for="item in oppList" :key="item.id">
             <view class="q-sel-item" @tap="onOppSelect(item)">
               <view class="q-sel-info">
-                <text class="q-sel-name">{{ item.opportunityName }}</text>
-                <text class="q-sel-no">{{ item.opportunityNo }}</text>
+                <text class="q-sel-name">{{ item.opportunityName || item.name || item.requiredProductLabel || '-'
+                  }}</text>
+                <text class="q-sel-no">{{ item.opportunityNo || item.statusLabel || '-' }}</text>
               </view>
               <view class="q-sel-radio" :class="{ 'q-sel-radio--checked': form.opportunityId === item.id }">
                 <view v-if="form.opportunityId === item.id" class="q-sel-radio-dot" />
@@ -288,7 +317,9 @@
     </nut-popup>
 
     <!-- 产品选择弹窗 -->
-    <nut-popup v-model:visible="showProductPopup" position="bottom" :style="{ borderRadius: '24rpx 24rpx 0 0', height: '1022rpx' }" :z-index="2100" portal-disable safe-area-inset-bottom>
+    <nut-popup v-model:visible="showProductPopup" position="bottom"
+      :style="{ borderRadius: '24rpx 24rpx 0 0', height: '1022rpx' }" :z-index="2100" portal-disable
+      safe-area-inset-bottom>
       <view class="q-popup">
         <view class="q-popup-header">
           <text class="q-popup-cancel" @tap="showProductPopup = false">取消</text>
@@ -296,9 +327,11 @@
           <text class="q-popup-confirm" @tap="showProductPopup = false">确认</text>
         </view>
         <view class="q-prod-search">
-          <input class="q-prod-search-input" v-model="prodKeyword" placeholder="输入产品名称" placeholder-style="color:#BBBEC2;font-size:28rpx" />
+          <input class="q-prod-search-input" v-model="prodKeyword" placeholder="输入产品名称"
+            placeholder-style="color:#BBBEC2;font-size:28rpx" />
         </view>
-        <scroll-view class="q-popup-body" scroll-y="true" :enhanced="true" :show-scrollbar="false" style="box-sizing: border-box;">
+        <scroll-view class="q-popup-body" scroll-y="true" :enhanced="true" :show-scrollbar="false"
+          style="box-sizing: border-box;">
           <view v-if="prodLoading" class="q-popup-tip">加载中...</view>
           <view v-else-if="filteredProducts.length === 0" class="q-popup-tip">暂无产品</view>
           <template v-else v-for="item in filteredProducts" :key="item.id">
@@ -308,17 +341,20 @@
                 <text class="q-prod-price">￥{{ item.price ? item.price.toLocaleString() : '0' }}</text>
               </view>
               <view class="q-prod-stepper">
-                <view class="q-prod-step-btn" @tap="onProdQtyChange(item, -1)"><text class="q-prod-step-icon">−</text></view>
+                <view class="q-prod-step-btn" @tap="onProdQtyChange(item, -1)"><text class="q-prod-step-icon">−</text>
+                </view>
                 <text class="q-prod-step-value">{{ item._qty || 0 }}</text>
-                <view class="q-prod-step-btn q-prod-step-btn--plus" @tap="onProdQtyChange(item, 1)"><text class="q-prod-step-icon">+</text></view>
+                <view class="q-prod-step-btn q-prod-step-btn--plus" @tap="onProdQtyChange(item, 1)"><text
+                    class="q-prod-step-icon">+</text></view>
               </view>
             </view>
             <view class="q-divider" />
           </template>
         </scroll-view>
-       
+
       </view>
     </nut-popup>
+    </template>
 
     <view class="q-actions">
       <view class="q-btn q-btn--preview" @tap="onPreview">预览</view>
@@ -328,11 +364,10 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, computed } from 'vue'
+import { ref, reactive, computed, onMounted } from 'vue'
 import Taro from '@tarojs/taro'
-import { queryOpportunityPage, type OpportunityPageItem } from '@/api/opportunity'
-import { createQuotation } from '@/api/quote'
-import { getCustomerList, type CustomerItem } from '@/api/customer'
+import { createQuotation, updateQuotation, getQuotationDetail } from '@/api/quote'
+import { getCustomerList, getCustomerOpportunities, type CustomerItem } from '@/api/customer'
 import { get } from '@/utils/request'
 import iconBack from '@/assets/dev/icon-back.png'
 import rightArrow from '@/assets/dev/rightArror.png'
@@ -374,6 +409,58 @@ const form = reactive({
     unitPrice: number
     amount: number
   }>,
+})
+
+const editId = ref(0)
+const idEditId = ref(false)
+// 编辑模式：加载详情填充表单
+onMounted(async () => {
+  const instance = Taro.getCurrentInstance()
+  const id = Number(instance.router?.params?.id)
+  if (!id) return 
+  editId.value = id
+  try {
+    const res = await getQuotationDetail(id) as Record<string, any>
+    form.name = res.name || ''
+    form.templateId = res.templateId || 0
+    form.templateName = res.templateName || ''
+    form.templateNo = res.templateNo || ''
+    form.customerId = res.customerId || 0
+    form.customerName = res.customerName || ''
+    form.opportunityId = res.opportunityId || 0
+    form.opportunityName = res.opportunityName || ''
+    // buyerSnapshot
+    const buyer = res.buyerSnapshot || {}
+    form.contactName = buyer.contactName || res.contactName || ''
+    form.phone = buyer.phone || res.phone || ''
+    form.company = buyer.company || ''
+    form.address = buyer.address || ''
+    // summarySnapshot
+    const summary = res.summarySnapshot || {}
+    form.validity = summary.validity || ''
+    form.warranty = summary.warranty || ''
+    form.delivery = summary.delivery || ''
+    form.taxRate = summary.taxRate || ''
+    form.discountedTotal = summary.discountedTotal || ''
+    // paymentTerms
+    const terms = res.paymentTerms || {}
+    form.payAfterSign = terms.payAfterSign || ''
+    form.payAfterPack = terms.payAfterPack || ''
+    form.payAfterInstall = terms.payAfterInstall || ''
+    form.payAfterCheck = terms.payAfterCheck || ''
+    // 产品列表
+    form.products = (res.items || []).map((item: any) => ({
+      productId: item.productId,
+      productName: item.productName || '',
+      modelName: item.modelName || '',
+      quantity: item.quantity || 0,
+      unitPrice: item.unitPrice || 0,
+      amount: item.amount || 0,
+    }))
+    if (editId.value) {
+      idEditId.value = true
+    }
+  } catch { /*  */ }
 })
 
 // 模板选择弹窗
@@ -426,23 +513,26 @@ function onCustomerSelect(item: CustomerItem) {
 // 商机弹窗
 const showOppPopup = ref(false)
 const oppLoading = ref(false)
-const oppList = ref<OpportunityPageItem[]>([])
+const oppList = ref<any[]>([])
 
 async function onSelectOpportunity() {
+  if (!form.customerId) {
+    Taro.showToast({ title: '请先选择需方客户', icon: 'none' })
+    return
+  }
   showOppPopup.value = true
   if (oppList.value.length > 0) return
   oppLoading.value = true
   try {
-    const res = await queryOpportunityPage({ page: 1, pageSize: 100 })
-    oppList.value = res.items || []
+    oppList.value = await getCustomerOpportunities(form.customerId) || []
   } catch { /*  */ }
   finally { oppLoading.value = false }
 }
 
-function onOppSelect(item: OpportunityPageItem) {
+function onOppSelect(item: any) {
   form.opportunityId = item.id
-  form.opportunityName = item.opportunityName
-  form.opportunityNo = item.opportunityNo
+  form.opportunityName = item.opportunityName || item.name || ''
+  form.opportunityNo = item.opportunityNo || ''
   showOppPopup.value = false
 }
 
@@ -468,13 +558,13 @@ async function onAddProduct() {
   showProductPopup.value = true
   if (allProducts.value.length > 0) return
   prodLoading.value = true
-    // 获取所有产品
-    try {
-      const allRes = await get<{ items: any[] }>('/product/products', { page: 1, pageSize: 200,status:'published' })
-      allProducts.value = (allRes.items || []).map((p: any) => ({ ...p, _qty: 0 }))
-    } catch {
-      allProducts.value = []
-    }
+  // 获取所有产品
+  try {
+    const allRes = await get<{ items: any[] }>('/product/products', { page: 1, pageSize: 200, status: 'published' })
+    allProducts.value = (allRes.items || []).map((p: any) => ({ ...p, _qty: 0 }))
+  } catch {
+    allProducts.value = []
+  }
   finally { prodLoading.value = false }
 }
 
@@ -542,7 +632,7 @@ async function onSubmit() {
   // if (form.products.length === 0) { Taro.showToast({ title: '请添加产品', icon: 'none' }); return }
 
   try {
-    await createQuotation({
+    const data = {
       name: form.name,
       templateId: form.templateId || undefined,
       customerId: form.customerId || undefined,
@@ -574,10 +664,17 @@ async function onSubmit() {
       buyerSnapshot: {
         company: form.company,
         address: form.address,
+        contactName: form.contactName,
+        phone: form.phone,
       },
-    })
-    Taro.showToast({ title: '提交成功', icon: 'success' })
-    setTimeout(() => Taro.navigateBack(), 1500)
+    }
+    if (editId.value) {
+      await updateQuotation(editId.value, data)
+    } else {
+      await createQuotation(data)
+    }
+    Taro.showToast({ title: editId.value ? '保存成功' : '提交成功', icon: 'success' })
+    setTimeout(() => Taro.navigateBack({ delta: editId.value ? 2 : 1 }), 1500)
   } catch {
     // 错误已在 request 层处理
   }
@@ -860,7 +957,7 @@ const onPreview = () => Taro.showToast({ title: '预览', icon: 'none' })
 }
 
 .q-btn--submit {
-  background: linear-gradient(270deg, rgba(102,220,166,1) 0%, rgba(88,188,150,1) 100%);
+  background: linear-gradient(270deg, rgba(102, 220, 166, 1) 0%, rgba(88, 188, 150, 1) 100%);
   color: #FFFFFF;
 }
 
@@ -899,6 +996,7 @@ const onPreview = () => Taro.showToast({ title: '预览', icon: 'none' })
 .q-popup-body {
   flex: 1;
   padding: 0 40rpx;
+  box-sizing: border-box
 }
 
 .q-popup-tip {

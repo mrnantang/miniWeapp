@@ -290,26 +290,26 @@
           </view>
         </view>
         <view v-if="infoTab === 'contract'" class="cd-quote-list">
-          <view v-for="card in contractCards" :key="card.no" class="cd-quote-card" @tap="goContractDetail(card)">
+          <view v-for="card in contractCards" :key="card.id" class="cd-quote-card" @tap="goContractDetail(card)">
             <view class="cd-quote-card-head">
-              <text class="cd-quote-card-name">{{ card.name }}</text>
-              <view class="cd-quote-badge" :class="'cd-quote-badge--' + card.badgeStyle">
-                <text class="cd-quote-badge-text">{{ card.badge }}</text>
+              <text class="cd-quote-card-name">{{ card.name || '-' }}</text>
+              <view class="cd-quote-badge" :class="'cd-quote-badge--' + (CONTRACT_STATUS_BADGE_MAP[card.displayStatus] || 'gray')">
+                <text class="cd-quote-badge-text">{{ CONTRACT_STATUS_MAP[card.displayStatus] || card.displayStatus || '-' }}</text>
               </view>
             </view>
             <view class="cd-quote-card-info">
               <view class="cd-quote-info-col">
                 <text class="cd-quote-info-label">合同编号</text>
-                <text class="cd-quote-info-value">{{ card.no }}</text>
+                <text class="cd-quote-info-value">{{ card.contractNo || '-' }}</text>
               </view>
               <view class="cd-quote-info-col">
                 <text class="cd-quote-info-label">合同金额</text>
-                <text class="cd-quote-info-value cd-quote-info-value--price">{{ card.amount }}</text>
+                <text class="cd-quote-info-value cd-quote-info-value--price">{{ formatAmount(card.totalAmount) }}</text>
               </view>
             </view>
             <view class="cd-quote-time">
               <text class="cd-quote-time-label">发起时间：</text>
-              <text class="cd-quote-time-value">{{ card.time }}</text>
+              <text class="cd-quote-time-value">{{ formatTime(card.submittedAt || card.submittedAt) }}</text>
             </view>
           </view>
           <view class="cd-quote-add-btn" @tap="onAddContract">
@@ -558,6 +558,7 @@ import { getCustomerDetail, getCustomerOpportunities, type CustomerItem } from '
 import { getOpportunityFollowRecords, getOpportunityVisitRecords, type VisitRecordItem } from '@/api/opportunity'
 import { getCustomerQuotations, type CustomerQuotationItem } from '@/api/quote'
 import { getExpenseList, EXPENSE_STATUS_MAP, EXPENSE_STATUS_BADGE_MAP, EXPENSE_ITEM_MAP, type ExpenseListItem } from '@/api/expense'
+import { getContractList, CONTRACT_STATUS_MAP, CONTRACT_STATUS_BADGE_MAP, type ContractListItem } from '@/api/contract'
 import iconEdit from '@/assets/dev/edit.png'
 import iconDelete from '@/assets/dev/delete.png'
 import iconClose from '@/assets/dev/icon-close.png'
@@ -656,13 +657,25 @@ async function fetchQuotations() {
   }
 }
 
-const contractCards = ref([])
+const contractCards = ref<any>([])
+
+/** 获取合同列表 */
+async function fetchContracts() {
+  if (!customerId.value) return
+  try {
+    const res = await getContractList({ customerId: customerId.value, page: 1, pageSize: 50 })
+    contractCards.value = res.items || []
+  } catch {
+    contractCards.value = []
+  }
+}
 
 const expenseCards = ref<ExpenseListItem[]>([])
 
 function expBadgeStyle(item: ExpenseListItem): string {
   return EXPENSE_STATUS_BADGE_MAP[item.status] || 'gray'
 }
+
 
 /** 获取关联费用列表 */
 async function fetchExpenses() {
@@ -737,15 +750,15 @@ const goQuotationDetail = (card) => {
 }
 
 const onAddContract = () => {
-  Taro.navigateTo({ url: '/subpackages/dev/contract/index' })
+  Taro.navigateTo({ url: '/subpackages/dev/contract/index?customerId=' + customerId.value })
 }
 
 const goExpenseDetail = (card: ExpenseListItem) => {
   Taro.navigateTo({ url: '/subpackages/dev/mine/expense/detail/index?id=' + card.id })
 }
 
-const goContractDetail = (card) => {
-  Taro.navigateTo({ url: '/subpackages/dev/contract/detail/index' })
+const goContractDetail = (card: ContractListItem) => {
+  Taro.navigateTo({ url: '/subpackages/dev/contract/detail/index?id=' + card.id })
 }
 
 const showLogisticsPopup = ref(false)
@@ -769,6 +782,8 @@ watch(infoTab, (tab) => {
     fetchOpportunities()
   } else if (tab === 'quote') {
     fetchQuotations()
+  } else if (tab === 'contract') {
+    fetchContracts()
   } else if (tab === 'expense') {
     fetchExpenses()
   }

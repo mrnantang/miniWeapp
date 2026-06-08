@@ -123,7 +123,7 @@
           <text class="type-header-title">选择报销类型</text>
           <text class="type-header-btn type-header-confirm" @tap="showTypePopup = false">确认</text>
         </view>
-        <scroll-view class="type-list" scroll-y>
+        <scroll-view class="type-list" scroll-y="true">
           <template v-for="item in reimbTypeOptions" :key="item">
             <view class="type-row" @tap="onTypeSelect(item)">
               <text class="type-name">{{ item }}</text>

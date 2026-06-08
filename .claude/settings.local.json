@@ -22,7 +22,9 @@
       "Bash(mkdir -p .firecrawl)",
       "Bash(git filter-branch *)",
       "Bash(mkdir -p c:/tangwei/miniWeapp/.firecrawl)",
-      "Bash(wc -l \"c:\\\\\\\\tangwei\\\\\\\\miniWeapp\\\\\\\\dber-backend\\\\\\\\API.openapi.json\")"
+      "Bash(wc -l \"c:\\\\\\\\tangwei\\\\\\\\miniWeapp\\\\\\\\dber-backend\\\\\\\\API.openapi.json\")",
+      "Bash(curl -s -H \"X-Figma-Token: <YOUR_FIGMA_TOKEN>\" \"https://api.figma.com/v1/files/PWUboIJVP9DmSXR7OFtls9/nodes?ids=9206-10453\" -o c:/tangwei/miniWeapp/.firecrawl/figma-approval.json)",
+      "Bash(node -e \"const fs=require\\('fs'\\);const d=JSON.parse\\(fs.readFileSync\\('.firecrawl/figma-approval.json','utf8'\\)\\);function t\\(n,d\\){if\\(n.type==='TEXT'\\)console.log\\('  '.repeat\\(d\\)+n.characters+' | fontSize:'+\\(n.style?.fontSize||'?'\\)+' | color:'+JSON.stringify\\(n.fills?.[0]?.color\\)+' | weight:'+\\(n.style?.fontWeight||'?'\\)\\);if\\(n.children\\)n.children.forEach\\(c=>t\\(c,d+1\\)\\)};t\\(d.nodes['9206:10453'].document,0\\)\")"
     ],
     "additionalDirectories": [
       "c:\\tangwei\\miniWeapp"

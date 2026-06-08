@@ -8,7 +8,7 @@
       <view class="pa-nav-right" />
     </view>
 
-    <scroll-view class="pa-scroll" scroll-y :enhanced="true" :show-scrollbar="false">
+    <scroll-view class="pa-scroll" scroll-y="true" :enhanced="true" :show-scrollbar="false">
       <view class="pa-card">
         <view v-for="(dept, di) in deptList" :key="di" class="pa-dept-card">
           <view class="pa-dept-header">
