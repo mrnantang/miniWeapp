@@ -1,4 +1,4 @@
-import { get, post } from '@/utils/request'
+import { get, post, put, publicGet } from '@/utils/request'
 
 /** 合同列表项 */
 export interface ContractListItem {
@@ -96,4 +96,29 @@ export function getContractTemplateDetail(id: number): Promise<ContractTemplateD
 /** 新增合同 */
 export function createContract(data: Record<string, unknown>): Promise<Record<string, unknown>> {
   return post('/sales/contracts', data)
+}
+
+/** 编辑合同 */
+export function updateContract(id: number, data: Record<string, unknown>): Promise<Record<string, unknown>> {
+  return put(`/sales/contracts/${id}`, data)
+}
+
+/** 查询合同详情 */
+export function getContractDetail(id: number): Promise<Record<string, unknown>> {
+  return get<Record<string, unknown>>(`/sales/contracts/${id}`)
+}
+
+/** 合同分享预览（公开接口，无需登录） */
+export function getContractSharePreview(token: string): Promise<Record<string, unknown>> {
+  return publicGet(`/sales/contracts/share/${token}/preview`)
+}
+
+/** 分享合同给客户 */
+export function shareContract(id: number): Promise<Record<string, unknown>> {
+  return post(`/sales/contracts/${id}/share`)
+}
+
+/** 取消合同 */
+export function cancelContract(id: number): Promise<Record<string, unknown>> {
+  return post(`/sales/contracts/${id}/cancel`)
 }

@@ -1,6 +1,6 @@
 <template>
   <view class="cdt-page">
-    <view class="cdt-bg" :class="'cdt-bg--' + approvalStatus" />
+    <view class="cdt-bg" :class="'cdt-bg--' + (detail.approvalStatus || 'pending')" />
     <view class="cdt-nav-bar">
       <view class="cdt-nav-back" @tap="goBack">
         <image class="cdt-nav-back-icon" :src="iconBack" mode="aspectFit" />
@@ -13,202 +13,154 @@
       <view class="cdt-card">
         <text class="cdt-section-title">审批记录</text>
         <view class="cdt-divider" />
-        <view class="cdt-approval-timeline">
-          <view class="cdt-at-item">
+        <view v-if="approvalNodes.length" class="cdt-approval-timeline">
+          <view v-for="(node, nIdx) in approvalNodes" :key="nIdx" class="cdt-at-item">
             <view class="cdt-at-left">
-              <view class="cdt-at-dot cdt-at-dot--gray" />
-              <view class="cdt-at-line" />
+              <view class="cdt-timeline-line" :class="node.topLineClass" />
+              <view class="cdt-timeline-dot" :class="node.dotClass" />
+              <view class="cdt-timeline-line" :class="node.bottomLineClass" />
             </view>
-            <view class="cdt-at-content">
-              <text class="cdt-at-title">二级审批</text>
-              <view class="cdt-at-card">
-                <text class="cdt-at-card-text">暂无数据</text>
+            <view class="cdt-at-content" :class="{ 'cdt-at-content--dim': node.isDim }">
+              <text class="cdt-at-title">{{ node.nodeName }}</text>
+              <view v-if="node.approverNames" class="cdt-at-field">
+                <text class="cdt-at-label">可审批人</text>
+                <text class="cdt-at-value">{{ node.approverNames }}</text>
+              </view>
+              <view v-if="node.approvalRuleText" class="cdt-at-field">
+                <text class="cdt-at-label">审批原则</text>
+                <text class="cdt-at-value">{{ node.approvalRuleText }}</text>
+              </view>
+              <view v-for="(box, bIdx) in node.approverBoxes" :key="bIdx" class="cdt-at-card">
+                <view class="cdt-at-field">
+                  <text class="cdt-at-label">审批人</text>
+                  <text class="cdt-at-value">{{ box.name }}</text>
+                </view>
+                <view class="cdt-at-field">
+                  <text class="cdt-at-label">审批状态</text>
+                  <text class="cdt-at-value" :class="{ 'cdt-at-value--reject': box.isRejected }">{{ box.statusLabel }}</text>
+                </view>
+                <view v-if="box.isRejected && box.comment" class="cdt-at-field">
+                  <text class="cdt-at-label">驳回原因</text>
+                  <text class="cdt-at-value">{{ box.comment }}</text>
+                </view>
+                <view v-if="box.operatedAt" class="cdt-at-field">
+                  <text class="cdt-at-label">审批时间</text>
+                  <text class="cdt-at-value">{{ box.operatedAt }}</text>
+                </view>
               </view>
             </view>
           </view>
-          <view class="cdt-at-item">
-            <view class="cdt-at-left">
-              <view class="cdt-at-dot cdt-at-dot--gray" />
-              <view class="cdt-at-line" />
-            </view>
-            <view class="cdt-at-content">
-              <text class="cdt-at-title">一级审批</text>
-              <view class="cdt-at-card">
-                <text class="cdt-at-card-text">暂无数据</text>
-              </view>
-            </view>
-          </view>
-          <view class="cdt-at-item">
-            <view class="cdt-at-left">
-              <view class="cdt-at-dot cdt-at-dot--gray" />
-            </view>
-            <view class="cdt-at-content">
-              <text class="cdt-at-title">发起审批</text>
-              <view class="cdt-at-card">
-                <text class="cdt-at-card-text">暂无数据</text>
-              </view>
-            </view>
-          </view>
+        </view>
+        <view v-else class="cdt-at-card">
+          <text class="cdt-at-card-text">暂无审批记录</text>
         </view>
       </view>
 
       <view class="cdt-card">
         <text class="cdt-section-title">需方信息</text>
         <view class="cdt-divider" />
-        <view class="cdt-row">
-          <text class="cdt-label">需方</text>
-          <text class="cdt-value">金石科技</text>
-        </view>
+        <view class="cdt-row"><text class="cdt-label">需方</text><text class="cdt-value">{{ buyer['buyer.party'] || buyer.party || buyer.fullName || buyer.companyName || '-' }}</text></view>
         <view class="cdt-divider" />
-        <view class="cdt-row">
-          <text class="cdt-label">单位全称</text>
-          <text class="cdt-value">金石科技信息科技有限公司</text>
-        </view>
+        <view class="cdt-row"><text class="cdt-label">地址</text><text class="cdt-value">{{ buyer.address || '-' }}</text></view>
         <view class="cdt-divider" />
-        <view class="cdt-row">
-          <text class="cdt-label">地址</text>
-          <text class="cdt-value">江苏省苏州市吴中区幸福大道129号</text>
-        </view>
+        <view class="cdt-row"><text class="cdt-label">联系人</text><text class="cdt-value">{{ buyer.contactName || '-' }}</text></view>
         <view class="cdt-divider" />
-        <view class="cdt-row">
-          <text class="cdt-label">联系人</text>
-          <text class="cdt-value">孙大星</text>
-        </view>
-        <view class="cdt-divider" />
-        <view class="cdt-row">
-          <text class="cdt-label">手机号</text>
-          <text class="cdt-value">15877720098</text>
-        </view>
-        <view class="cdt-divider" />
-        <view class="cdt-row">
-          <text class="cdt-label">账号</text>
-          <text class="cdt-value">217271827811</text>
-        </view>
-        <view class="cdt-divider" />
-        <view class="cdt-row">
-          <text class="cdt-label">开户行</text>
-          <text class="cdt-value">建设银行</text>
-        </view>
-        <view class="cdt-divider" />
-        <view class="cdt-row">
-          <text class="cdt-label">电话</text>
-          <text class="cdt-value">400328829982</text>
-        </view>
-        <view class="cdt-divider" />
-        <view class="cdt-row">
-          <text class="cdt-label">税号</text>
-          <text class="cdt-value">21525626345435</text>
-        </view>
-        <view class="cdt-divider" />
-        <view class="cdt-row">
-          <text class="cdt-label">收货省市区</text>
-          <text class="cdt-value">广东省深圳市南山区</text>
-        </view>
-        <view class="cdt-divider" />
-        <view class="cdt-row">
-          <text class="cdt-label">收货详细地址</text>
-          <text class="cdt-value">关河工厂</text>
-        </view>
+        <view class="cdt-row"><text class="cdt-label">手机号</text><text class="cdt-value">{{ buyer['buyer.phone'] || buyer.phone || buyer.contactPhone || '-' }}</text></view>
       </view>
 
       <view class="cdt-card">
         <text class="cdt-section-title">供方信息</text>
         <view class="cdt-divider" />
-        <view class="cdt-row">
-          <text class="cdt-label">供方</text>
-          <text class="cdt-value">德贝尔总公司</text>
-        </view>
+        <view class="cdt-row"><text class="cdt-label">供方</text><text class="cdt-value">{{ seller.party || seller.fullName || '-' }}</text></view>
         <view class="cdt-divider" />
-        <view class="cdt-row">
-          <text class="cdt-label">收款公户/私户</text>
-          <text class="cdt-value">公户</text>
-        </view>
+        <view class="cdt-row"><text class="cdt-label">收款公户/私户</text><text class="cdt-value">{{ seller.accountType === 'public' ? '公户' : seller.accountType === 'private' ? '私户' : seller.accountType || '-' }}</text></view>
         <view class="cdt-divider" />
-        <view class="cdt-row">
-          <text class="cdt-label">收款公户账户</text>
-          <text class="cdt-value">21892781378271381</text>
-        </view>
+        <view class="cdt-row"><text class="cdt-label">收款账户名称</text><text class="cdt-value">{{ seller.accountName || '-' }}</text></view>
+        <view class="cdt-divider" />
+        <view class="cdt-row"><text class="cdt-label">收款公户账户</text><text class="cdt-value">{{ seller.publicAccount || '-' }}</text></view>
+        <view class="cdt-divider" />
+        <view class="cdt-row"><text class="cdt-label">开户行</text><text class="cdt-value">{{ seller.bankName || '-' }}</text></view>
       </view>
 
       <view class="cdt-card">
         <view class="cdt-section-head">
           <text class="cdt-section-title">合同信息</text>
-          <text class="cdt-section-subtitle">智能喷枪购销合同</text>
+          <text class="cdt-section-subtitle">{{ detail.templateName || '-' }}</text>
         </view>
         <view class="cdt-divider" />
-        <view class="cdt-row">
-          <text class="cdt-label">合同编号</text>
-          <text class="cdt-value">HT-28761827818</text>
-        </view>
+        <view class="cdt-row"><text class="cdt-label">合同编号</text><text class="cdt-value">{{ detail.contractNo || '-' }}</text></view>
         <view class="cdt-divider" />
-        <view class="cdt-row">
-          <text class="cdt-label">安装时长</text>
-          <view class="cdt-row-inline">
-            <text class="cdt-value">10</text>
-            <text class="cdt-suffix">天</text>
-          </view>
-        </view>
+        <view class="cdt-row"><text class="cdt-label">合同名称</text><text class="cdt-value">{{ detail.name || '-' }}</text></view>
         <view class="cdt-divider" />
-        <view class="cdt-row">
-          <text class="cdt-label">保修期限</text>
-          <view class="cdt-row-inline">
-            <text class="cdt-value">12</text>
-            <text class="cdt-suffix">月</text>
-          </view>
-        </view>
+        <view class="cdt-row"><text class="cdt-label">关联商机</text><text class="cdt-value">{{ detail.opportunityName || '-' }}</text></view>
         <view class="cdt-divider" />
-        <view class="cdt-row">
-          <text class="cdt-label">是否含税</text>
-          <text class="cdt-value">是</text>
-        </view>
+        <view class="cdt-row"><text class="cdt-label">关联报价</text><text class="cdt-value">{{ detail.quotationName || '-' }}</text></view>
         <view class="cdt-divider" />
-        <view class="cdt-row">
-          <text class="cdt-label">税点</text>
-          <view class="cdt-row-inline">
-            <text class="cdt-value">4</text>
-            <text class="cdt-suffix">%</text>
-          </view>
-        </view>
+        <view class="cdt-row"><text class="cdt-label">交货期限</text><view class="cdt-row-inline"><text class="cdt-value">{{ summary.deliveryPeriodDays || '-' }}</text><text class="cdt-suffix">天</text></view></view>
         <view class="cdt-divider" />
-        <view class="cdt-row">
-          <text class="cdt-label">付款方式</text>
-          <text class="cdt-value">先付款后发货</text>
-        </view>
+        <view class="cdt-row"><text class="cdt-label">保修期限</text><view class="cdt-row-inline"><text class="cdt-value">{{ summary.warrantyPeriodYears || '-' }}</text><text class="cdt-suffix">年</text></view></view>
         <view class="cdt-divider" />
-        <view class="cdt-row">
-          <text class="cdt-label">支付方式</text>
-          <text class="cdt-value">分期支付</text>
-        </view>
+        <view class="cdt-row"><text class="cdt-label">是否含税</text><text class="cdt-value">{{ summary.includeTax ? '是' : '否' }}</text></view>
         <view class="cdt-divider" />
-        <view class="cdt-row">
-          <text class="cdt-label">分付周期</text>
-          <text class="cdt-value">4</text>
-        </view>
+        <view class="cdt-row"><text class="cdt-label">税点</text><view class="cdt-row-inline"><text class="cdt-value">{{ summary.taxRate ?? '-' }}</text><text class="cdt-suffix">%</text></view></view>
+        <view class="cdt-divider" />
+        <view class="cdt-row"><text class="cdt-label">报价有效期</text><view class="cdt-row-inline"><text class="cdt-value">{{ summary.quotationValidityMonths || '-' }}</text><text class="cdt-suffix">月</text></view></view>
+        <view class="cdt-divider" />
+        <view class="cdt-row"><text class="cdt-label">付款方式</text><text class="cdt-value">{{ paymentMethodLabel }}</text></view>
+        <view class="cdt-divider" />
+        <view class="cdt-row"><text class="cdt-label">支付方式</text><text class="cdt-value">{{ paymentTypeLabel }}</text></view>
+        <view class="cdt-divider" />
+        <view class="cdt-row"><text class="cdt-label">分付周期</text><text class="cdt-value">{{ summary.installmentPeriods || '-' }}</text></view>
       </view>
 
       <view class="cdt-card">
+        <view class="cdt-section-head">
+          <text class="cdt-section-title">产品明细</text>
+        </view>
+        <view class="cdt-divider" />
+        <view v-if="detail.items && detail.items.length">
+          <view v-for="(item, idx) in detail.items" :key="idx">
+            <view class="cdt-row">
+              <text class="cdt-label">{{ item.productName || '-' }}</text>
+              <text class="cdt-value">{{ item.quantity }} x ￥{{ (item.unitPrice / 100).toLocaleString() }}</text>
+            </view>
+            <view v-if="idx < detail.items.length - 1" class="cdt-divider" />
+          </view>
+        </view>
+        <view v-else class="cdt-row"><text class="cdt-value">暂无产品</text></view>
+      </view>
+
+      <view class="cdt-card">
+        <text class="cdt-section-title">金额汇总</text>
+        <view class="cdt-divider" />
+        <view class="cdt-row"><text class="cdt-label">产品总额</text><text class="cdt-value q-field-value--amount">{{ formatAmount(summary.totalAmount || summary.grossAmountExcludingTax) }}</text></view>
+        <view class="cdt-divider" />
+        <view class="cdt-row"><text class="cdt-label">折前总额(不含税)</text><text class="cdt-value q-field-value--amount">{{ formatAmount(summary.grossAmountExcludingTax) }}</text></view>
+        <view class="cdt-divider" />
+        <view class="cdt-row"><text class="cdt-label">折后总额(不含税)</text><text class="cdt-value q-field-value--amount">{{ formatAmount(summary.discountedAmountExcludingTax) }}</text></view>
+        <view class="cdt-divider" />
+        <view class="cdt-row"><text class="cdt-label">税额</text><text class="cdt-value q-field-value--amount">{{ formatAmount(summary.taxAmount) }}</text></view>
+        <view class="cdt-divider" />
+        <view class="cdt-row"><text class="cdt-label">应收总额</text><text class="cdt-value q-field-value--total">{{ formatAmount(summary.receivableAmount || summary.discountedAmount) }}</text></view>
+      </view>
+
+      <view v-if="summary.installmentStages && summary.installmentStages.length" class="cdt-card">
         <text class="cdt-section-title">分期信息</text>
         <view class="cdt-divider" />
-        <view v-for="period in periods" :key="period.title" class="cdt-period-card">
-          <text class="cdt-period-title">{{ period.title }}</text>
+        <view v-for="(stage, idx) in summary.installmentStages" :key="idx" class="cdt-period-card">
+          <text class="cdt-period-title">{{ stage.title || '第' + padNum(Number(idx) + 1) + '期' }}</text>
           <view class="cdt-period-body">
             <view class="cdt-period-row">
               <text class="cdt-period-label">支付比例</text>
-              <view class="cdt-period-value-row">
-                <text class="cdt-period-value">{{ period.ratio }}</text>
-                <text class="cdt-period-suffix">%</text>
-              </view>
+              <view class="cdt-period-value-row"><text class="cdt-period-value">{{ stage.ratio ?? stage.ratioPercent ?? '-' }}</text><text class="cdt-period-suffix">%</text></view>
             </view>
             <view class="cdt-period-row">
               <text class="cdt-period-label">支付金额</text>
-              <view class="cdt-period-value-row">
-                <text class="cdt-period-value">{{ period.amount }}</text>
-                <text class="cdt-period-suffix">元</text>
-              </view>
+              <view class="cdt-period-value-row"><text class="cdt-period-value">{{ formatAmount(stage.amount) }}</text></view>
             </view>
             <view class="cdt-period-row">
               <text class="cdt-period-label">应收款节点</text>
-              <text class="cdt-period-value">{{ period.node }}</text>
+              <text class="cdt-period-value">{{ stage.deadline || stage.node || '-' }}</text>
             </view>
           </view>
         </view>
@@ -217,7 +169,7 @@
       <view class="cdt-bottom-spacer" />
     </scroll-view>
 
-    <view v-if="approvalStatus === 'approved'" class="cdt-actions">
+    <view v-if="detail.approvalStatus === 'approved'" class="cdt-actions">
       <view class="cdt-btn cdt-btn--primary" @tap="onPreview">预览</view>
       <view class="cdt-btn cdt-btn--primary" @tap="onShare">分享给客户</view>
       <view class="cdt-btn cdt-btn--gradient" @tap="onUpload">上传回签</view>
@@ -230,43 +182,139 @@
   </view>
 </template>
 
-<script setup>
-import { ref } from 'vue'
+<script setup lang="ts">
+import { reactive, computed, onMounted } from 'vue'
 import Taro from '@tarojs/taro'
+import { getContractDetail, getContractSharePreview, cancelContract, shareContract, CONTRACT_STATUS_MAP, CONTRACT_STATUS_BADGE_MAP } from '@/api/contract'
 import iconBack from '@/assets/dev/icon-back.png'
 
-const approvalStatus = ref('pending')
-
-const goBack = () => {
-  Taro.navigateBack()
+const statusLabels: Record<string, string> = {
+  pending: '待审批', approved: '审批通过', rejected: '审批驳回',
 }
 
-const periods = ref([
-  { title: '一期', ratio: '30', amount: '30000', node: '合同签订' },
-  { title: '二期', ratio: '30', amount: '30000', node: '发货后' },
-  { title: '三期', ratio: '20', amount: '20000', node: '安装调试后' },
-  { title: '四期', ratio: '20', amount: '20000', node: '验收后' },
-])
+const detail = reactive<Record<string, any>>({
+  id: 0,
+  contractNo: '',
+  contractName: '',
+  displayStatus: '',
+  approvalStatus: '',
+  shareToken: '',
+  shareUrl: '',
+  canEdit: false,
+  canCancel: false,
+  approvalFlow: null,
+  approvalHistory: [],
+  buyerSnapshot: {},
+  supplierSnapshot: {},
+  tokenValues: {},
+  tokenSchema: [],
+  paymentPeriods: [],
+})
 
-const onCancel = () => {
-  Taro.showToast({ title: '取消合同', icon: 'none' })
+const buyer = computed(() => detail.buyerSnapshot || {})
+const seller = computed(() => detail.sellerSnapshot || {})
+const summary = computed(() => detail.summarySnapshot || {})
+
+const paymentMethodLabel = computed(() => {
+  const v = summary.value.paymentMethod
+  const map: Record<string, string> = { pay_before_delivery: '先付款后发货', pay_after_delivery: '先发货后付款' }
+  return map[v] || v || '-'
+})
+
+const paymentTypeLabel = computed(() => {
+  const v = summary.value.paymentType
+  const map: Record<string, string> = { full: '全额支付', installment: '分期支付' }
+  return map[v] || v || '-'
+})
+
+function formatAmount(cent?: number): string {
+  if (!cent && cent !== 0) return '-'
+  return '￥' + (cent / 100).toLocaleString('zh-CN', { minimumFractionDigits: 0, maximumFractionDigits: 2 })
 }
 
-const onPreview = () => {
-  Taro.showToast({ title: '预览', icon: 'none' })
+
+// 审批节点
+const approvalNodes = computed(() => {
+  const flow = detail.approvalFlow
+  const nodes = flow?.nodes || []
+  return nodes.map((node: any, idx: number, arr: any[]) => {
+    const first = idx === 0; const last = idx === arr.length - 1
+    const approvers = node.approvers || []
+    const hasApproval = approvers.some((a: any) => a.status === 'approved' || a.status === 'rejected')
+    const approverNames = approvers.map((a: any) => a.name || '').filter(Boolean).join(' | ')
+    const ruleText = node.approvalRule === 'all_pass' ? '全部审批通过即通过' : node.approvalRule === 'any_pass' ? '一人审批通过即通过' : node.approvalRule === 'pass_2' ? '两人审批通过即通过' : node.approvalRule || ''
+    return {
+      nodeName: node.nodeName || node.name || '-',
+      approverNames,
+      approvalRuleText: ruleText,
+      approverBoxes: approvers.map((a: any) => ({
+        name: a.name || '-',
+        statusLabel: statusLabels[a.status] || a.status || '待审批',
+        isRejected: a.status === 'rejected',
+        comment: a.comment || '',
+        operatedAt: a.operatedAt || a.approvedAt || '',
+      })),
+      isDim: !hasApproval && !first,
+      topLineClass: first ? 'cdt-timeline-line--top' : 'cdt-timeline-line--fill',
+      dotClass: hasApproval ? 'cdt-timeline-dot--solid' : 'cdt-timeline-dot--empty',
+      bottomLineClass: last ? 'cdt-timeline-line--none' : 'cdt-timeline-line--fill',
+    }
+  })
+})
+
+function padNum(n: number | string): string { const v = Number(n); return v < 10 ? '0' + v : String(v) }
+
+const goBack = () => Taro.navigateBack()
+
+async function fetchDetail() {
+  const instance = Taro.getCurrentInstance()
+  const id = Number(instance.router?.params?.id)
+  if (!id) return
+  try {
+    const res = await getContractDetail(id) as Record<string, any>
+    Object.assign(detail, res)
+  } catch (e) {
+    console.error('fetchDetail error:', e)
+  }
+}
+
+const onCancel = async () => {
+  try {
+    const res = await Taro.showModal({ title: '提示', content: '确定要取消该合同吗？' })
+    if (!res.confirm) return
+    await cancelContract(detail.id)
+    Taro.showToast({ title: '已取消', icon: 'success' })
+    fetchDetail()
+  } catch { /*  */ }
+}
+
+const onPreview = async () => {
+  if (!detail.shareToken) {
+    Taro.showToast({ title: '暂无分享链接', icon: 'none' })
+    return
+  }
+  try {
+    await getContractSharePreview(detail.shareToken)
+    Taro.showToast({ title: '预览成功', icon: 'success' })
+  } catch { /*  */ }
 }
 
 const onEdit = () => {
-  Taro.showToast({ title: '编辑', icon: 'none' })
-}
 
-const onShare = () => {
-  Taro.showToast({ title: '分享给客户', icon: 'none' })
+  Taro.navigateTo({ url: '/subpackages/dev/contract/index?id=' + detail.id })
 }
+const onShare = async () => {
+  try {
+    const res = await shareContract(detail.id) as Record<string, any>
+    const url = res.shareUrl || ''
+    await Taro.setClipboardData({ data: url })
+    Taro.showToast({ title: '已复制分享链接', icon: 'success' })
+    fetchDetail()
+  } catch { /*  */ }
+}
+const onUpload = () => Taro.showToast({ title: '上传回签', icon: 'none' })
 
-const onUpload = () => {
-  Taro.showToast({ title: '上传回签', icon: 'none' })
-}
+onMounted(() => fetchDetail())
 </script>
 
 <style>
@@ -423,6 +471,24 @@ const onUpload = () => {
   border-radius: 50%;
   flex-shrink: 0;
 }
+
+.cdt-timeline-dot {
+  width: 16rpx; height: 16rpx; border-radius: 50%; flex-shrink: 0;
+}
+.cdt-timeline-dot--solid { background: #37AE7E; }
+.cdt-timeline-dot--empty { border: 2rpx solid #E5E6EB; background: transparent; }
+
+.cdt-timeline-line { width: 2rpx; flex: 1; min-height: 16rpx; }
+.cdt-timeline-line--fill { background: #E5E6EB; }
+.cdt-timeline-line--top { background: #E5E6EB; min-height: 4rpx; flex: 0 0 8rpx; }
+.cdt-timeline-line--none { background: transparent; }
+
+.cdt-at-content--dim { opacity: 0.5; }
+
+.cdt-at-field { display: flex; align-items: center; justify-content: space-between; }
+.cdt-at-label { font-size: 28rpx; color: #62687D; flex-shrink: 0; }
+.cdt-at-value { font-size: 28rpx; color: #1A1D24; text-align: right; flex: 1; margin-left: 24rpx; }
+.cdt-at-value--reject { color: #F53F3F; }
 
 .cdt-at-dot--gray {
   background: #E5E6EB;

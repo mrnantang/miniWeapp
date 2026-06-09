@@ -96,3 +96,31 @@ export async function del<T>(url: string): Promise<T> {
   })
   return handleResponse(res, url)
 }
+
+/** 公开 GET 请求（不携带 Authorization 头，不处理 401 跳转），用于 H5 公开页面 */
+export async function publicGet<T>(url: string, params?: Record<string, unknown>): Promise<T> {
+  let fullUrl = `${getBaseUrl()}${url}`
+  if (params) {
+    const parts: string[] = []
+    for (const [key, val] of Object.entries(params)) {
+      if (val === undefined || val === null) continue
+      if (Array.isArray(val)) {
+        for (const item of val) {
+          parts.push(`${encodeURIComponent(key)}=${encodeURIComponent(String(item))}`)
+        }
+      } else {
+        parts.push(`${encodeURIComponent(key)}=${encodeURIComponent(String(val))}`)
+      }
+    }
+    if (parts.length > 0) fullUrl += '?' + parts.join('&')
+  }
+  const res = await Taro.request<ApiResponse<T>>({
+    url: fullUrl,
+    method: 'GET',
+    header: {},
+  })
+  if (res.data.code === 200) {
+    return res.data.data
+  }
+  throw new Error(res.data.msg || '请求失败')
+}

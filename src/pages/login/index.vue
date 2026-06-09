@@ -28,11 +28,11 @@
           />
         </view>
 
-        <view class="remember-row">
+       <!--  <view class="remember-row">
           <nut-checkbox v-model="rememberPwd" icon-size="14">
             <text class="remember-text">记住密码</text>
           </nut-checkbox>
-        </view>
+        </view> -->
 
         <nut-button
           class="login-btn"
@@ -71,6 +71,8 @@ import loginBanner from '@/assets/login/login-banner.png'
 import iconAccount from '@/assets/login/icon-account.svg'
 import iconPassword from '@/assets/login/icon-password.svg'
 
+// const account = ref('hdxs06')
+// const account = ref('hdyyg101')
 const account = ref('admin')
 const password = ref('123456')
 const rememberPwd = ref(false)
@@ -107,10 +109,7 @@ const handleLogin = async () => {
     }
 
     const role = detectRole(res.permissions)
-    // Taro.reLaunch({ url: '/' + getRoleHomePath(role) })
-    Taro.reLaunch({ url: '/subpackages/dev/home/index'})
-    // Taro.reLaunch({ url: '/subpackages/boss/dev-home/index'})
-    // Taro.reLaunch({ url: '/subpackages/ops/home/index'})
+    Taro.reLaunch({ url: '/' + getRoleHomePath(role) })
   } catch (e) {
     errorMsg.value = (e instanceof Error) ? e.message : '账号或密码错误，请重新输入'
     showError.value = true
@@ -136,7 +135,7 @@ const handleLogin = async () => {
 }
 
 .banner-img {
-  width: 1252rpx;
+  width: 750rpx;
   height: 740rpx;
   position: absolute;
   left: 0;

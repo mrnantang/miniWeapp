@@ -8,188 +8,23 @@
   },
   "tags": [
     {
-      "name": "Customer"
+      "name": "Contract"
     }
   ],
   "paths": {
-    "/api/customers/{id}": {
-      "delete": {
-        "summary": "删除客户",
-        "deprecated": false,
-        "description": "软删除客户并关闭当前归属记录",
-        "tags": [
-          "Customer"
-        ],
-        "parameters": [
-          {
-            "name": "id",
-            "in": "path",
-            "description": "客户 ID",
-            "required": true,
-            "example": 0,
-            "schema": {
-              "type": "integer"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "OK",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "allOf": [
-                    {
-                      "$ref": "#/components/schemas/ResponseEnvelope"
-                    },
-                    {
-                      "properties": {
-                        "data": {
-                          "$ref": "#/components/schemas/internal_customer_api.MessageResponse"
-                        }
-                      },
-                      "type": "object"
-                    }
-                  ]
-                }
-              }
-            },
-            "headers": {}
-          },
-          "400": {
-            "description": "Bad Request",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "allOf": [
-                    {
-                      "$ref": "#/components/schemas/BadRequestEnvelope"
-                    },
-                    {
-                      "properties": {
-                        "data": {
-                          "$ref": "#/components/schemas/EmptyData"
-                        }
-                      },
-                      "type": "object"
-                    }
-                  ]
-                }
-              }
-            },
-            "headers": {}
-          },
-          "401": {
-            "description": "Unauthorized",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "allOf": [
-                    {
-                      "$ref": "#/components/schemas/UnauthorizedEnvelope"
-                    },
-                    {
-                      "properties": {
-                        "data": {
-                          "$ref": "#/components/schemas/EmptyData"
-                        }
-                      },
-                      "type": "object"
-                    }
-                  ]
-                }
-              }
-            },
-            "headers": {}
-          },
-          "403": {
-            "description": "Forbidden",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "allOf": [
-                    {
-                      "$ref": "#/components/schemas/ForbiddenEnvelope"
-                    },
-                    {
-                      "properties": {
-                        "data": {
-                          "$ref": "#/components/schemas/EmptyData"
-                        }
-                      },
-                      "type": "object"
-                    }
-                  ]
-                }
-              }
-            },
-            "headers": {}
-          },
-          "404": {
-            "description": "Not Found",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "allOf": [
-                    {
-                      "$ref": "#/components/schemas/NotFoundEnvelope"
-                    },
-                    {
-                      "properties": {
-                        "data": {
-                          "$ref": "#/components/schemas/EmptyData"
-                        }
-                      },
-                      "type": "object"
-                    }
-                  ]
-                }
-              }
-            },
-            "headers": {}
-          },
-          "503": {
-            "description": "Service Unavailable",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "allOf": [
-                    {
-                      "$ref": "#/components/schemas/ServiceUnavailableEnvelope"
-                    },
-                    {
-                      "properties": {
-                        "data": {
-                          "$ref": "#/components/schemas/EmptyData"
-                        }
-                      },
-                      "type": "object"
-                    }
-                  ]
-                }
-              }
-            },
-            "headers": {}
-          }
-        },
-        "security": [
-          {
-            "BearerAuth": []
-          }
-        ]
-      },
+    "/api/sales/contracts/{id}": {
       "get": {
-        "summary": "查询客户详情",
+        "summary": "查询合同详情",
         "deprecated": false,
-        "description": "根据客户 ID 查询客户全量基础资料，返回编辑所需字段和值",
+        "description": "根据合同 ID 查询合同正文、主体快照、商品明细和审批历史",
         "tags": [
-          "Customer"
+          "Contract"
         ],
         "parameters": [
           {
             "name": "id",
             "in": "path",
-            "description": "客户 ID",
+            "description": "合同 ID",
             "required": true,
             "example": 0,
             "schema": {
@@ -210,7 +45,7 @@
                     {
                       "properties": {
                         "data": {
-                          "$ref": "#/components/schemas/dto.CustomerDetailResponse"
+                          "$ref": "#/components/schemas/dto.ContractDetailResponse"
                         }
                       },
                       "type": "object"
@@ -313,14 +148,14 @@
             },
             "headers": {}
           },
-          "503": {
-            "description": "Service Unavailable",
+          "501": {
+            "description": "Not Implemented",
             "content": {
               "application/json": {
                 "schema": {
                   "allOf": [
                     {
-                      "$ref": "#/components/schemas/ServiceUnavailableEnvelope"
+                      "$ref": "#/components/schemas/NotImplementedEnvelope"
                     },
                     {
                       "properties": {
@@ -344,17 +179,17 @@
         ]
       },
       "put": {
-        "summary": "编辑客户",
+        "summary": "编辑合同",
         "deprecated": false,
-        "description": "根据客户 ID 更新客户全量基础资料",
+        "description": "编辑待审批或审批驳回中的合同",
         "tags": [
-          "Customer"
+          "Contract"
         ],
         "parameters": [
           {
             "name": "id",
             "in": "path",
-            "description": "客户 ID",
+            "description": "合同 ID",
             "required": true,
             "example": 0,
             "schema": {
@@ -366,7 +201,7 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/dto.UpdateCustomerRequest"
+                "$ref": "#/components/schemas/dto.UpdateContractRequest"
               }
             }
           },
@@ -385,7 +220,7 @@
                     {
                       "properties": {
                         "data": {
-                          "$ref": "#/components/schemas/dto.CustomerDetailResponse"
+                          "$ref": "#/components/schemas/dto.UpdateContractResponse"
                         }
                       },
                       "type": "object"
@@ -450,52 +285,6 @@
                   "allOf": [
                     {
                       "$ref": "#/components/schemas/ForbiddenEnvelope"
-                    },
-                    {
-                      "properties": {
-                        "data": {
-                          "$ref": "#/components/schemas/EmptyData"
-                        }
-                      },
-                      "type": "object"
-                    }
-                  ]
-                }
-              }
-            },
-            "headers": {}
-          },
-          "404": {
-            "description": "Not Found",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "allOf": [
-                    {
-                      "$ref": "#/components/schemas/NotFoundEnvelope"
-                    },
-                    {
-                      "properties": {
-                        "data": {
-                          "$ref": "#/components/schemas/EmptyData"
-                        }
-                      },
-                      "type": "object"
-                    }
-                  ]
-                }
-              }
-            },
-            "headers": {}
-          },
-          "503": {
-            "description": "Service Unavailable",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "allOf": [
-                    {
-                      "$ref": "#/components/schemas/ServiceUnavailableEnvelope"
                     },
                     {
                       "properties": {
@@ -519,19 +308,19 @@
         ]
       }
     },
-    "/api/customers/{id}/quotations": {
-      "get": {
-        "summary": "查询客户下的报价列表",
+    "/api/sales/contracts/{id}/approve": {
+      "post": {
+        "summary": "审批通过合同",
         "deprecated": false,
-        "description": "根据客户 ID 查询当前用户可见的客户报价摘要列表，并返回客户级新建能力元数据",
+        "description": "当前审批人对指定合同执行审批通过",
         "tags": [
-          "Customer"
+          "Contract"
         ],
         "parameters": [
           {
             "name": "id",
             "in": "path",
-            "description": "客户 ID",
+            "description": "合同 ID",
             "required": true,
             "example": 0,
             "schema": {
@@ -539,6 +328,15 @@
             }
           }
         ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/dto.ApproveContractRequest"
+              }
+            }
+          }
+        },
         "responses": {
           "200": {
             "description": "OK",
@@ -552,7 +350,7 @@
                     {
                       "properties": {
                         "data": {
-                          "$ref": "#/components/schemas/dto.CustomerQuotationListResponse"
+                          "$ref": "#/components/schemas/dto.ContractActionResponse"
                         }
                       },
                       "type": "object"
@@ -655,14 +453,1289 @@
             },
             "headers": {}
           },
-          "503": {
-            "description": "Service Unavailable",
+          "501": {
+            "description": "Not Implemented",
             "content": {
               "application/json": {
                 "schema": {
                   "allOf": [
                     {
-                      "$ref": "#/components/schemas/ServiceUnavailableEnvelope"
+                      "$ref": "#/components/schemas/NotImplementedEnvelope"
+                    },
+                    {
+                      "properties": {
+                        "data": {
+                          "$ref": "#/components/schemas/EmptyData"
+                        }
+                      },
+                      "type": "object"
+                    }
+                  ]
+                }
+              }
+            },
+            "headers": {}
+          }
+        },
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ]
+      }
+    },
+    "/api/sales/contracts/{id}/cancel": {
+      "post": {
+        "summary": "取消合同",
+        "deprecated": false,
+        "description": "取消待审批或审批驳回中的合同",
+        "tags": [
+          "Contract"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "合同 ID",
+            "required": true,
+            "example": 0,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/ResponseEnvelope"
+                    },
+                    {
+                      "properties": {
+                        "data": {
+                          "$ref": "#/components/schemas/dto.ContractActionResponse"
+                        }
+                      },
+                      "type": "object"
+                    }
+                  ]
+                }
+              }
+            },
+            "headers": {}
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/BadRequestEnvelope"
+                    },
+                    {
+                      "properties": {
+                        "data": {
+                          "$ref": "#/components/schemas/EmptyData"
+                        }
+                      },
+                      "type": "object"
+                    }
+                  ]
+                }
+              }
+            },
+            "headers": {}
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/UnauthorizedEnvelope"
+                    },
+                    {
+                      "properties": {
+                        "data": {
+                          "$ref": "#/components/schemas/EmptyData"
+                        }
+                      },
+                      "type": "object"
+                    }
+                  ]
+                }
+              }
+            },
+            "headers": {}
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/ForbiddenEnvelope"
+                    },
+                    {
+                      "properties": {
+                        "data": {
+                          "$ref": "#/components/schemas/EmptyData"
+                        }
+                      },
+                      "type": "object"
+                    }
+                  ]
+                }
+              }
+            },
+            "headers": {}
+          }
+        },
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ]
+      }
+    },
+    "/api/sales/contracts/{id}/download": {
+      "get": {
+        "summary": "下载合同 PDF",
+        "deprecated": false,
+        "description": "将合同已渲染 HTML 转换为 PDF 并作为附件下载",
+        "tags": [
+          "Contract"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "合同 ID",
+            "required": true,
+            "example": 0,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "contract pdf",
+            "content": {
+              "application/pdf": {
+                "schema": {
+                  "format": "binary",
+                  "type": "string"
+                }
+              }
+            },
+            "headers": {}
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/pdf": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/BadRequestEnvelope"
+                    },
+                    {
+                      "properties": {
+                        "data": {
+                          "$ref": "#/components/schemas/EmptyData"
+                        }
+                      },
+                      "type": "object"
+                    }
+                  ]
+                }
+              }
+            },
+            "headers": {}
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/pdf": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/UnauthorizedEnvelope"
+                    },
+                    {
+                      "properties": {
+                        "data": {
+                          "$ref": "#/components/schemas/EmptyData"
+                        }
+                      },
+                      "type": "object"
+                    }
+                  ]
+                }
+              }
+            },
+            "headers": {}
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/pdf": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/ForbiddenEnvelope"
+                    },
+                    {
+                      "properties": {
+                        "data": {
+                          "$ref": "#/components/schemas/EmptyData"
+                        }
+                      },
+                      "type": "object"
+                    }
+                  ]
+                }
+              }
+            },
+            "headers": {}
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/pdf": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/NotFoundEnvelope"
+                    },
+                    {
+                      "properties": {
+                        "data": {
+                          "$ref": "#/components/schemas/EmptyData"
+                        }
+                      },
+                      "type": "object"
+                    }
+                  ]
+                }
+              }
+            },
+            "headers": {}
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/pdf": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/InternalServerErrorEnvelope"
+                    },
+                    {
+                      "properties": {
+                        "data": {
+                          "$ref": "#/components/schemas/EmptyData"
+                        }
+                      },
+                      "type": "object"
+                    }
+                  ]
+                }
+              }
+            },
+            "headers": {}
+          }
+        },
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ]
+      }
+    },
+    "/api/sales/contracts/{id}/preview": {
+      "get": {
+        "summary": "预览合同 PDF",
+        "deprecated": false,
+        "description": "将合同已渲染 HTML 转换为 PDF 并以内嵌方式返回，用于浏览器新窗口预览",
+        "tags": [
+          "Contract"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "合同 ID",
+            "required": true,
+            "example": 0,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "contract pdf",
+            "content": {
+              "application/pdf": {
+                "schema": {
+                  "format": "binary",
+                  "type": "string"
+                }
+              }
+            },
+            "headers": {}
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/pdf": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/BadRequestEnvelope"
+                    },
+                    {
+                      "properties": {
+                        "data": {
+                          "$ref": "#/components/schemas/EmptyData"
+                        }
+                      },
+                      "type": "object"
+                    }
+                  ]
+                }
+              }
+            },
+            "headers": {}
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/pdf": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/UnauthorizedEnvelope"
+                    },
+                    {
+                      "properties": {
+                        "data": {
+                          "$ref": "#/components/schemas/EmptyData"
+                        }
+                      },
+                      "type": "object"
+                    }
+                  ]
+                }
+              }
+            },
+            "headers": {}
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/pdf": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/ForbiddenEnvelope"
+                    },
+                    {
+                      "properties": {
+                        "data": {
+                          "$ref": "#/components/schemas/EmptyData"
+                        }
+                      },
+                      "type": "object"
+                    }
+                  ]
+                }
+              }
+            },
+            "headers": {}
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/pdf": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/NotFoundEnvelope"
+                    },
+                    {
+                      "properties": {
+                        "data": {
+                          "$ref": "#/components/schemas/EmptyData"
+                        }
+                      },
+                      "type": "object"
+                    }
+                  ]
+                }
+              }
+            },
+            "headers": {}
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/pdf": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/InternalServerErrorEnvelope"
+                    },
+                    {
+                      "properties": {
+                        "data": {
+                          "$ref": "#/components/schemas/EmptyData"
+                        }
+                      },
+                      "type": "object"
+                    }
+                  ]
+                }
+              }
+            },
+            "headers": {}
+          }
+        },
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ]
+      }
+    },
+    "/api/sales/contracts/{id}/receipts": {
+      "post": {
+        "summary": "上传合同水单",
+        "deprecated": false,
+        "description": "为已回签合同上传一条水单图片记录",
+        "tags": [
+          "Contract"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "合同 ID",
+            "required": true,
+            "example": 0,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/dto.UploadContractReceiptRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/ResponseEnvelope"
+                    },
+                    {
+                      "properties": {
+                        "data": {
+                          "$ref": "#/components/schemas/dto.UploadContractReceiptResponse"
+                        }
+                      },
+                      "type": "object"
+                    }
+                  ]
+                }
+              }
+            },
+            "headers": {}
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/BadRequestEnvelope"
+                    },
+                    {
+                      "properties": {
+                        "data": {
+                          "$ref": "#/components/schemas/EmptyData"
+                        }
+                      },
+                      "type": "object"
+                    }
+                  ]
+                }
+              }
+            },
+            "headers": {}
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/UnauthorizedEnvelope"
+                    },
+                    {
+                      "properties": {
+                        "data": {
+                          "$ref": "#/components/schemas/EmptyData"
+                        }
+                      },
+                      "type": "object"
+                    }
+                  ]
+                }
+              }
+            },
+            "headers": {}
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/ForbiddenEnvelope"
+                    },
+                    {
+                      "properties": {
+                        "data": {
+                          "$ref": "#/components/schemas/EmptyData"
+                        }
+                      },
+                      "type": "object"
+                    }
+                  ]
+                }
+              }
+            },
+            "headers": {}
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/NotFoundEnvelope"
+                    },
+                    {
+                      "properties": {
+                        "data": {
+                          "$ref": "#/components/schemas/EmptyData"
+                        }
+                      },
+                      "type": "object"
+                    }
+                  ]
+                }
+              }
+            },
+            "headers": {}
+          },
+          "501": {
+            "description": "Not Implemented",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/NotImplementedEnvelope"
+                    },
+                    {
+                      "properties": {
+                        "data": {
+                          "$ref": "#/components/schemas/EmptyData"
+                        }
+                      },
+                      "type": "object"
+                    }
+                  ]
+                }
+              }
+            },
+            "headers": {}
+          }
+        },
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ]
+      }
+    },
+    "/api/sales/contracts/{id}/reject": {
+      "post": {
+        "summary": "审批驳回合同",
+        "deprecated": false,
+        "description": "当前审批人对指定合同执行审批驳回",
+        "tags": [
+          "Contract"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "合同 ID",
+            "required": true,
+            "example": 0,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/dto.RejectContractRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/ResponseEnvelope"
+                    },
+                    {
+                      "properties": {
+                        "data": {
+                          "$ref": "#/components/schemas/dto.ContractActionResponse"
+                        }
+                      },
+                      "type": "object"
+                    }
+                  ]
+                }
+              }
+            },
+            "headers": {}
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/BadRequestEnvelope"
+                    },
+                    {
+                      "properties": {
+                        "data": {
+                          "$ref": "#/components/schemas/EmptyData"
+                        }
+                      },
+                      "type": "object"
+                    }
+                  ]
+                }
+              }
+            },
+            "headers": {}
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/UnauthorizedEnvelope"
+                    },
+                    {
+                      "properties": {
+                        "data": {
+                          "$ref": "#/components/schemas/EmptyData"
+                        }
+                      },
+                      "type": "object"
+                    }
+                  ]
+                }
+              }
+            },
+            "headers": {}
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/ForbiddenEnvelope"
+                    },
+                    {
+                      "properties": {
+                        "data": {
+                          "$ref": "#/components/schemas/EmptyData"
+                        }
+                      },
+                      "type": "object"
+                    }
+                  ]
+                }
+              }
+            },
+            "headers": {}
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/NotFoundEnvelope"
+                    },
+                    {
+                      "properties": {
+                        "data": {
+                          "$ref": "#/components/schemas/EmptyData"
+                        }
+                      },
+                      "type": "object"
+                    }
+                  ]
+                }
+              }
+            },
+            "headers": {}
+          },
+          "501": {
+            "description": "Not Implemented",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/NotImplementedEnvelope"
+                    },
+                    {
+                      "properties": {
+                        "data": {
+                          "$ref": "#/components/schemas/EmptyData"
+                        }
+                      },
+                      "type": "object"
+                    }
+                  ]
+                }
+              }
+            },
+            "headers": {}
+          }
+        },
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ]
+      }
+    },
+    "/api/sales/contracts/{id}/share": {
+      "post": {
+        "summary": "生成合同分享链接",
+        "deprecated": false,
+        "description": "为合同生成可给客户访问的 H5 预览分享链接；若合同当前为 approval_passed=全部审批通过，则同步推进为 forwarded_customer=已转发客户",
+        "tags": [
+          "Contract"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "合同 ID",
+            "required": true,
+            "example": 0,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/ResponseEnvelope"
+                    },
+                    {
+                      "properties": {
+                        "data": {
+                          "$ref": "#/components/schemas/dto.ShareContractResponse"
+                        }
+                      },
+                      "type": "object"
+                    }
+                  ]
+                }
+              }
+            },
+            "headers": {}
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/BadRequestEnvelope"
+                    },
+                    {
+                      "properties": {
+                        "data": {
+                          "$ref": "#/components/schemas/EmptyData"
+                        }
+                      },
+                      "type": "object"
+                    }
+                  ]
+                }
+              }
+            },
+            "headers": {}
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/UnauthorizedEnvelope"
+                    },
+                    {
+                      "properties": {
+                        "data": {
+                          "$ref": "#/components/schemas/EmptyData"
+                        }
+                      },
+                      "type": "object"
+                    }
+                  ]
+                }
+              }
+            },
+            "headers": {}
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/ForbiddenEnvelope"
+                    },
+                    {
+                      "properties": {
+                        "data": {
+                          "$ref": "#/components/schemas/EmptyData"
+                        }
+                      },
+                      "type": "object"
+                    }
+                  ]
+                }
+              }
+            },
+            "headers": {}
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/NotFoundEnvelope"
+                    },
+                    {
+                      "properties": {
+                        "data": {
+                          "$ref": "#/components/schemas/EmptyData"
+                        }
+                      },
+                      "type": "object"
+                    }
+                  ]
+                }
+              }
+            },
+            "headers": {}
+          }
+        },
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ]
+      }
+    },
+    "/api/sales/contracts/{id}/sign-back": {
+      "post": {
+        "summary": "上传合同回签",
+        "deprecated": false,
+        "description": "上传回签文件并更新合同状态，同时生成首笔订单",
+        "tags": [
+          "Contract"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "合同 ID",
+            "required": true,
+            "example": 0,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/dto.SignBackContractRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/ResponseEnvelope"
+                    },
+                    {
+                      "properties": {
+                        "data": {
+                          "$ref": "#/components/schemas/dto.SignBackContractResponse"
+                        }
+                      },
+                      "type": "object"
+                    }
+                  ]
+                }
+              }
+            },
+            "headers": {}
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/BadRequestEnvelope"
+                    },
+                    {
+                      "properties": {
+                        "data": {
+                          "$ref": "#/components/schemas/EmptyData"
+                        }
+                      },
+                      "type": "object"
+                    }
+                  ]
+                }
+              }
+            },
+            "headers": {}
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/UnauthorizedEnvelope"
+                    },
+                    {
+                      "properties": {
+                        "data": {
+                          "$ref": "#/components/schemas/EmptyData"
+                        }
+                      },
+                      "type": "object"
+                    }
+                  ]
+                }
+              }
+            },
+            "headers": {}
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/ForbiddenEnvelope"
+                    },
+                    {
+                      "properties": {
+                        "data": {
+                          "$ref": "#/components/schemas/EmptyData"
+                        }
+                      },
+                      "type": "object"
+                    }
+                  ]
+                }
+              }
+            },
+            "headers": {}
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/NotFoundEnvelope"
+                    },
+                    {
+                      "properties": {
+                        "data": {
+                          "$ref": "#/components/schemas/EmptyData"
+                        }
+                      },
+                      "type": "object"
+                    }
+                  ]
+                }
+              }
+            },
+            "headers": {}
+          },
+          "501": {
+            "description": "Not Implemented",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/NotImplementedEnvelope"
+                    },
+                    {
+                      "properties": {
+                        "data": {
+                          "$ref": "#/components/schemas/EmptyData"
+                        }
+                      },
+                      "type": "object"
+                    }
+                  ]
+                }
+              }
+            },
+            "headers": {}
+          }
+        },
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ]
+      }
+    },
+    "/api/sales/contracts/{id}/submit": {
+      "post": {
+        "summary": "提交合同审批",
+        "deprecated": false,
+        "description": "将草稿或已驳回合同提交到公司审批流",
+        "tags": [
+          "Contract"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "合同 ID",
+            "required": true,
+            "example": 0,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/ResponseEnvelope"
+                    },
+                    {
+                      "properties": {
+                        "data": {
+                          "$ref": "#/components/schemas/dto.SubmitContractResponse"
+                        }
+                      },
+                      "type": "object"
+                    }
+                  ]
+                }
+              }
+            },
+            "headers": {}
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/BadRequestEnvelope"
+                    },
+                    {
+                      "properties": {
+                        "data": {
+                          "$ref": "#/components/schemas/EmptyData"
+                        }
+                      },
+                      "type": "object"
+                    }
+                  ]
+                }
+              }
+            },
+            "headers": {}
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/UnauthorizedEnvelope"
+                    },
+                    {
+                      "properties": {
+                        "data": {
+                          "$ref": "#/components/schemas/EmptyData"
+                        }
+                      },
+                      "type": "object"
+                    }
+                  ]
+                }
+              }
+            },
+            "headers": {}
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/ForbiddenEnvelope"
+                    },
+                    {
+                      "properties": {
+                        "data": {
+                          "$ref": "#/components/schemas/EmptyData"
+                        }
+                      },
+                      "type": "object"
+                    }
+                  ]
+                }
+              }
+            },
+            "headers": {}
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/NotFoundEnvelope"
+                    },
+                    {
+                      "properties": {
+                        "data": {
+                          "$ref": "#/components/schemas/EmptyData"
+                        }
+                      },
+                      "type": "object"
+                    }
+                  ]
+                }
+              }
+            },
+            "headers": {}
+          },
+          "501": {
+            "description": "Not Implemented",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/NotImplementedEnvelope"
                     },
                     {
                       "properties": {
@@ -721,6 +1794,20 @@
         },
         "type": "object"
       },
+      "InternalServerErrorEnvelope": {
+        "properties": {
+          "code": {
+            "type": "integer",
+            "example": 500
+          },
+          "data": {},
+          "msg": {
+            "type": "string",
+            "example": "internal server error"
+          }
+        },
+        "type": "object"
+      },
       "NotFoundEnvelope": {
         "properties": {
           "code": {
@@ -731,6 +1818,20 @@
           "msg": {
             "type": "string",
             "example": "not found"
+          }
+        },
+        "type": "object"
+      },
+      "NotImplementedEnvelope": {
+        "properties": {
+          "code": {
+            "type": "integer",
+            "example": 501
+          },
+          "data": {},
+          "msg": {
+            "type": "string",
+            "example": "not implemented"
           }
         },
         "type": "object"
@@ -749,20 +1850,6 @@
         },
         "type": "object"
       },
-      "ServiceUnavailableEnvelope": {
-        "properties": {
-          "code": {
-            "type": "integer",
-            "example": 503
-          },
-          "data": {},
-          "msg": {
-            "type": "string",
-            "example": "service unavailable"
-          }
-        },
-        "type": "object"
-      },
       "UnauthorizedEnvelope": {
         "properties": {
           "code": {
@@ -777,535 +1864,633 @@
         },
         "type": "object"
       },
-      "dto.CustomerContactDetail": {
+      "dto.ApproveContractRequest": {
         "properties": {
-          "email": {
-            "description": "Email 表示邮箱。",
-            "type": "string"
-          },
-          "id": {
-            "description": "ID 表示联系人 ID。",
-            "type": "integer"
-          },
-          "isPrimary": {
-            "description": "IsPrimary 表示是否主联系人。",
-            "type": "boolean"
-          },
-          "name": {
-            "description": "Name 表示联系人姓名。",
-            "type": "string"
-          },
-          "phones": {
-            "description": "Phones 表示联系电话列表。",
-            "items": {
-              "$ref": "#/components/schemas/dto.CustomerContactPhoneDetail"
-            },
-            "type": "array"
-          },
-          "position": {
-            "description": "Position 表示联系人职位。",
-            "type": "string"
-          },
-          "sortOrder": {
-            "description": "SortOrder 表示排序。",
-            "type": "integer"
-          },
-          "wechat": {
-            "description": "Wechat 表示微信号。",
-            "type": "string"
-          },
-          "whatsapp": {
-            "description": "Whatsapp 表示 WhatsApp。",
+          "comment": {
+            "description": "Comment 表示审批意见；可为空。",
             "type": "string"
           }
         },
         "type": "object"
       },
-      "dto.CustomerContactInput": {
+      "dto.ContractActionResponse": {
         "properties": {
-          "email": {
-            "description": "Email 表示邮箱。",
+          "approvalStatus": {
+            "description": "ApprovalStatus 表示审批状态；支持 draft=草稿、pending=待审批、approved=审批通过、rejected=审批驳回。",
+            "type": "string"
+          },
+          "displayStatus": {
+            "description": "DisplayStatus 表示合同展示状态；支持 pending_approval=待审批、approval_rejected=审批驳回、approval_passed=全部审批通过、forwarded_customer=已转发客户、customer_read=客户已读、signed_back=已回签。",
+            "type": "string"
+          },
+          "message": {
+            "description": "Message 表示提示信息。",
+            "type": "string"
+          },
+          "signStatus": {
+            "description": "SignStatus 表示签署状态；支持 not_sent=未发送、signed=已签署。",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "dto.ContractApprovalActor": {
+        "properties": {
+          "account": {
+            "description": "Account 表示审批人账号。",
+            "type": "string"
+          },
+          "approvedAt": {
+            "description": "ApprovedAt 表示审批完成时间。",
             "type": "string"
           },
           "id": {
-            "description": "ID 表示联系人 ID，创建时可为空。",
+            "description": "ID 表示审批人用户 ID。",
             "type": "integer"
           },
           "name": {
-            "description": "Name 表示联系人姓名。",
+            "description": "Name 表示审批人姓名。",
             "type": "string"
           },
-          "phones": {
-            "description": "Phones 表示联系电话列表。",
+          "phone": {
+            "description": "Phone 表示审批人手机号。",
+            "type": "string"
+          },
+          "status": {
+            "description": "Status 表示节点内审批状态；支持 pending=待审批、approved=审批通过、rejected=审批驳回。",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "dto.ContractApprovalFlowSnapshot": {
+        "properties": {
+          "flowConfigId": {
+            "description": "FlowConfigID 表示审批流配置 ID。",
+            "type": "integer"
+          },
+          "nodes": {
+            "description": "Nodes 表示审批节点快照列表。",
             "items": {
-              "$ref": "#/components/schemas/dto.CustomerContactPhoneInput"
+              "$ref": "#/components/schemas/dto.ContractApprovalNodeSnapshot"
             },
             "type": "array"
           },
-          "position": {
-            "description": "Position 表示联系人职位。",
+          "ruleLabel": {
+            "description": "RuleLabel 表示前端展示用的审批规则说明。",
             "type": "string"
           },
-          "wechat": {
-            "description": "Wechat 表示微信号。",
+          "triggerType": {
+            "description": "TriggerType 表示触发类型；当前合同审批固定为 always=始终触发。",
             "type": "string"
           },
-          "whatsapp": {
-            "description": "Whatsapp 表示 WhatsApp。",
+          "triggerValue": {
+            "description": "TriggerValue 表示触发阈值；当前合同审批通常固定为 0。",
+            "type": "integer"
+          }
+        },
+        "type": "object"
+      },
+      "dto.ContractApprovalNodeSnapshot": {
+        "properties": {
+          "approvalRule": {
+            "description": "ApprovalRule 表示节点审批规则；支持 any_pass=任意1人通过、all_pass=全部通过、pass_N=任意 N 人通过。",
+            "type": "string"
+          },
+          "approvers": {
+            "description": "Approvers 表示当前节点审批人列表。",
+            "items": {
+              "$ref": "#/components/schemas/dto.ContractApprovalActor"
+            },
+            "type": "array"
+          },
+          "nodeName": {
+            "description": "NodeName 表示审批节点名称。",
+            "type": "string"
+          },
+          "nodeNo": {
+            "description": "NodeNo 表示审批节点编号。",
+            "type": "integer"
+          },
+          "status": {
+            "description": "Status 表示节点状态；支持 pending=待审批、approved=审批通过、rejected=审批驳回、cancelled=已取消。",
             "type": "string"
           }
         },
         "type": "object"
       },
-      "dto.CustomerContactPhoneDetail": {
+      "dto.ContractApprovalStep": {
         "properties": {
-          "id": {
-            "description": "ID 表示联系电话 ID。",
+          "approvalRule": {
+            "description": "ApprovalRule 表示节点审批规则；支持 any_pass=任意1人通过、all_pass=全部通过、pass_N=任意 N 人通过。",
+            "type": "string"
+          },
+          "comment": {
+            "description": "Comment 表示审批意见、驳回原因或操作备注。",
+            "type": "string"
+          },
+          "nodeName": {
+            "description": "NodeName 表示节点名称。",
+            "type": "string"
+          },
+          "nodeNo": {
+            "description": "NodeNo 表示节点编号。",
             "type": "integer"
           },
-          "isPrimary": {
-            "description": "IsPrimary 表示是否主联系电话。",
+          "operatedAt": {
+            "description": "OperatedAt 表示操作时间。",
+            "type": "string"
+          },
+          "operatorName": {
+            "description": "OperatorName 表示操作人名称。",
+            "type": "string"
+          },
+          "status": {
+            "description": "Status 表示审批动作；支持 submit=提交、approve=审批通过、reject=审批驳回、cancel=取消合同。",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "dto.ContractDetailResponse": {
+        "properties": {
+          "approvalFlow": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/dto.ContractApprovalFlowSnapshot"
+              }
+            ],
+            "description": "ApprovalFlow 表示合同审批流快照。"
+          },
+          "approvalHistory": {
+            "description": "ApprovalHistory 表示合同审批历史记录。",
+            "items": {
+              "$ref": "#/components/schemas/dto.ContractApprovalStep"
+            },
+            "type": "array"
+          },
+          "approvalStatus": {
+            "description": "ApprovalStatus 表示审批状态；支持 draft=草稿、pending=待审批、approved=审批通过、rejected=审批驳回。",
+            "type": "string"
+          },
+          "buyerSnapshot": {
+            "additionalProperties": {},
+            "description": "BuyerSnapshot 表示买方主体信息快照，自定义键值对象。",
+            "type": "object",
+            "properties": {}
+          },
+          "canApprove": {
+            "description": "CanApprove 表示是否可审批。",
             "type": "boolean"
           },
-          "phone": {
-            "description": "Phone 表示联系电话。",
+          "contractNo": {
+            "description": "ContractNo 表示合同编号。",
             "type": "string"
           },
-          "sortOrder": {
-            "description": "SortOrder 表示排序。",
-            "type": "integer"
-          }
-        },
-        "type": "object"
-      },
-      "dto.CustomerContactPhoneInput": {
-        "properties": {
-          "id": {
-            "description": "ID 表示联系电话 ID，创建时可为空。",
-            "type": "integer"
+          "currentApprovalNode": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/dto.ContractApprovalNodeSnapshot"
+              }
+            ],
+            "description": "CurrentApprovalNode 表示当前待处理审批节点快照。"
           },
-          "phone": {
-            "description": "Phone 表示联系电话。",
-            "type": "string"
-          }
-        },
-        "type": "object"
-      },
-      "dto.CustomerDetailResponse": {
-        "properties": {
-          "address": {
-            "description": "Address 表示详细地址。",
-            "type": "string"
-          },
-          "businessLicenseFileName": {
-            "description": "BusinessLicenseFileName 表示营业执照文件名。",
-            "type": "string"
-          },
-          "businessLicenseFileSize": {
-            "description": "BusinessLicenseFileSize 表示营业执照文件大小。",
-            "type": "integer"
-          },
-          "businessLicenseMimeType": {
-            "description": "BusinessLicenseMimeType 表示营业执照文件 MIME 类型。",
-            "type": "string"
-          },
-          "businessLicenseUrl": {
-            "description": "BusinessLicenseURL 表示营业执照文件地址。",
-            "type": "string"
-          },
-          "category": {
-            "description": "Category 表示客户类别。",
-            "type": "string"
-          },
-          "categoryLabel": {
-            "description": "CategoryLabel 表示客户类别展示文案。",
-            "type": "string"
-          },
-          "channelId": {
-            "description": "ChannelID 表示渠道 ID。",
-            "type": "integer"
-          },
-          "channelName": {
-            "description": "ChannelName 表示渠道名称。",
-            "type": "string"
-          },
-          "cityCode": {
-            "description": "CityCode 表示城市编码。",
-            "type": "string"
-          },
-          "cityName": {
-            "description": "CityName 表示城市名称。",
-            "type": "string"
-          },
-          "collaboratorUserIds": {
-            "description": "CollaboratorUserIDs 表示协作人用户 ID 列表。",
+          "currentApproverIds": {
+            "description": "CurrentApproverIDs 表示当前节点审批人用户 ID 列表。",
             "items": {
               "type": "integer"
             },
             "type": "array"
           },
-          "collaboratorUserNames": {
-            "description": "CollaboratorUserNames 表示协作人姓名列表。",
+          "customerId": {
+            "description": "CustomerID 表示关联合同客户 ID；未关联时为空。",
+            "type": "integer"
+          },
+          "displayStatus": {
+            "description": "DisplayStatus 表示合同展示状态；支持 pending_approval=待审批、approval_rejected=审批驳回、approval_passed=全部审批通过、forwarded_customer=已转发客户、customer_read=客户已读、signed_back=已回签。",
+            "type": "string"
+          },
+          "executableActions": {
+            "description": "ExecutableActions 表示当前用户可对该合同执行的操作。",
             "items": {
               "type": "string"
             },
             "type": "array"
           },
-          "companyId": {
-            "description": "CompanyID 表示公司 ID。",
-            "type": "integer"
-          },
-          "companyName": {
-            "description": "CompanyName 表示公司名称。",
-            "type": "string"
-          },
-          "contactName": {
-            "description": "ContactName 表示联系人姓名。",
-            "type": "string"
-          },
-          "contactPosition": {
-            "description": "ContactPosition 表示联系人职位。",
-            "type": "string"
-          },
-          "contacts": {
-            "description": "Contacts 表示联系人列表。",
-            "items": {
-              "$ref": "#/components/schemas/dto.CustomerContactDetail"
-            },
-            "type": "array"
-          },
-          "createdAt": {
-            "description": "CreatedAt 表示创建时间。",
-            "type": "string"
-          },
-          "districtCode": {
-            "description": "DistrictCode 表示区县编码。",
-            "type": "string"
-          },
-          "districtName": {
-            "description": "DistrictName 表示区县名称。",
-            "type": "string"
-          },
-          "email": {
-            "description": "Email 表示邮箱。",
-            "type": "string"
-          },
-          "geocodeError": {
-            "description": "GeocodeError 表示最近一次地理编码失败原因。",
-            "type": "string"
-          },
-          "geocodeSource": {
-            "description": "GeocodeSource 表示客户地址坐标来源。",
-            "type": "string"
-          },
-          "geocodeStatus": {
-            "description": "GeocodeStatus 表示客户地址坐标补齐状态。",
-            "type": "string"
-          },
-          "geocodeUpdatedAt": {
-            "description": "GeocodeUpdatedAt 表示最近一次地理编码状态更新时间。",
+          "fileUrl": {
+            "description": "FileURL 表示合同 PDF 文件地址。",
             "type": "string"
           },
           "id": {
-            "description": "ID 表示客户 ID。",
+            "description": "ID 表示唯一标识。",
             "type": "integer"
-          },
-          "industry": {
-            "description": "Industry 表示客户行业。",
-            "type": "string"
-          },
-          "industryLabel": {
-            "description": "IndustryLabel 表示客户行业展示文案。",
-            "type": "string"
-          },
-          "latitude": {
-            "description": "Latitude 表示客户主地址纬度。",
-            "type": "number"
-          },
-          "level": {
-            "description": "Level 表示客户等级。",
-            "type": "string"
-          },
-          "levelLabel": {
-            "description": "LevelLabel 表示客户等级展示文案。",
-            "type": "string"
-          },
-          "longitude": {
-            "description": "Longitude 表示客户主地址经度。",
-            "type": "number"
-          },
-          "name": {
-            "description": "Name 表示客户名称。",
-            "type": "string"
-          },
-          "otherBrandGunBrand": {
-            "description": "OtherBrandGunBrand 表示其他品牌喷粉枪品牌。",
-            "type": "string"
-          },
-          "otherBrandGunQty": {
-            "description": "OtherBrandGunQty 表示其他品牌喷粉枪数量。",
-            "type": "integer"
-          },
-          "otherBrandGunType": {
-            "description": "OtherBrandGunType 表示其他品牌喷粉枪类型。",
-            "type": "string"
-          },
-          "otherBrandGunTypeLabel": {
-            "description": "OtherBrandGunTypeLabel 表示其他品牌喷粉枪类型展示文案。",
-            "type": "string"
-          },
-          "ownerUserId": {
-            "description": "OwnerUserID 表示负责人用户 ID。",
-            "type": "integer"
-          },
-          "ownerUserName": {
-            "description": "OwnerUserName 表示负责人姓名。",
-            "type": "string"
-          },
-          "phone": {
-            "description": "Phone 表示联系电话。",
-            "type": "string"
-          },
-          "projectType": {
-            "description": "ProjectType 表示项目类型。",
-            "type": "string"
-          },
-          "projectTypeLabel": {
-            "description": "ProjectTypeLabel 表示项目类型展示文案。",
-            "type": "string"
-          },
-          "provinceCode": {
-            "description": "ProvinceCode 表示省份编码。",
-            "type": "string"
-          },
-          "provinceName": {
-            "description": "ProvinceName 表示省份名称。",
-            "type": "string"
-          },
-          "sourceDepartmentId": {
-            "description": "SourceDepartmentID 表示来源部门 ID。",
-            "type": "integer"
-          },
-          "sourceDepartmentName": {
-            "description": "SourceDepartmentName 表示来源部门名称。",
-            "type": "string"
-          },
-          "sourceLeadId": {
-            "description": "SourceLeadID 表示关联线索 ID。",
-            "type": "integer"
-          },
-          "sourceLeadNo": {
-            "description": "SourceLeadNo 表示关联线索编号。",
-            "type": "string"
-          },
-          "updatedAt": {
-            "description": "UpdatedAt 表示更新时间。",
-            "type": "string"
-          },
-          "usesOtherBrandGun": {
-            "description": "UsesOtherBrandGun 表示是否使用其他品牌喷粉枪。",
-            "type": "boolean"
-          },
-          "wechat": {
-            "description": "Wechat 表示微信号。",
-            "type": "string"
-          },
-          "whatsapp": {
-            "description": "Whatsapp 表示 WhatsApp。",
-            "type": "string"
-          },
-          "workpiece": {
-            "description": "Workpiece 表示客户工件。",
-            "type": "string"
-          }
-        },
-        "type": "object"
-      },
-      "dto.CustomerQuotationListResponse": {
-        "properties": {
-          "canCreate": {
-            "type": "boolean"
           },
           "items": {
+            "description": "Items 表示合同商品明细列表。",
             "items": {
-              "$ref": "#/components/schemas/internal_customer_dto.CustomerQuotationItem"
+              "$ref": "#/components/schemas/dto.ContractLineItem"
             },
             "type": "array"
-          }
-        },
-        "type": "object"
-      },
-      "dto.UpdateCustomerRequest": {
-        "properties": {
-          "address": {
-            "description": "Address 表示详细地址。",
-            "type": "string"
-          },
-          "businessLicenseFileName": {
-            "description": "BusinessLicenseFileName 表示营业执照文件名。",
-            "type": "string"
-          },
-          "businessLicenseFileSize": {
-            "description": "BusinessLicenseFileSize 表示营业执照文件大小。",
-            "type": "integer"
-          },
-          "businessLicenseMimeType": {
-            "description": "BusinessLicenseMimeType 表示营业执照文件 MIME 类型。",
-            "type": "string"
-          },
-          "businessLicenseUrl": {
-            "description": "BusinessLicenseURL 表示营业执照文件地址。",
-            "type": "string"
-          },
-          "category": {
-            "description": "Category 表示客户分类。",
-            "type": "string"
-          },
-          "channelId": {
-            "description": "ChannelID 表示渠道 ID。",
-            "type": "integer"
-          },
-          "cityCode": {
-            "description": "CityCode 表示城市行政区划编码。",
-            "type": "string"
-          },
-          "collaboratorUserIds": {
-            "description": "CollaboratorUserIDs 表示协作人用户 ID 列表。",
-            "items": {
-              "type": "integer"
-            },
-            "type": "array"
-          },
-          "contacts": {
-            "description": "Contacts 表示联系人列表。",
-            "items": {
-              "$ref": "#/components/schemas/dto.CustomerContactInput"
-            },
-            "type": "array"
-          },
-          "customerType": {
-            "description": "CustomerType 表示客户类型。",
-            "type": "string"
-          },
-          "districtCode": {
-            "description": "DistrictCode 表示区县行政区划编码。",
-            "type": "string"
-          },
-          "industry": {
-            "description": "Industry 表示所属行业。",
-            "type": "string"
-          },
-          "latitude": {
-            "description": "Latitude 表示客户主地址纬度。",
-            "type": "number"
-          },
-          "level": {
-            "description": "Level 表示客户等级。",
-            "type": "string"
-          },
-          "longitude": {
-            "description": "Longitude 表示客户主地址经度。",
-            "type": "number"
           },
           "name": {
-            "description": "Name 表示客户名称。",
+            "description": "Name 表示合同名称。",
             "type": "string"
           },
-          "otherBrandGunBrand": {
-            "description": "OtherBrandGunBrand 表示其他品牌喷枪品牌。",
-            "type": "string"
-          },
-          "otherBrandGunQty": {
-            "description": "OtherBrandGunQty 表示其他品牌喷枪数量。",
+          "opportunityId": {
+            "description": "OpportunityID 表示关联商机 ID；未关联时为空。",
             "type": "integer"
           },
-          "otherBrandGunType": {
-            "description": "OtherBrandGunType 表示其他品牌喷枪型号或类型。",
+          "opportunityName": {
+            "description": "OpportunityName 表示关联商机名称。",
             "type": "string"
           },
-          "ownerUserId": {
-            "description": "OwnerUserID 表示负责人用户 ID。",
+          "quotationId": {
+            "description": "QuotationID 表示关联报价 ID；未从报价生成时为空。",
             "type": "integer"
           },
-          "projectType": {
-            "description": "ProjectType 表示项目类型。",
+          "quotationName": {
+            "description": "QuotationName 表示关联报价名称。",
             "type": "string"
           },
-          "provinceCode": {
-            "description": "ProvinceCode 表示省份行政区划编码。",
+          "receipts": {
+            "description": "Receipts 表示合同回款水单记录列表。",
+            "items": {
+              "$ref": "#/components/schemas/dto.ContractReceiptItem"
+            },
+            "type": "array"
+          },
+          "renderedHtml": {
+            "description": "RenderedHTML 表示已渲染的合同 HTML 正文。",
             "type": "string"
           },
-          "sourceDepartmentId": {
-            "description": "SourceDepartmentID 表示来源部门 ID。",
+          "sellerSnapshot": {
+            "additionalProperties": {},
+            "description": "SellerSnapshot 表示卖方主体信息快照，自定义键值对象。",
+            "type": "object",
+            "properties": {}
+          },
+          "signStatus": {
+            "description": "SignStatus 表示签署状态；支持 not_sent=未发送、signed=已签署。",
+            "type": "string"
+          },
+          "signedBackAt": {
+            "description": "SignedBackAt 表示客户回签时间，格式 RFC3339。",
+            "type": "string"
+          },
+          "signedBackFileUrl": {
+            "description": "SignedBackFileURL 表示客户回签文件地址。",
+            "type": "string"
+          },
+          "summarySnapshot": {
+            "additionalProperties": {},
+            "description": "SummarySnapshot 表示合同摘要信息快照，自定义键值对象。",
+            "type": "object",
+            "properties": {}
+          },
+          "templateId": {
+            "description": "TemplateID 表示合同模板 ID。",
             "type": "integer"
           },
-          "usesOtherBrandGun": {
-            "description": "UsesOtherBrandGun 表示是否使用其他品牌喷枪。",
-            "type": "boolean"
-          },
-          "workpiece": {
-            "description": "Workpiece 表示工件信息。",
+          "templateName": {
+            "description": "TemplateName 表示模板名称。",
             "type": "string"
+          },
+          "templateVersion": {
+            "description": "TemplateVersion 表示模板版本。",
+            "type": "integer"
           }
         },
         "type": "object"
       },
-      "internal_customer_api.MessageResponse": {
+      "dto.ContractLineItem": {
         "properties": {
-          "message": {
+          "amount": {
+            "description": "Amount 表示行金额，单位分。",
+            "type": "integer"
+          },
+          "brandName": {
+            "description": "BrandName 表示品牌名称。",
             "type": "string"
+          },
+          "lineNo": {
+            "description": "LineNo 表示行号。",
+            "type": "integer"
+          },
+          "model": {
+            "description": "Model 表示型号。",
+            "type": "string"
+          },
+          "productName": {
+            "description": "ProductName 表示产品名称。",
+            "type": "string"
+          },
+          "quantity": {
+            "description": "Quantity 表示数量。",
+            "type": "number"
+          },
+          "unit": {
+            "description": "Unit 表示单位。",
+            "type": "string"
+          },
+          "unitPrice": {
+            "description": "UnitPrice 表示单价，单位分。",
+            "type": "integer"
           }
         },
         "type": "object"
       },
-      "internal_customer_dto.CustomerQuotationAction": {
+      "dto.ContractReceiptItem": {
         "properties": {
-          "canEdit": {
-            "type": "boolean"
-          },
-          "canView": {
-            "type": "boolean"
-          }
-        },
-        "type": "object"
-      },
-      "internal_customer_dto.CustomerQuotationItem": {
-        "properties": {
-          "actions": {
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/internal_customer_dto.CustomerQuotationAction"
-              }
-            ],
-            "description": "Actions 表示报价可执行操作。"
-          },
-          "approvalStatus": {
-            "description": "ApprovalStatus 表示审批状态；支持 no_approval=无需审批、pending=待审批、pending_approval=待审批、approved=审批通过、approved_finished=审批通过、rejected=已驳回。",
-            "type": "string"
-          },
-          "bizStatus": {
-            "description": "BizStatus 表示业务状态；支持 not_forwarded=未转发、forwarded_customer=已转发客户、customer_read=客户已读。",
+          "createdAt": {
+            "description": "CreatedAt 表示水单上传时间，格式 RFC3339。",
             "type": "string"
           },
           "id": {
-            "description": "ID 表示报价 ID。",
+            "description": "ID 表示水单记录 ID。",
+            "type": "integer"
+          },
+          "receiptAmount": {
+            "description": "ReceiptAmount 表示本次回款金额，单位分。",
+            "type": "integer"
+          },
+          "receiptDate": {
+            "description": "ReceiptDate 表示水单登记时间。",
+            "type": "string"
+          },
+          "receiptNo": {
+            "description": "ReceiptNo 表示水单编号。",
+            "type": "string"
+          },
+          "uploadedBy": {
+            "description": "UploadedBy 表示水单上传人姓名。",
+            "type": "string"
+          },
+          "voucherUrl": {
+            "description": "VoucherURL 表示水单凭证文件地址。",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "dto.CreateContractItemInput": {
+        "properties": {
+          "amount": {
+            "description": "Amount 表示行金额，单位分；传 0 时按 Quantity * UnitPrice 自动计算。",
+            "type": "integer"
+          },
+          "brandName": {
+            "description": "BrandName 表示品牌名称。",
+            "type": "string"
+          },
+          "model": {
+            "description": "Model 表示产品型号。",
+            "type": "string"
+          },
+          "productId": {
+            "description": "ProductID 表示关联产品 ID；未关联产品时可不传。",
+            "type": "integer"
+          },
+          "productName": {
+            "description": "ProductName 表示产品名称。",
+            "type": "string"
+          },
+          "quantity": {
+            "description": "Quantity 表示数量。",
+            "type": "number"
+          },
+          "remark": {
+            "description": "Remark 表示明细备注。",
+            "type": "string"
+          },
+          "unit": {
+            "description": "Unit 表示计量单位。",
+            "type": "string"
+          },
+          "unitPrice": {
+            "description": "UnitPrice 表示单价，单位分。",
+            "type": "integer"
+          }
+        },
+        "type": "object"
+      },
+      "dto.RejectContractRequest": {
+        "properties": {
+          "comment": {
+            "description": "Comment 表示驳回原因或审批意见。",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "dto.ShareContractResponse": {
+        "properties": {
+          "displayStatus": {
+            "description": "DisplayStatus 表示生成分享链接后的合同展示状态；支持 pending_approval=待审批、approval_rejected=审批驳回、approval_passed=全部审批通过、forwarded_customer=已转发客户、customer_read=客户已读、signed_back=已回签。",
+            "type": "string"
+          },
+          "expiresAt": {
+            "description": "ExpiresAt 表示分享链接失效时间，格式 RFC3339。",
+            "type": "string"
+          },
+          "miniProgramAppId": {
+            "description": "MiniProgramAppID 表示兼容旧小程序入口的目标 AppID；H5 分享场景可为空。",
+            "type": "string"
+          },
+          "miniProgramPath": {
+            "description": "MiniProgramPath 表示兼容旧小程序入口的页面路径；H5 分享场景可为空。",
+            "type": "string"
+          },
+          "miniProgramQuery": {
+            "description": "MiniProgramQuery 表示兼容旧小程序入口的页面查询参数，格式为 shareToken=合同分享 token。",
+            "type": "string"
+          },
+          "shareToken": {
+            "description": "ShareToken 表示合同分享 token。",
+            "type": "string"
+          },
+          "shareUrl": {
+            "description": "ShareURL 表示可直接访问的分享链接地址。",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "dto.SignBackContractRequest": {
+        "properties": {
+          "fileName": {
+            "description": "FileName 表示客户回签文件名称；可选。",
+            "type": "string"
+          },
+          "fileSize": {
+            "description": "FileSize 表示客户回签文件大小，单位字节；可选。",
+            "type": "integer"
+          },
+          "fileUrl": {
+            "description": "FileURL 表示客户回签文件地址。",
+            "type": "string"
+          },
+          "mimeType": {
+            "description": "MimeType 表示客户回签文件 MIME 类型；可选。",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "dto.SignBackContractResponse": {
+        "properties": {
+          "displayStatus": {
+            "description": "DisplayStatus 表示合同展示状态；当前回签成功后固定返回 signed_back=已回签。",
+            "type": "string"
+          },
+          "message": {
+            "description": "Message 表示回签结果提示信息。",
+            "type": "string"
+          },
+          "orderId": {
+            "description": "OrderID 表示回签成功后自动生成的首笔订单 ID。",
+            "type": "integer"
+          },
+          "orderNo": {
+            "description": "OrderNo 表示回签成功后自动生成的首笔订单编号。",
+            "type": "string"
+          },
+          "signStatus": {
+            "description": "SignStatus 表示签署状态；当前回签成功后固定返回 signed=已签署。",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "dto.SubmitContractResponse": {
+        "properties": {
+          "approvalStatus": {
+            "description": "ApprovalStatus 表示审批状态；支持 draft=草稿、pending=待审批、approved=审批通过、rejected=审批驳回。",
+            "type": "string"
+          },
+          "displayStatus": {
+            "description": "DisplayStatus 表示合同展示状态；支持 pending_approval=待审批、approval_rejected=审批驳回、approval_passed=全部审批通过、forwarded_customer=已转发客户、customer_read=客户已读、signed_back=已回签。",
+            "type": "string"
+          },
+          "message": {
+            "description": "Message 表示提示信息。",
+            "type": "string"
+          },
+          "signStatus": {
+            "description": "SignStatus 表示签署状态；支持 not_sent=未发送、signed=已签署。",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "dto.UpdateContractRequest": {
+        "properties": {
+          "buyerSnapshot": {
+            "additionalProperties": {},
+            "description": "BuyerSnapshot 表示买方主体信息快照，自定义键值对象。",
+            "type": "object",
+            "properties": {}
+          },
+          "contractNo": {
+            "description": "ContractNo 表示合同编号；为空时系统自动生成。",
+            "type": "string"
+          },
+          "customerId": {
+            "description": "CustomerID 表示合同客户 ID。",
+            "type": "integer"
+          },
+          "items": {
+            "description": "Items 表示合同商品明细；未传 QuotationID 时至少需要 1 条。",
+            "items": {
+              "$ref": "#/components/schemas/dto.CreateContractItemInput"
+            },
+            "type": "array"
+          },
+          "name": {
+            "description": "Name 表示合同名称；为空时默认使用“客户名称+合同”。",
+            "type": "string"
+          },
+          "opportunityId": {
+            "description": "OpportunityID 表示关联商机 ID；可选。",
+            "type": "integer"
+          },
+          "quotationId": {
+            "description": "QuotationID 表示关联报价 ID；从报价生成合同时可传。",
+            "type": "integer"
+          },
+          "renderedHtml": {
+            "description": "RenderedHTML 表示已渲染的合同 HTML 正文；为空时按模板正文回填。",
+            "type": "string"
+          },
+          "sellerSnapshot": {
+            "additionalProperties": {},
+            "description": "SellerSnapshot 表示卖方主体信息快照，自定义键值对象。",
+            "type": "object",
+            "properties": {}
+          },
+          "summarySnapshot": {
+            "additionalProperties": {},
+            "description": "SummarySnapshot 表示合同摘要信息快照，自定义键值对象。",
+            "type": "object",
+            "properties": {}
+          },
+          "templateId": {
+            "description": "TemplateID 表示合同模板 ID。",
+            "type": "integer"
+          }
+        },
+        "type": "object"
+      },
+      "dto.UpdateContractResponse": {
+        "properties": {
+          "approvalStatus": {
+            "description": "ApprovalStatus 表示审批状态；支持 draft=草稿、pending=待审批、approved=审批通过、rejected=审批驳回。",
+            "type": "string"
+          },
+          "contractNo": {
+            "description": "ContractNo 表示合同编号。",
+            "type": "string"
+          },
+          "displayStatus": {
+            "description": "DisplayStatus 表示合同展示状态；支持 pending_approval=待审批、approval_rejected=审批驳回、approval_passed=全部审批通过、forwarded_customer=已转发客户、customer_read=客户已读、signed_back=已回签。",
+            "type": "string"
+          },
+          "id": {
+            "description": "ID 表示合同 ID。",
             "type": "integer"
           },
           "name": {
-            "description": "Name 表示报价名称。",
+            "description": "Name 表示合同名称。",
             "type": "string"
-          },
-          "quotationNo": {
-            "description": "QuotationNo 表示报价编号。",
-            "type": "string"
-          },
-          "quotedAt": {
-            "description": "QuotedAt 表示报价时间。",
-            "type": "string"
-          },
-          "totalAmount": {
-            "description": "TotalAmount 表示报价总金额。",
+          }
+        },
+        "type": "object"
+      },
+      "dto.UploadContractReceiptRequest": {
+        "properties": {
+          "receiptAmount": {
+            "description": "ReceiptAmount 表示本次回款金额，单位分。",
             "type": "integer"
+          },
+          "voucherUrl": {
+            "description": "VoucherURL 表示水单凭证文件地址。",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "dto.UploadContractReceiptResponse": {
+        "properties": {
+          "message": {
+            "description": "Message 表示上传结果提示信息。",
+            "type": "string"
+          },
+          "receipt": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/dto.ContractReceiptItem"
+              }
+            ],
+            "description": "Receipt 表示本次新增的水单记录。"
           }
         },
         "type": "object"

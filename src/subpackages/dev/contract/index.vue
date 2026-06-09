@@ -1,6 +1,6 @@
 <template>
   <view class="ct-page">
-    <NavBar title="新建合同" />
+    <NavBar :title="editId ? '编辑合同' : '新建合同'" />
     <scroll-view class="ct-scroll" scroll-y="true" :enhanced="true" :show-scrollbar="false">
       <view class="ct-card">
         <view class="ct-field" @tap="onSelectTemplate">
@@ -57,7 +57,7 @@
             <view class="ct-tmpl-card" :class="{ 'ct-tmpl-card--active': selectedTemplateId === item.id }" @tap="selectedTemplateId = item.id">
               <view class="ct-tmpl-info">
                 <text class="ct-tmpl-name">{{ item.name }}</text>
-                <text class="ct-tmpl-no">{{ item.templateNo }}</text>
+                <text class="ct-tmpl-no">模板编号：{{ item.templateNo }}</text>
               </view>
               <view class="ct-tmpl-checkbox" :class="{ 'ct-tmpl-checkbox--checked': selectedTemplateId === item.id }">
                 <view v-if="selectedTemplateId === item.id" class="ct-tmpl-checkbox-dot" />
@@ -69,7 +69,7 @@
       </view>
     </nut-popup>
 
-    <nut-popup v-model:visible="showSupplierPopup" position="center" :style="{ borderRadius: '16rpx' }" :z-index="2100">
+   <!--  <nut-popup v-model:visible="showSupplierPopup" position="center" :style="{ borderRadius: '16rpx' }" :z-index="2100">
       <view class="ct-supplier-card">
         <text class="ct-supplier-title">供方信息</text>
         <view class="ct-supplier-divider" />
@@ -99,9 +99,9 @@
           <text class="ct-supplier-value">21892781378271381</text>
         </view>
       </view>
-    </nut-popup>
+    </nut-popup> -->
 
-    <nut-popup v-model:visible="showPaymentPopup" position="bottom" :style="{ borderRadius: '24rpx 24rpx 0 0' }" :z-index="2000">
+<!--     <nut-popup v-model:visible="showPaymentPopup" position="bottom" :style="{ borderRadius: '24rpx 24rpx 0 0' }" :z-index="2000">
       <view class="ct-pay-popup">
         <view class="ct-pay-header">
           <text class="ct-pay-cancel" @tap="showPaymentPopup = false">取消</text>
@@ -120,11 +120,11 @@
           </template>
         </view>
       </view>
-    </nut-popup>
+    </nut-popup> -->
 
     <view class="ct-actions">
       <view class="ct-btn ct-btn--preview" @tap="onPreview">预览合同</view>
-      <view class="ct-btn ct-btn--submit" @tap="onSubmit">生成合同</view>
+      <view class="ct-btn ct-btn--submit" @tap="onSubmit">{{ editId ? '保存合同' : '生成合同' }}</view>
     </view>
   </view>
 </template>
@@ -133,7 +133,7 @@
 import { ref, reactive, computed, onMounted } from 'vue'
 import Taro from '@tarojs/taro'
 import NavBar from '@/components/NavBar.vue'
-import { getContractTemplates, getContractTemplateDetail, createContract, type ContractTemplateItem, type ContractTokenField } from '@/api/contract'
+import { getContractTemplates, getContractTemplateDetail, createContract, updateContract, getContractDetail, type ContractTemplateItem, type ContractTokenField } from '@/api/contract'
 import rightArrow from '@/assets/dev/rightArror.png'
 
 // 固定字段
@@ -144,10 +144,49 @@ const form = reactive({
 })
 
 const customerId = ref(0)
+const editId = ref(0)
 
-onMounted(() => {
+onMounted(async () => {
   const instance = Taro.getCurrentInstance()
   customerId.value = Number(instance.router?.params?.customerId) || 0
+  const id = Number(instance.router?.params?.id)
+  if (!id) return
+  editId.value = id
+  try {
+    const res = await getContractDetail(id) as Record<string, any>
+    form.templateId = res.templateId || 0
+    form.templateName = res.templateName || ''
+    form.templateNo = res.templateNo || ''
+    templateContentHtml.value = res.renderedHtml || res.contentHtml || ''
+    // 加载模板 tokenSchema
+    if (res.templateId) {
+      const detail = await getContractTemplateDetail(res.templateId)
+      tokenSchema.value = detail.tokenSchema || []
+    }
+    // 从 buyerSnapshot / sellerSnapshot / summarySnapshot 合并填充 formData
+    const all: Record<string, string> = {
+      ...(res.buyerSnapshot || {}),
+      ...(res.sellerSnapshot || {}),
+      ...(res.summarySnapshot || {}),
+    }
+    // 从 items 反填 item.* 字段
+    const itemArr = res.items || []
+    if (itemArr.length > 0) {
+      const it = itemArr[0]
+      all['item.productName'] = it.productName || ''
+      all['item.brandName'] = it.brandName || ''
+      all['item.model'] = it.model || ''
+      all['item.quantity'] = String(it.quantity || '')
+      all['item.unitPrice'] = it.unitPrice ? String(it.unitPrice / 100) : ''
+      all['item.amount'] = it.amount ? String(it.amount / 100) : ''
+      all['item.unit'] = it.unit || ''
+      all['item.remark'] = it.remark || ''
+      all['item.productId'] = String(it.productId || '')
+    }
+    for (const f of tokenSchema.value) {
+      formData[f.key] = all[f.key] ?? ''
+    }
+  } catch { /*  */ }
 })
 
 // 动态字段值
@@ -161,6 +200,7 @@ const selectedTemplateId = ref(0)
 
 // 模板详情
 const tokenSchema = ref<ContractTokenField[]>([])
+const templateContentHtml = ref('')
 
 // 按 category 分组
 const fieldGroups = computed(() => {
@@ -201,6 +241,7 @@ async function onTemplateConfirm() {
     form.templateName = detail.name
     form.templateNo = detail.templateNo
     tokenSchema.value = detail.tokenSchema || []
+    templateContentHtml.value = detail.contentHtml || ''
     // 初始化 formData 默认值
     for (const f of detail.tokenSchema || []) {
       formData[f.key] = f.defaultValue || ''
@@ -233,13 +274,61 @@ async function onSubmit() {
     return
   }
   try {
-    await createContract({
+    // 按 category 分组到对应 snapshot，同时提取 items
+    const buyerSnapshot: Record<string, string> = {}
+    const sellerSnapshot: Record<string, string> = {}
+    const summarySnapshot: Record<string, string> = {}
+    const itemProps: Record<string, string> = {}
+
+    for (const f of tokenSchema.value) {
+      const val = formData[f.key] || ''
+      // 提取 item.* 前缀的产品字段
+      if (f.key.startsWith('item.')) {
+        const prop = f.key.replace('item.', '')
+        itemProps[prop] = val
+        continue
+      }
+      if (f.category === '需方信息' || f.category.includes('需方')) {
+        buyerSnapshot[f.key] = val
+      } else if (f.category === '供方信息' || f.category.includes('供方')) {
+        sellerSnapshot[f.key] = val
+      } else {
+        summarySnapshot[f.key] = val
+      }
+    }
+
+    // 构建 items 数组
+    const items: Record<string, any>[] = []
+    if (Object.keys(itemProps).length > 0) {
+      items.push({
+        productName: itemProps.productName || '',
+        brandName: itemProps.brandName || '',
+        model: itemProps.model || '',
+        quantity: Number(itemProps.quantity) || 0,
+        unitPrice: Math.round(Number(itemProps.unitPrice) * 100) || 0,
+        amount: Math.round(Number(itemProps.amount) * 100) || 0,
+        unit: itemProps.unit || '',
+        remark: itemProps.remark || '',
+        productId: Number(itemProps.productId) || 0,
+      })
+    }
+
+    const data: Record<string, any> = {
       customerId: customerId.value || undefined,
       templateId: form.templateId,
-      ...formData,
-    })
-    Taro.showToast({ title: '创建成功', icon: 'success' })
-    setTimeout(() => Taro.navigateBack(), 1500)
+      buyerSnapshot,
+      sellerSnapshot,
+      summarySnapshot,
+      renderedHtml: templateContentHtml.value || undefined,
+    }
+    if (items.length > 0) data.items = items
+    if (editId.value) {
+      await updateContract(editId.value, data)
+    } else {
+      await createContract(data)
+    }
+    Taro.showToast({ title: editId.value ? '保存成功' : '创建成功', icon: 'success' })
+    setTimeout(() => Taro.navigateBack({ delta: editId.value ? 2 : 1 }), 1500)
   } catch { /*  */ }
 }
 
@@ -512,6 +601,7 @@ const onPreview = () => Taro.showToast({ title: '预览合同', icon: 'none' })
   background: #FBFBFB;
   border: 1rpx solid #ECEBEB;
   border-radius: 8rpx;
+  margin-bottom: 32rpx;
 }
 
 .ct-tmpl-card--active {
