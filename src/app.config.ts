@@ -4,6 +4,7 @@ export default {
   pages: isH5
     ? [
         'pages/pdf-viewer/index',
+        'pages/automation-preview/index',
       ]
     : [
         'pages/login/index',

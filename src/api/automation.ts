@@ -1,4 +1,4 @@
-import { get, post, del } from '@/utils/request'
+import { get, post, del, publicGet } from '@/utils/request'
 
 // ========== 类型定义 ==========
 
@@ -150,4 +150,30 @@ export function createTask(data: UpsertTaskRequest): Promise<TaskDetailResponse>
 /** 删除营销任务 */
 export function deleteTask(id: number, companyId: number): Promise<MutationResponse> {
   return del<MutationResponse>(`/automation/tasks/${id}?companyId=${companyId}`)
+}
+
+// ========== 分享预览 ==========
+
+/** 关联素材项 */
+export interface TaskShareMaterial {
+  materialId: number
+  name: string
+  summary: string
+  materialType: string
+  traceCode: string
+}
+
+/** 任务分享预览响应 */
+export interface TaskSharePreviewResponse {
+  shareToken: string
+  taskId: number
+  taskNo: string
+  title: string
+  contentHtml: string
+  materials: TaskShareMaterial[]
+}
+
+/** 获取任务分享预览（公开接口，无需登录） */
+export function getTaskSharePreview(shareToken: string): Promise<TaskSharePreviewResponse> {
+  return publicGet<TaskSharePreviewResponse>(`/automation/share/tasks/${shareToken}/preview`)
 }
