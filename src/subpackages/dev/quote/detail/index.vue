@@ -229,7 +229,10 @@
 <script setup lang="ts">
 import { reactive, computed, ref, onMounted } from 'vue'
 import Taro from '@tarojs/taro'
+
+declare const TARO_APP_API_BASE: string
 import { getQuotationDetail, revokeQuotation, type QuotationLineItem } from '@/api/quote'
+import { getToken } from '@/utils/storage'
 import iconBack from '@/assets/dev/icon-back.png'
 
 const detail = reactive({
@@ -337,7 +340,29 @@ async function onCancel() {
 }
 
 function onPreview() {
-  Taro.showToast({ title: '预览功能开发中', icon: 'none' })
+  if (!detail.id) {
+    Taro.showToast({ title: '报价单信息异常', icon: 'none' })
+    return
+  }
+  const pdfUrl = `${TARO_APP_API_BASE}/quotations/${detail.id}/preview`
+  Taro.downloadFile({
+    url: pdfUrl,
+    header: { Authorization: `Bearer ${getToken()}` },
+    success(res) {
+      if (res.statusCode === 200) {
+        Taro.openDocument({
+          filePath: res.tempFilePath,
+          fileType: 'pdf',
+          showMenu: true,
+        })
+      } else {
+        Taro.showToast({ title: '预览失败', icon: 'none' })
+      }
+    },
+    fail: () => {
+      Taro.showToast({ title: '下载失败', icon: 'none' })
+    },
+  })
 }
 
 function onEdit() {

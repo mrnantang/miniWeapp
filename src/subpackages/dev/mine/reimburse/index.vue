@@ -206,7 +206,7 @@ function onLoadMore() {
 }
 
 const onAdd = () => {
-  Taro.navigateTo({ url: '/subpackages/dev/mine/reimburse/add/index' })
+  Taro.navigateTo({ url: '/subpackages/dev/mine/reimburse/add/index?isDone=true' })
 }
 
 function onView(item: ReimbursementListItem) {

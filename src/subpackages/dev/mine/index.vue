@@ -25,7 +25,7 @@
     <view class="mine-func-card">
       <text class="mine-card-title">常用功能</text>
       <!-- 切换角色行（仅老板身份可见） -->
-      <view v-if="!isBoss" class="mine-role-row">
+      <view v-if="isBoss" class="mine-role-row">
         <view class="mine-role-left">
           <view class="mine-role-icon">
             <image class="mine-role-icon-img" :src="iconCheck" mode="aspectFit" />
@@ -103,7 +103,6 @@ function onSwitchRole(role) {
 
 /** 从公司架构树中匹配公司名和部门名 */
 function resolveCompanyAndDept(tree, companyId, departmentId) {
-  console.log("test",tree, companyId, departmentId)
   for (const company of tree) {
     if (company.companyId === companyId) {
       const dept = company.children?.find(d => d.departmentId === departmentId)

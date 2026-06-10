@@ -185,7 +185,10 @@
 <script setup lang="ts">
 import { reactive, computed, onMounted } from 'vue'
 import Taro from '@tarojs/taro'
-import { getContractDetail, getContractSharePreview, cancelContract, shareContract, CONTRACT_STATUS_MAP, CONTRACT_STATUS_BADGE_MAP } from '@/api/contract'
+import { getContractDetail, cancelContract, shareContract, CONTRACT_STATUS_MAP, CONTRACT_STATUS_BADGE_MAP } from '@/api/contract'
+import { getToken } from '@/utils/storage'
+
+declare const TARO_APP_API_BASE: string
 import iconBack from '@/assets/dev/icon-back.png'
 
 const statusLabels: Record<string, string> = {
@@ -288,20 +291,34 @@ const onCancel = async () => {
   } catch { /*  */ }
 }
 
-const onPreview = async () => {
-  if (!detail.shareToken) {
-    Taro.showToast({ title: '暂无分享链接', icon: 'none' })
+const onPreview = () => {
+  if (!detail.id) {
+    Taro.showToast({ title: '合同信息异常', icon: 'none' })
     return
   }
-  try {
-    await getContractSharePreview(detail.shareToken)
-    Taro.showToast({ title: '预览成功', icon: 'success' })
-  } catch { /*  */ }
+  const pdfUrl = `${TARO_APP_API_BASE}/sales/contracts/${detail.id}/preview`
+  Taro.downloadFile({
+    url: pdfUrl,
+    header: { Authorization: `Bearer ${getToken()}` },
+    success(res) {
+      if (res.statusCode === 200) {
+        Taro.openDocument({
+          filePath: res.tempFilePath,
+          fileType: 'pdf',
+          showMenu: true,
+        })
+      } else {
+        Taro.showToast({ title: '预览失败', icon: 'none' })
+      }
+    },
+    fail: () => {
+      Taro.showToast({ title: '下载失败', icon: 'none' })
+    },
+  })
 }
 
 const onEdit = () => {
-
-  Taro.navigateTo({ url: '/subpackages/dev/contract/index?id=' + detail.id })
+  Taro.navigateTo({ url: '/subpackages/dev/contract/index?id=' + detail.id + '&customerId=' + detail.customerId })
 }
 const onShare = async () => {
   try {

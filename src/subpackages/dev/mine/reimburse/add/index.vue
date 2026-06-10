@@ -221,10 +221,14 @@ function pickAtt(atts: AttachmentInput[], type: string): UploadedFile | null {
 
 onMounted(() => {
   const instance = Taro.getCurrentInstance()
-  const id = Number(instance.router?.params?.id)
+  const params = instance.router?.params || {}
+  const id = Number(params.id)
   if (id) {
     editId.value = id
     loadEditData(id)
+  } else if (params.isDone === 'true') {
+    // 新建模式：读取路由 isDone 参数，显示页面
+    isDone.value = true
   }
 })
 

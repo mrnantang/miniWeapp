@@ -571,7 +571,7 @@ function formatTime(val?: string) {
 
 function formatAmount(cent: number): string {
   if (cent === undefined || cent === null) return '-'
-  return '￥' + (cent / 100).toLocaleString('zh-CN', { minimumFractionDigits: 0, maximumFractionDigits: 2 })
+  return '￥' + (cent).toLocaleString('zh-CN', { minimumFractionDigits: 0, maximumFractionDigits: 2 })
 }
 
 function quotBadgeStyle(item: CustomerQuotationItem): string {
@@ -742,7 +742,7 @@ const goOppDetail = (card) => {
 }
 
 const onAddQuote = () => {
-  Taro.navigateTo({ url: '/subpackages/dev/quote/index' })
+  Taro.navigateTo({ url: '/subpackages/dev/quote/index?isEdit=true' })
 }
 
 const goQuotationDetail = (card) => {

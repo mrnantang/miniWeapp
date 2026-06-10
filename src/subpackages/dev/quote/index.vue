@@ -1,5 +1,5 @@
 <template>
-  <view class="q-page">
+  <view v-if="isEdit"  class="q-page" >
     <view class="q-nav-bar">
       <view class="q-nav-back" @tap="goBack">
         <image class="q-nav-back-icon" :src="iconBack" mode="aspectFit" />
@@ -8,7 +8,7 @@
       <view class="q-nav-right" />
     </view>
 
-    <view v-if="!editId || idEditId" style="display:flex;flex-direction:column;flex:1">
+    <view style="display:flex;flex-direction:column;flex:1">
       <scroll-view class="q-scroll" scroll-y="true" :enhanced="true" :show-scrollbar="false">
         <view class="q-card">
           <view class="q-field" @tap="onSelectTemplate">
@@ -225,9 +225,7 @@
     
 
     </view>
-
-    <!-- 弹窗（编辑模式下等待数据加载完成后渲染） -->
-    <template v-if="!editId || idEditId">
+   
       <!-- 模板选择弹窗 -->
     <nut-popup v-model:visible="showTemplatePopup" position="bottom"
       :style="{ borderRadius: '24rpx 24rpx 0 0', height: '1022rpx' }" :z-index="2100" portal-disable
@@ -354,7 +352,6 @@
 
       </view>
     </nut-popup>
-    </template>
 
     <view class="q-actions">
       <view class="q-btn q-btn--preview" @tap="onPreview">预览</view>
@@ -364,7 +361,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, computed, onMounted } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import Taro from '@tarojs/taro'
 import { createQuotation, updateQuotation, getQuotationDetail } from '@/api/quote'
 import { getCustomerList, getCustomerOpportunities, type CustomerItem } from '@/api/customer'
@@ -374,7 +371,7 @@ import rightArrow from '@/assets/dev/rightArror.png'
 import iconPlus from '@/assets/dev/icon-add.png'
 import iconDelete from '@/assets/dev/delete.png'
 
-const form = reactive({
+const form = ref({
   name: '',
   company: '',
   address: '',
@@ -412,55 +409,61 @@ const form = reactive({
 })
 
 const editId = ref(0)
-const idEditId = ref(false)
-// 编辑模式：加载详情填充表单
-onMounted(async () => {
-  const instance = Taro.getCurrentInstance()
-  const id = Number(instance.router?.params?.id)
-  if (!id) return 
-  editId.value = id
+const isEdit = ref(false)
+
+// 编辑模式下加载详情数据填充表单
+async function loadEditData(id: number) {
   try {
     const res = await getQuotationDetail(id) as Record<string, any>
-    form.name = res.name || ''
-    form.templateId = res.templateId || 0
-    form.templateName = res.templateName || ''
-    form.templateNo = res.templateNo || ''
-    form.customerId = res.customerId || 0
-    form.customerName = res.customerName || ''
-    form.opportunityId = res.opportunityId || 0
-    form.opportunityName = res.opportunityName || ''
-    // buyerSnapshot
     const buyer = res.buyerSnapshot || {}
-    form.contactName = buyer.contactName || res.contactName || ''
-    form.phone = buyer.phone || res.phone || ''
-    form.company = buyer.company || ''
-    form.address = buyer.address || ''
-    // summarySnapshot
     const summary = res.summarySnapshot || {}
-    form.validity = summary.validity || ''
-    form.warranty = summary.warranty || ''
-    form.delivery = summary.delivery || ''
-    form.taxRate = summary.taxRate || ''
-    form.discountedTotal = summary.discountedTotal || ''
-    // paymentTerms
     const terms = res.paymentTerms || {}
-    form.payAfterSign = terms.payAfterSign || ''
-    form.payAfterPack = terms.payAfterPack || ''
-    form.payAfterInstall = terms.payAfterInstall || ''
-    form.payAfterCheck = terms.payAfterCheck || ''
-    // 产品列表
-    form.products = (res.items || []).map((item: any) => ({
-      productId: item.productId,
-      productName: item.productName || '',
-      modelName: item.modelName || '',
-      quantity: item.quantity || 0,
-      unitPrice: item.unitPrice || 0,
-      amount: item.amount || 0,
-    }))
-    if (editId.value) {
-      idEditId.value = true
+    form.value = {
+      ...form.value,
+      name: res.name || '',
+      templateId: res.templateId || 0,
+      templateName: res.templateName || '',
+      templateNo: res.templateNo || '',
+      customerId: res.customerId || 0,
+      customerName: res.customerName || '',
+      opportunityId: res.opportunityId || 0,
+      opportunityName: res.opportunityName || '',
+      contactName: buyer.contactName || res.contactName || '',
+      phone: buyer.phone || res.phone || '',
+      company: buyer.company || '',
+      address: buyer.address || '',
+      validity: summary.validity || '',
+      warranty: summary.warranty || '',
+      delivery: summary.delivery || '',
+      taxRate: summary.taxRate || '',
+      discountedTotal: summary.discountedTotal || '',
+      payAfterSign: terms.payAfterSign || '',
+      payAfterPack: terms.payAfterPack || '',
+      payAfterInstall: terms.payAfterInstall || '',
+      payAfterCheck: terms.payAfterCheck || '',
+      products: (res.items || []).map((item: any) => ({
+        productId: item.productId,
+        productName: item.productName || '',
+        modelName: item.modelName || '',
+        quantity: item.quantity || 0,
+        unitPrice: item.unitPrice || 0,
+        amount: item.amount || 0,
+      })),
     }
-  } catch { /*  */ }
+    isEdit.value = true
+  } catch { /* 加载失败不显示 */ }
+}
+
+onMounted(() => {
+  const instance = Taro.getCurrentInstance()
+  const params = instance.router?.params || {}
+  const id = Number(params.id)
+  if (id) {
+    editId.value = id
+    loadEditData(id)
+  } else if (params.isEdit === 'true') {
+    isEdit.value = true
+  }
 })
 
 // 模板选择弹窗
@@ -480,9 +483,9 @@ async function onSelectTemplate() {
 }
 
 function onTemplateSelect(item: { id: number; name: string; templateNo: string }) {
-  form.templateId = item.id
-  form.templateName = item.name
-  form.templateNo = item.templateNo || ''
+  form.value.templateId = item.id
+  form.value.templateName = item.name
+  form.value.templateNo = item.templateNo || ''
   showTemplatePopup.value = false
 }
 
@@ -503,10 +506,10 @@ async function onSelectBuyer() {
 }
 
 function onCustomerSelect(item: CustomerItem) {
-  form.customerId = item.id
-  form.customerName = item.name
-  form.contactName = item.contactName || form.contactName
-  form.phone = item.phone || form.phone
+  form.value.customerId = item.id
+  form.value.customerName = item.name
+  form.value.contactName = item.contactName || form.value.contactName
+  form.value.phone = item.phone || form.value.phone
   showCustomerPopup.value = false
 }
 
@@ -516,7 +519,7 @@ const oppLoading = ref(false)
 const oppList = ref<any[]>([])
 
 async function onSelectOpportunity() {
-  if (!form.customerId) {
+  if (!form.value.customerId) {
     Taro.showToast({ title: '请先选择需方客户', icon: 'none' })
     return
   }
@@ -524,15 +527,15 @@ async function onSelectOpportunity() {
   if (oppList.value.length > 0) return
   oppLoading.value = true
   try {
-    oppList.value = await getCustomerOpportunities(form.customerId) || []
+    oppList.value = await getCustomerOpportunities(form.value.customerId) || []
   } catch { /*  */ }
   finally { oppLoading.value = false }
 }
 
 function onOppSelect(item: any) {
-  form.opportunityId = item.id
-  form.opportunityName = item.opportunityName || item.name || ''
-  form.opportunityNo = item.opportunityNo || ''
+  form.value.opportunityId = item.id
+  form.value.opportunityName = item.opportunityName || item.name || ''
+  form.value.opportunityNo = item.opportunityNo || ''
   showOppPopup.value = false
 }
 
@@ -575,17 +578,17 @@ function onProdQtyChange(item: any, delta: number) {
   item._qty = qty
   if (qty === 0) {
     // 从列表中移除
-    const idx = form.products.findIndex(p => p.productId === item.id)
-    if (idx >= 0) form.products.splice(idx, 1)
+    const idx = form.value.products.findIndex(p => p.productId === item.id)
+    if (idx >= 0) form.value.products.splice(idx, 1)
   } else {
     const price = item.price || 0
-    const existing = form.products.find(p => p.productId === item.id)
+    const existing = form.value.products.find(p => p.productId === item.id)
     if (existing) {
       existing.quantity = qty
       existing.unitPrice = price
       existing.amount = qty * price
     } else {
-      form.products.push({
+      form.value.products.push({
         productId: item.id,
         productName: item.name,
         quantity: qty,
@@ -597,7 +600,7 @@ function onProdQtyChange(item: any, delta: number) {
 }
 
 function removeProduct(idx: number) {
-  form.products.splice(idx, 1)
+  form.value.products.splice(idx, 1)
 }
 
 function padIdx(n: number): string {
@@ -605,15 +608,15 @@ function padIdx(n: number): string {
 }
 
 const totalProductAmount = computed(() => {
-  const sum = form.products.reduce((s, p) => s + (p.amount || 0), 0)
+  const sum = form.value.products.reduce((s, p) => s + (p.amount || 0), 0)
   return sum.toLocaleString()
 })
 
-const totalProductAmountRaw = computed(() => form.products.reduce((s, p) => s + (p.amount || 0), 0))
+const totalProductAmountRaw = computed(() => form.value.products.reduce((s, p) => s + (p.amount || 0), 0))
 
 const taxAmountRaw = computed(() => {
   const total = totalProductAmountRaw.value
-  const rate = Number(form.taxRate) || 0
+  const rate = Number(form.value.taxRate) || 0
   return Math.round(total * rate / 100)
 })
 
@@ -628,16 +631,15 @@ const discountedTotalRaw = computed(() => {
 const goBack = () => Taro.navigateBack()
 
 async function onSubmit() {
-  if (!form.name) { Taro.showToast({ title: '请输入报价名称', icon: 'none' }); return }
-  // if (form.products.length === 0) { Taro.showToast({ title: '请添加产品', icon: 'none' }); return }
+  if (!form.value.name) { Taro.showToast({ title: '请输入报价名称', icon: 'none' }); return }
 
   try {
     const data = {
-      name: form.name,
-      templateId: form.templateId || undefined,
-      customerId: form.customerId || undefined,
-      opportunityId: form.opportunityId || undefined,
-      items: form.products.map(p => ({
+      name: form.value.name,
+      templateId: form.value.templateId || undefined,
+      customerId: form.value.customerId || undefined,
+      opportunityId: form.value.opportunityId || undefined,
+      items: form.value.products.map(p => ({
         productId: p.productId,
         productName: p.productName,
         modelName: p.modelName,
@@ -646,26 +648,26 @@ async function onSubmit() {
         amount: p.amount,
       })),
       summarySnapshot: {
-        validity: form.validity,
-        warranty: form.warranty,
-        delivery: form.delivery,
-        taxRate: form.taxRate,
+        validity: form.value.validity,
+        warranty: form.value.warranty,
+        delivery: form.value.delivery,
+        taxRate: form.value.taxRate,
         taxAmount: taxAmountRaw.value,
         totalProductAmount: totalProductAmountRaw.value,
         totalReceivable: totalReceivableRaw.value,
         discountedTotal: discountedTotalRaw.value,
       },
       paymentTerms: {
-        payAfterSign: form.payAfterSign,
-        payAfterPack: form.payAfterPack,
-        payAfterInstall: form.payAfterInstall,
-        payAfterCheck: form.payAfterCheck,
+        payAfterSign: form.value.payAfterSign,
+        payAfterPack: form.value.payAfterPack,
+        payAfterInstall: form.value.payAfterInstall,
+        payAfterCheck: form.value.payAfterCheck,
       },
       buyerSnapshot: {
-        company: form.company,
-        address: form.address,
-        contactName: form.contactName,
-        phone: form.phone,
+        company: form.value.company,
+        address: form.value.address,
+        contactName: form.value.contactName,
+        phone: form.value.phone,
       },
     }
     if (editId.value) {

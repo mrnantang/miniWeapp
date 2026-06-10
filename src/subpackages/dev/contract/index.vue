@@ -19,28 +19,25 @@
 
       <!-- 动态字段卡片：按 category 分组 -->
       <view v-for="group in fieldGroups" :key="group.category" class="ct-card">
-        <text class="ct-label ct-label--title">{{ group.category }}</text>
+        <text class="ct-label ct-label--title">{{ group.category  === 'buyer' ? '需方信息' : group.category === 'seller' ? '供方信息' : '合同信息' }}</text>
         <view class="ct-divider" />
         <template v-for="(field, fi) in group.fields" :key="field.key">
           <view class="ct-field">
             <text class="ct-label">{{ field.label }}</text>
-            <input class="ct-input" v-model="formData[field.key]" :placeholder="'请输入'"
+            <!-- 日期字段：用日期选择器 -->
+            <template v-if="isDateField(field.key)">
+              <view class="ct-field-right" @tap="onOpenDatePicker(field.key)">
+                <text :class="formData[field.key] ? 'ct-value' : 'ct-placeholder'">{{ formData[field.key] || '请选择日期' }}</text>
+                <image class="ct-arrow" :src="rightArrow" mode="aspectFit" />
+              </view>
+            </template>
+            <!-- 普通字段：用 input -->
+            <input v-else class="ct-input" v-model="formData[field.key]" :placeholder="'请输入'"
               placeholder-style="color:#BBBEC2;font-size:30rpx" />
           </view>
           <view v-if="fi < group.fields.length - 1" class="ct-divider" />
         </template>
       </view>
-
-      <!-- 供方信息 -->
-  <!--     <view class="ct-card">
-        <view class="ct-field" @tap="onSelectSupplier">
-          <text class="ct-label ct-label--title">供方信息</text>
-          <view class="ct-field-right">
-            <text class="ct-placeholder">请选择</text>
-            <image class="ct-arrow" :src="rightArrow" mode="aspectFit" />
-          </view>
-        </view>
-      </view> -->
     </scroll-view>
 
     <nut-popup v-model:visible="showTemplatePopup" position="bottom" :style="{ borderRadius: '24rpx 24rpx 0 0', height: '1022rpx' }" :z-index="2000" portal-disable safe-area-inset-bottom>
@@ -69,58 +66,27 @@
       </view>
     </nut-popup>
 
-   <!--  <nut-popup v-model:visible="showSupplierPopup" position="center" :style="{ borderRadius: '16rpx' }" :z-index="2100">
-      <view class="ct-supplier-card">
-        <text class="ct-supplier-title">供方信息</text>
-        <view class="ct-supplier-divider" />
-        <view class="ct-supplier-field" @tap="onSelectSupplierCompany">
-          <text class="ct-supplier-label">供方</text>
-          <view class="ct-supplier-right">
-            <text class="ct-supplier-value">德贝尔总公司</text>
-            <image class="ct-arrow" :src="rightArrow" mode="aspectFit" />
-          </view>
+    <!-- 日期选择弹窗 -->
+    <nut-popup v-model:visible="showDatePopup" position="bottom" :style="{ borderRadius: '24rpx 24rpx 0 0' }" :z-index="2100">
+      <view class="ct-date-popup">
+        <view class="q-popup-header">
+          <text class="ct-pay-cancel" @tap="showDatePopup = false">取消</text>
+          <text class="q-popup-title">选择日期</text>
+          <text class="q-popup-confirm" @tap="onDateConfirm">确定</text>
         </view>
-        <view class="ct-supplier-divider" />
-        <view class="ct-supplier-field" @tap="onSelectAccountType">
-          <text class="ct-supplier-label">收款公户/私户</text>
-          <view class="ct-supplier-right">
-            <text class="ct-supplier-value">私户</text>
-            <image class="ct-arrow" :src="rightArrow" mode="aspectFit" />
-          </view>
-        </view>
-        <view class="ct-supplier-divider" />
-        <view class="ct-supplier-field">
-          <text class="ct-supplier-label">收款账户名称</text>
-          <text class="ct-supplier-value">孙星星</text>
-        </view>
-        <view class="ct-supplier-divider" />
-        <view class="ct-supplier-field">
-          <text class="ct-supplier-label">收款私户账户</text>
-          <text class="ct-supplier-value">21892781378271381</text>
-        </view>
+        <picker-view class="ct-date-picker-body" :value="pickerValue" @change="onPickerChange">
+          <picker-view-column>
+            <view v-for="y in years" :key="y" class="ct-picker-item">{{ y }}年</view>
+          </picker-view-column>
+          <picker-view-column>
+            <view v-for="m in months" :key="m" class="ct-picker-item">{{ m }}月</view>
+          </picker-view-column>
+          <picker-view-column>
+            <view v-for="d in days" :key="d" class="ct-picker-item">{{ d }}日</view>
+          </picker-view-column>
+        </picker-view>
       </view>
-    </nut-popup> -->
-
-<!--     <nut-popup v-model:visible="showPaymentPopup" position="bottom" :style="{ borderRadius: '24rpx 24rpx 0 0' }" :z-index="2000">
-      <view class="ct-pay-popup">
-        <view class="ct-pay-header">
-          <text class="ct-pay-cancel" @tap="showPaymentPopup = false">取消</text>
-          <text class="ct-pay-title">付款方式</text>
-          <text class="ct-pay-confirm" @tap="onPaymentConfirm">确认</text>
-        </view>
-        <view class="ct-pay-body">
-          <template v-for="(item, idx) in paymentOptions" :key="item">
-            <view class="ct-pay-row" @tap="selectPayment(item)">
-              <text class="ct-pay-row-text">{{ item }}</text>
-              <view class="ct-pay-checkbox" :class="{ 'ct-pay-checkbox--checked': selectedPayment === item }">
-                <view v-if="selectedPayment === item" class="ct-pay-checkbox-dot" />
-              </view>
-            </view>
-            <view v-if="idx < paymentOptions.length - 1" class="ct-pay-divider" />
-          </template>
-        </view>
-      </view>
-    </nut-popup> -->
+    </nut-popup>
 
     <view class="ct-actions">
       <view class="ct-btn ct-btn--preview" @tap="onPreview">预览合同</view>
@@ -157,18 +123,20 @@ onMounted(async () => {
     form.templateId = res.templateId || 0
     form.templateName = res.templateName || ''
     form.templateNo = res.templateNo || ''
-    templateContentHtml.value = res.renderedHtml || res.contentHtml || ''
     // 加载模板 tokenSchema
     if (res.templateId) {
       const detail = await getContractTemplateDetail(res.templateId)
       tokenSchema.value = detail.tokenSchema || []
     }
     // 从 buyerSnapshot / sellerSnapshot / summarySnapshot 合并填充 formData
-    const all: Record<string, string> = {
-      ...(res.buyerSnapshot || {}),
-      ...(res.sellerSnapshot || {}),
-      ...(res.summarySnapshot || {}),
-    }
+    // 接口返回的 snapshot key 不带前缀，tokenSchema 的 key 带前缀（buyer./seller./item.），需要补回
+    const buyerRaw = res.buyerSnapshot || {}
+    const sellerRaw = res.sellerSnapshot || {}
+    const summaryRaw = res.summarySnapshot || {}
+    const all: Record<string, string> = {}
+    for (const k of Object.keys(buyerRaw)) { all['buyer.' + k] = buyerRaw[k] }
+    for (const k of Object.keys(sellerRaw)) { all['seller.' + k] = sellerRaw[k] }
+    for (const k of Object.keys(summaryRaw)) { all[k] = summaryRaw[k] }
     // 从 items 反填 item.* 字段
     const itemArr = res.items || []
     if (itemArr.length > 0) {
@@ -177,11 +145,11 @@ onMounted(async () => {
       all['item.brandName'] = it.brandName || ''
       all['item.model'] = it.model || ''
       all['item.quantity'] = String(it.quantity || '')
+      // 后端返回分，表单输入期望元：除以100
       all['item.unitPrice'] = it.unitPrice ? String(it.unitPrice / 100) : ''
       all['item.amount'] = it.amount ? String(it.amount / 100) : ''
       all['item.unit'] = it.unit || ''
       all['item.remark'] = it.remark || ''
-      all['item.productId'] = String(it.productId || '')
     }
     for (const f of tokenSchema.value) {
       formData[f.key] = all[f.key] ?? ''
@@ -249,25 +217,6 @@ async function onTemplateConfirm() {
   } catch { /*  */ }
 }
 
-const showSupplierPopup = ref(false)
-const showPaymentPopup = ref(false)
-const selectedPayment = ref('先发货后付款')
-const paymentOptions = ['先发货后付款', '分期支付']
-
-const onSelectBuyer = () => Taro.showToast({ title: '选择需方', icon: 'none' })
-const onSelectSupplier = () => showSupplierPopup.value = true
-const onSelectRegion = () => Taro.showToast({ title: '选择省市区', icon: 'none' })
-const onSelectTaxIncluded = () => Taro.showToast({ title: '选择是否含税', icon: 'none' })
-const onSelectPaymentMethod = () => showPaymentPopup.value = true
-
-const selectPayment = (item: string) => { selectedPayment.value = item }
-const onPaymentConfirm = () => {
-  showPaymentPopup.value = false
-  Taro.showToast({ title: '已选择' + selectedPayment.value, icon: 'none' })
-}
-const onSelectSupplierCompany = () => Taro.showToast({ title: '选择供方公司', icon: 'none' })
-const onSelectAccountType = () => Taro.showToast({ title: '选择账户类型', icon: 'none' })
-
 async function onSubmit() {
   if (!form.templateId) {
     Taro.showToast({ title: '请选择合同模板', icon: 'none' })
@@ -275,6 +224,8 @@ async function onSubmit() {
   }
   try {
     // 按 category 分组到对应 snapshot，同时提取 items
+    // 注意：token key 带前缀（如 buyer.party、seller.fullName、item.productName），
+    // 接口要求 snapshot 对象的 key 不带前缀
     const buyerSnapshot: Record<string, string> = {}
     const sellerSnapshot: Record<string, string> = {}
     const summarySnapshot: Record<string, string> = {}
@@ -282,22 +233,18 @@ async function onSubmit() {
 
     for (const f of tokenSchema.value) {
       const val = formData[f.key] || ''
-      // 提取 item.* 前缀的产品字段
-      if (f.key.startsWith('item.')) {
-        const prop = f.key.replace('item.', '')
-        itemProps[prop] = val
-        continue
-      }
-      if (f.category === '需方信息' || f.category.includes('需方')) {
-        buyerSnapshot[f.key] = val
-      } else if (f.category === '供方信息' || f.category.includes('供方')) {
-        sellerSnapshot[f.key] = val
+      if (f.key.startsWith('buyer.')) {
+        buyerSnapshot[f.key.replace('buyer.', '')] = val
+      } else if (f.key.startsWith('seller.')) {
+        sellerSnapshot[f.key.replace('seller.', '')] = val
+      } else if (f.key.startsWith('item.')) {
+        itemProps[f.key.replace('item.', '')] = val
       } else {
         summarySnapshot[f.key] = val
       }
     }
 
-    // 构建 items 数组
+    // 构建 items 数组（amount=0 由后端自动计算）
     const items: Record<string, any>[] = []
     if (Object.keys(itemProps).length > 0) {
       items.push({
@@ -306,10 +253,9 @@ async function onSubmit() {
         model: itemProps.model || '',
         quantity: Number(itemProps.quantity) || 0,
         unitPrice: Math.round(Number(itemProps.unitPrice) * 100) || 0,
-        amount: Math.round(Number(itemProps.amount) * 100) || 0,
+        amount: 0,
         unit: itemProps.unit || '',
         remark: itemProps.remark || '',
-        productId: Number(itemProps.productId) || 0,
       })
     }
 
@@ -318,8 +264,7 @@ async function onSubmit() {
       templateId: form.templateId,
       buyerSnapshot,
       sellerSnapshot,
-      summarySnapshot,
-      renderedHtml: templateContentHtml.value || undefined,
+      summarySnapshot
     }
     if (items.length > 0) data.items = items
     if (editId.value) {
@@ -333,6 +278,58 @@ async function onSubmit() {
 }
 
 const onPreview = () => Taro.showToast({ title: '预览合同', icon: 'none' })
+
+// ========== 日期选择器 ==========
+const showDatePopup = ref(false)
+/** 当前正在编辑的日期字段 key */
+let currentDateKey = ''
+
+const now = new Date()
+const currentYear = now.getFullYear()
+const years = Array.from({ length: 5 }, (_, i) => currentYear - 2 + i)
+const months = Array.from({ length: 12 }, (_, i) => i + 1)
+const daysInMonth = (y: number, m: number) => new Date(y, m, 0).getDate()
+const days = computed(() => {
+  const y = years[pickerValue.value[0]]
+  const m = months[pickerValue.value[1]]
+  return Array.from({ length: daysInMonth(y, m) }, (_, i) => i + 1)
+})
+const pickerValue = ref([2, now.getMonth(), now.getDate() - 1])
+
+/** 判断字段 key 是否为日期类型（包含 Date 或 signingDate 等） */
+function isDateField(key: string): boolean {
+  return key.includes('Date') || key.includes('date') || key.includes('time') || key.includes('Time')
+}
+
+function onOpenDatePicker(key: string) {
+  currentDateKey = key
+  // 如果已有值，尝试解析并定位 picker
+  const existing = formData[key]
+  if (existing && /^\d{4}-\d{2}-\d{2}$/.test(existing)) {
+    const parts = existing.split('-')
+    const y = Number(parts[0])
+    const m = Number(parts[1]) - 1
+    const d = Number(parts[2]) - 1
+    const yi = years.indexOf(y)
+    const mi = m // 0-based
+    const di = d // 0-based
+    pickerValue.value = [yi >= 0 ? yi : 2, mi >= 0 && mi < 12 ? mi : 0, di >= 0 ? di : 0]
+  }
+  showDatePopup.value = true
+}
+
+function onDateConfirm() {
+  const y = years[pickerValue.value[0]]
+  const m = months[pickerValue.value[1]]
+  const d = days.value[pickerValue.value[2]]
+  const dateStr = `${y}-${m < 10 ? '0' + m : m}-${d < 10 ? '0' + d : d}`
+  formData[currentDateKey] = dateStr
+  showDatePopup.value = false
+}
+
+function onPickerChange(e: any) {
+  pickerValue.value = e.detail.value
+}
 </script>
 
 <style>
@@ -762,5 +759,23 @@ const onPreview = () => Taro.showToast({ title: '预览合同', icon: 'none' })
 .ct-pay-divider {
   height: 1rpx;
   background: #F4F4F4;
+}
+
+/* 日期选择弹窗 */
+.ct-date-popup {
+  background: #FFFFFF;
+  border-radius: 24rpx 24rpx 0 0;
+}
+
+.ct-date-picker-body {
+  height: 480rpx;
+}
+
+.ct-picker-item {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 32rpx;
+  color: #1A1D24;
 }
 </style>
