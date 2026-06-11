@@ -104,6 +104,12 @@
     </scroll-view>
 
     <FilterPopup v-model="showFilterPopup" :simple="true" :active-type="activeFilterType" :title="activeFilterTitle" :multiple="false" :initial-selected="activeFilterInitial" @confirm="onFilterConfirm" />
+
+    <!-- 负责人选择 -->
+    <UserCascaderPopup v-model="showUserPopup" title="选择负责人" @confirm="onUserConfirm" />
+
+    <!-- 省市区选择 -->
+    <RegionPickerPopup v-model="showRegionPopup" title="选择省市区" @confirm="onRegionConfirm" />
   </view>
 </template>
 
@@ -111,11 +117,15 @@
 import { ref, reactive } from 'vue'
 import Taro from '@tarojs/taro'
 import FilterPopup from '../components/FilterPopup.vue'
+import UserCascaderPopup from '@/components/UserCascaderPopup.vue'
+import RegionPickerPopup from '@/components/RegionPickerPopup.vue'
 import { createLead, type CreateLeadRequest } from '@/api/lead'
 import rightArrowIcon from '@/assets/dev/rightArror.png'
 
 const showFilterPopup = ref(false)
 const activeFilterType = ref('channel')
+const showUserPopup = ref(false)
+const showRegionPopup = ref(false)
 const activeFilterTitle = ref('')
 const activeFilterInitial = ref<string[]>([])
 const saving = ref(false)
@@ -181,6 +191,8 @@ const industryMap: Record<string, string> = {
 }
 
 const openFilter = (type: string, title: string) => {
+  if (type === 'userCascader') { showUserPopup.value = true; return }
+  if (type === 'region') { showRegionPopup.value = true; return }
   activeFilterType.value = type
   activeFilterTitle.value = title
 
@@ -200,25 +212,24 @@ const openFilter = (type: string, title: string) => {
   showFilterPopup.value = true
 }
 
-const onFilterConfirm = (result: { type: string; selected: string[]; regionCodes?: { provinceCode: string; cityCode: string; districtCode: string }; regionPath?: string; userCascaderPath?: string; userId?: number; userName?: string }) => {
-  if (result.type === 'region') {
-    form.region = result.regionPath || (result.selected.length > 0 ? result.selected[0] : '')
-    if (result.regionCodes) {
-      form.regionProvinceCode = result.regionCodes.provinceCode
-      form.regionCityCode = result.regionCodes.cityCode
-      form.regionDistrictCode = result.regionCodes.districtCode
-    }
-  } else if (result.type === 'userCascader') {
-    form.ownerUserName = result.userName || ''
-    // form.ownerUserId = result.userId
-    form.ownerUserId = 5
-  } else {
-    const fieldKey = Object.keys(fieldTypeMap).find(k => fieldTypeMap[k] === result.type)
-    if (fieldKey) {
-      form[fieldKey] = result.selected.length > 0 ? result.selected[0] : ''
-    }
+const onFilterConfirm = (result: { type: string; selected: string[] }) => {
+  const fieldKey = Object.keys(fieldTypeMap).find(k => fieldTypeMap[k] === result.type)
+  if (fieldKey) {
+    form[fieldKey] = result.selected.length > 0 ? result.selected[0] : ''
   }
   showFilterPopup.value = false
+}
+
+const onUserConfirm = (payload: { userId: number; userName: string }) => {
+  form.ownerUserId = payload.userId
+  form.ownerUserName = payload.userName
+}
+
+const onRegionConfirm = (payload: { provinceCode: string; cityCode: string; districtCode: string; regionPath: string }) => {
+  form.region = payload.regionPath
+  form.regionProvinceCode = payload.provinceCode
+  form.regionCityCode = payload.cityCode
+  form.regionDistrictCode = payload.districtCode
 }
 
 const goBack = () => {

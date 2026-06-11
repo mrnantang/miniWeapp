@@ -16,7 +16,7 @@
     <template v-else-if="detail">
       <!-- 头部卡片 -->
       <view class="ms-card">
-        <text class="ms-title">{{ detail.name || '-' }}</text>
+        <text class="ms-title">{{ detail.summary || '-' }}</text>
         <view class="ms-divider" />
 
         <!-- video 视频 -->
@@ -25,26 +25,34 @@
             v-if="videoUrl"
             class="ms-video"
             :src="videoUrl"
-            :poster="detail.coverUrl"
+            :poster="videoUrl"
             controls
             show-play-btn
             object-fit="contain"
           />
         </template>
 
-        <!-- 图片类（poster/article） -->
-        <image v-else-if="detail.coverUrl" class="ms-cover-img" :src="detail.coverUrl" @tap="previewImage" />
+        <!-- 图片类 -->
+        <template v-if="imageUrls.length > 0">
+          <image
+            v-for="url in imageUrls"
+            :key="url"
+            class="ms-cover-img"
+            :src="url"
+            mode="widthFix"
+            @tap="previewImage(url)"
+          />
+        </template>
 
-        <!-- 文件链接（document/h5） -->
-        <template v-if="detail.files && detail.files.length > 0">
-          <view v-for="f in detail.files" :key="f.id" class="ms-file-row">
-            <view class="ms-link-icon" />
-            <text class="ms-file-name" @tap="openFile(f.fileUrl)">{{ f.fileName }}</text>
+        <!-- 文档/链接文件 -->
+        <template v-if="docFiles.length > 0">
+          <view v-for="f in docFiles" :key="f.url" class="ms-file-row">
+            <text class="ms-file-name" @tap="openFile(f.url)">{{ f.fileName || '附件' }}</text>
           </view>
         </template>
 
         <!-- 描述文字 -->
-        <view v-if="detail.summary" class="ms-summary">
+        <view v-if="detail.summary && detail.materialType !== 'video'" class="ms-summary">
           <text class="ms-summary-text">{{ detail.summary }}</text>
         </view>
 
@@ -68,13 +76,26 @@ const detail = ref<Record<string, any> | null>(null)
 
 const videoUrl = computed(() => {
   if (!detail.value) return ''
-  const files = detail.value.files || []
-  const video = files.find((f: any) => f.fileRole === 'video')
-  return video?.fileUrl || ''
+  const vf = detail.value.videoFiles || []
+  return vf[0]?.url || ''
 })
 
-function previewImage() {
-  const url = detail.value?.coverUrl
+const imageUrls = computed(() => {
+  if (!detail.value) return []
+  const imgs = detail.value.imageFiles || detail.value.posterFiles || []
+  return imgs.filter((f: any) => f.url).map((f: any) => f.url)
+})
+
+const docFiles = computed(() => {
+  if (!detail.value) return []
+  const docs = detail.value.documentFiles || detail.value.files || []
+  return docs.filter((f: any) => f.url || f.fileUrl).map((f: any) => ({
+    url: f.url || f.fileUrl || '',
+    fileName: f.fileName || '附件',
+  }))
+})
+
+function previewImage(url: string) {
   if (url) {
     Taro.previewImage({ urls: [url], current: url })
   }

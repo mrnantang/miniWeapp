@@ -552,7 +552,7 @@
 
 <script setup lang="ts">
 import { ref, computed, onMounted, watch } from 'vue'
-import Taro from '@tarojs/taro'
+import Taro, { useDidShow } from '@tarojs/taro'
 import NavBar from '@/components/NavBar.vue'
 import { getCustomerDetail, getCustomerOpportunities, type CustomerItem } from '@/api/customer'
 import { getOpportunityFollowRecords, getOpportunityVisitRecords, type VisitRecordItem } from '@/api/opportunity'
@@ -787,6 +787,14 @@ watch(infoTab, (tab) => {
   } else if (tab === 'expense') {
     fetchExpenses()
   }
+})
+
+// 从子页面返回时刷新当前 tab 数据
+useDidShow(() => {
+  if (infoTab.value === 'contract') fetchContracts()
+  else if (infoTab.value === 'quote') fetchQuotations()
+  else if (infoTab.value === 'expense') fetchExpenses()
+  else if (infoTab.value === 'opportunity') fetchOpportunities()
 })
 
 const followTypeEnToCn = {

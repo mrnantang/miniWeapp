@@ -45,7 +45,7 @@
           <view class="q-field">
             <text class="q-field-label">手机号</text>
             <input class="q-input" v-model="form.phone" placeholder="请输入"
-              placeholder-style="color:#BBBEC2;font-size:28rpx" type="number" />
+              placeholder-style="color:#BBBEC2;font-size:28rpx"/>
           </view>
         </view>
 
@@ -273,7 +273,6 @@
               <view class="q-sel-item" @tap="onCustomerSelect(item)">
                 <view class="q-sel-info">
                   <text class="q-sel-name">{{ item.name }}</text>
-                  <text class="q-sel-no">{{ item.phone || '-' }}</text>
                 </view>
                 <view class="q-sel-radio" :class="{ 'q-sel-radio--checked': form.customerId === item.id }">
                   <view v-if="form.customerId === item.id" class="q-sel-radio-dot" />
@@ -373,8 +372,6 @@ import iconDelete from '@/assets/dev/delete.png'
 
 const form = ref({
   name: '',
-  company: '',
-  address: '',
   contactName: '',
   phone: '',
   validity: '',
@@ -425,18 +422,16 @@ async function loadEditData(id: number) {
       templateName: res.templateName || '',
       templateNo: res.templateNo || '',
       customerId: res.customerId || 0,
-      customerName: res.customerName || '',
-      opportunityId: res.opportunityId || 0,
+      customerName: buyer.customerName || '',
+       opportunityId: res?.opportunityId || 0,
       opportunityName: res.opportunityName || '',
-      contactName: buyer.contactName || res.contactName || '',
-      phone: buyer.phone || res.phone || '',
-      company: buyer.company || '',
-      address: buyer.address || '',
+      contactName: buyer.contactName  || '',
+      phone: buyer?.phone  || '', 
       validity: summary.validity || '',
       warranty: summary.warranty || '',
       delivery: summary.delivery || '',
       taxRate: summary.taxRate || '',
-      discountedTotal: summary.discountedTotal || '',
+       discountedTotal: summary.discountedTotal || '',
       payAfterSign: terms.payAfterSign || '',
       payAfterPack: terms.payAfterPack || '',
       payAfterInstall: terms.payAfterInstall || '',
@@ -509,7 +504,6 @@ function onCustomerSelect(item: CustomerItem) {
   form.value.customerId = item.id
   form.value.customerName = item.name
   form.value.contactName = item.contactName || form.value.contactName
-  form.value.phone = item.phone || form.value.phone
   showCustomerPopup.value = false
 }
 
@@ -664,8 +658,6 @@ async function onSubmit() {
         payAfterCheck: form.value.payAfterCheck,
       },
       buyerSnapshot: {
-        company: form.value.company,
-        address: form.value.address,
         contactName: form.value.contactName,
         phone: form.value.phone,
       },

@@ -360,7 +360,7 @@ const fetchUserCascader = async () => {
   if (userCascaderTree.value.length > 0 || userCascaderLoading.value) return
   userCascaderLoading.value = true
   try {
-    const res = await getUserCascader({ permissionCode: 'lead.create', companyId: 1 })
+    const res = await getUserCascader({ permissionCode: 'lead.create' })
     userCascaderTree.value = res.items || []
   } catch {
     // 加载失败保持空列表

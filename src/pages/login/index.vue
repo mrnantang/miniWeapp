@@ -73,7 +73,7 @@ import iconPassword from '@/assets/login/icon-password.svg'
 
 // const account = ref('hdxs06')
 // const account = ref('hdyyg101')
-const account = ref('admin')
+const account = ref('hzxs06')
 const password = ref('123456')
 const rememberPwd = ref(false)
 const loading = ref(false)

@@ -99,6 +99,9 @@
 import { ref, reactive, computed, onMounted } from 'vue'
 import Taro from '@tarojs/taro'
 import NavBar from '@/components/NavBar.vue'
+import { getToken } from '@/utils/storage'
+
+declare const TARO_APP_API_BASE: string
 import { getContractTemplates, getContractTemplateDetail, createContract, updateContract, getContractDetail, type ContractTemplateItem, type ContractTokenField } from '@/api/contract'
 import rightArrow from '@/assets/dev/rightArror.png'
 
@@ -203,6 +206,9 @@ async function onTemplateConfirm() {
     return
   }
   showTemplatePopup.value = false
+  // 先清空旧数据再加载新模板
+  tokenSchema.value = []
+  Object.keys(formData).forEach(k => delete formData[k])
   try {
     const detail = await getContractTemplateDetail(selectedTemplateId.value)
     form.templateId = detail.id
@@ -277,7 +283,26 @@ async function onSubmit() {
   } catch { /*  */ }
 }
 
-const onPreview = () => Taro.showToast({ title: '预览合同', icon: 'none' })
+const onPreview = () => {
+  // 编辑模式下调用合同预览接口下载 PDF
+  if (editId.value) {
+    const pdfUrl = `${TARO_APP_API_BASE}/sales/contracts/${editId.value}/preview`
+    Taro.downloadFile({
+      url: pdfUrl,
+      header: { Authorization: `Bearer ${getToken()}` },
+      success(res) {
+        if (res.statusCode === 200) {
+          Taro.openDocument({ filePath: res.tempFilePath, fileType: 'pdf', showMenu: true })
+        } else {
+          Taro.showToast({ title: '预览失败', icon: 'none' })
+        }
+      },
+      fail: () => Taro.showToast({ title: '下载失败', icon: 'none' }),
+    })
+    return
+  }
+  Taro.showToast({ title: '请先保存合同再预览', icon: 'none' })
+}
 
 // ========== 日期选择器 ==========
 const showDatePopup = ref(false)

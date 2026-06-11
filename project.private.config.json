@@ -23,11 +23,18 @@
     "miniprogram": {
       "list": [
         {
-          "name": "客户详情",
-          "pathName": "subpackages/dev/customer/detail/index",
-          "query": "id=5",
+          "name": "bug",
+          "pathName": "subpackages/dev/quote/detail/index",
+          "query": "id=1949",
           "scene": null,
           "launchMode": "default"
+        },
+        {
+          "name": "客户详情",
+          "pathName": "subpackages/dev/customer/detail/index",
+          "query": "id=986",
+          "launchMode": "default",
+          "scene": null
         },
         {
           "name": "创建客户与商机",

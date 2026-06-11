@@ -900,6 +900,7 @@ onMounted(async () => {
   justify-content: space-between;
 }
 .tc-name {
+  width: 80%;
   font-size: 28rpx;
   font-weight: 600;
   color: #1A1D24;

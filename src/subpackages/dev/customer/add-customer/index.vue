@@ -35,7 +35,7 @@
           <input class="ac-input" v-model="form.contactTitle" placeholder="请输入" placeholder-style="color:#BBBEC2;font-size:28rpx" />
         </view>
         <view class="ac-divider" />
-        <view class="ac-field" @tap="openPicker('industry')">
+        <view class="ac-field" @tap="showIndustryPopup = true">
           <text class="ac-label">客户行业</text>
           <text class="ac-required">*</text>
           <view class="ac-value-row">
@@ -44,12 +44,9 @@
           </view>
         </view>
         <view class="ac-divider" />
-        <view class="ac-field" @tap="openPicker('product')">
+        <view class="ac-field">
           <text class="ac-label">客户工件</text>
-          <view class="ac-value-row">
-            <text class="ac-value" :class="{ 'ac-value--set': form.product }">{{ form.product || '请选择' }}</text>
-            <image class="ac-arrow" :src="rightArrow" mode="aspectFit" />
-          </view>
+          <input class="ac-input" v-model="form.product" placeholder="请输入" placeholder-style="color:#BBBEC2;font-size:28rpx" />
         </view>
         <view class="ac-divider" />
         <view class="ac-field" @tap="showCategoryPopup = true">
@@ -148,7 +145,7 @@
           <input class="ac-input" v-model="form.email" placeholder="请输入" placeholder-style="color:#BBBEC2;font-size:28rpx" />
         </view>
         <view class="ac-divider" />
-        <view class="ac-field" @tap="openPicker('region')">
+        <view class="ac-field" @tap="showRegionPopup = true">
           <text class="ac-label">省/市/区</text>
           <text class="ac-required">*</text>
           <view class="ac-value-row">
@@ -189,16 +186,16 @@
           <text class="ac-label">协作人</text>
           <text class="ac-required">*</text>
           <view class="ac-value-row">
-            <text class="ac-value" :class="{ 'ac-value--set': form.collaborator }">{{ form.collaborator || '请选择' }}</text>
+            <text class="ac-value" :class="{ 'ac-value--set': form.collaboratorUserName || form.collaborator }">{{ form.collaboratorUserName || form.collaborator || '请选择' }}</text>
             <image class="ac-arrow" :src="rightArrow" mode="aspectFit" />
           </view>
         </view>
         <view class="ac-divider" />
-        <view class="ac-field" @tap="openPicker('owner')">
+        <view class="ac-field" @tap="showUserPopup = true">
           <text class="ac-label">负责人</text>
           <text class="ac-required">*</text>
           <view class="ac-value-row">
-            <text class="ac-value" :class="{ 'ac-value--set': form.owner }">{{ form.owner || '请选择' }}</text>
+            <text class="ac-value" :class="{ 'ac-value--set': form.ownerUserName || form.owner }">{{ form.ownerUserName || form.owner || '请选择' }}</text>
             <image class="ac-arrow" :src="rightArrow" mode="aspectFit" />
           </view>
         </view>
@@ -277,54 +274,19 @@
       </view>
     </nut-popup>
 
-    <nut-popup v-model:visible="showCollaboratorPopup" position="bottom" :style="{ borderRadius: '24rpx 24rpx 0 0', height: '1022rpx' }" :z-index="2000">
-      <view class="ac-org-popup">
+    <nut-popup v-model:visible="showIndustryPopup" position="bottom" :style="{ borderRadius: '24rpx 24rpx 0 0' }" :z-index="2000">
+      <view class="ac-popup">
         <view class="ac-popup-header">
-          <text class="ac-popup-cancel" @tap="showCollaboratorPopup = false">取消</text>
-          <text class="ac-popup-title">协作人</text>
-          <text class="ac-popup-confirm" @tap="confirmCollaborator">确认</text>
+          <text class="ac-popup-cancel" @tap="showIndustryPopup = false">取消</text>
+          <text class="ac-popup-title">客户行业</text>
+          <text class="ac-popup-confirm" @tap="confirmIndustry">确认</text>
         </view>
-        <view class="ac-org-body">
-          <view class="ac-org-sidebar">
-            <view class="ac-org-sidebar-item ac-org-sidebar-item--active">
-              <text class="ac-org-sidebar-text ac-org-sidebar-text--active">公司/部门/员工</text>
+        <view class="ac-popup-body">
+          <view v-for="item in industryOptions" :key="item" class="ac-popup-row" @tap="toggleSelect('industry', item)">
+            <text class="ac-popup-label" :class="{ 'ac-popup-label--set': selectedIndustry === item }">{{ item }}</text>
+            <view class="ac-checkbox" :class="{ 'ac-checkbox--checked': selectedIndustry === item }">
+              <view v-if="selectedIndustry === item" class="ac-checkbox-dot" />
             </view>
-          </view>
-          <view class="ac-org-content">
-            <scroll-view scroll-y :enhanced="true" :show-scrollbar="false" class="ac-org-scroll">
-              <text class="ac-org-section-title">公司</text>
-              <view class="ac-org-tag-row">
-                <view v-for="c in orgData.companies" :key="c.name" class="ac-org-tag" :class="{ 'ac-org-tag--active': orgSelected.includes(c.name) }" @tap="toggleOrg(c.name)">
-                  <text class="ac-org-tag-text" :class="{ 'ac-org-tag-text--active': orgSelected.includes(c.name) }">{{ c.name }}</text>
-                </view>
-              </view>
-              <text class="ac-org-section-title">部门</text>
-              <view class="ac-org-tag-row">
-                <view v-for="d in orgData.depts" :key="d.name" class="ac-org-tag" :class="{ 'ac-org-tag--active': orgSelected.includes(d.name) }" @tap="toggleOrg(d.name)">
-                  <text class="ac-org-tag-text" :class="{ 'ac-org-tag-text--active': orgSelected.includes(d.name) }">{{ d.name }}</text>
-                </view>
-              </view>
-              <text class="ac-org-section-title">子部门</text>
-              <view class="ac-org-tag-row">
-                <view v-for="s in orgData.subDepts" :key="s.name" class="ac-org-tag" :class="{ 'ac-org-tag--active': orgSelected.includes(s.name) }" @tap="toggleOrg(s.name)">
-                  <text class="ac-org-tag-text" :class="{ 'ac-org-tag-text--active': orgSelected.includes(s.name) }">{{ s.name }}</text>
-                </view>
-              </view>
-              <text class="ac-org-section-title">员工</text>
-              <view class="ac-org-tag-row">
-                <view v-for="e in orgData.employees" :key="e.name" class="ac-org-tag" :class="{ 'ac-org-tag--active': orgSelected.includes(e.name) }" @tap="toggleOrg(e.name)">
-                  <text class="ac-org-tag-text" :class="{ 'ac-org-tag-text--active': orgSelected.includes(e.name) }">{{ e.name }}</text>
-                </view>
-              </view>
-            </scroll-view>
-          </view>
-        </view>
-        <view class="ac-org-footer">
-          <view class="ac-org-footer-btn ac-org-footer-btn--clear" @tap="clearOrgSelected">
-            <text class="ac-org-footer-clear-text">清空选择</text>
-          </view>
-          <view class="ac-org-footer-btn ac-org-footer-btn--confirm" @tap="confirmOrg">
-            <text class="ac-org-footer-confirm-text">确认</text>
           </view>
         </view>
       </view>
@@ -336,6 +298,15 @@
       <view class="ac-btn ac-btn--cancel" @tap="goBack">取消</view>
       <view class="ac-btn ac-btn--save" @tap="onSave">保存</view>
     </view>
+
+    <!-- 负责人选择 -->
+    <UserCascaderPopup v-model="showUserPopup" title="选择负责人" @confirm="onUserConfirm" />
+
+    <!-- 协作人选择 -->
+    <UserCascaderPopup v-model="showCollaboratorPopup" title="选择协作人" @confirm="onCollaboratorConfirm" />
+
+    <!-- 省市区选择 -->
+    <RegionPickerPopup v-model="showRegionPopup" title="选择省市区" @confirm="onRegionConfirm" />
   </view>
 </template>
 
@@ -345,6 +316,8 @@ import Taro from '@tarojs/taro'
 import iconBack from '@/assets/dev/icon-back.png'
 import rightArrow from '@/assets/dev/rightArror.png'
 import DuplicateCheckPopup from '../components/DuplicateCheckPopup.vue'
+import UserCascaderPopup from '@/components/UserCascaderPopup.vue'
+import RegionPickerPopup from '@/components/RegionPickerPopup.vue'
 
 const form = reactive({
   customerName: '',
@@ -369,59 +342,47 @@ const form = reactive({
   company: '',
   dept: '',
   owner: '',
+  ownerUserId: 0,
+  ownerUserName: '',
   collaborator: '',
+  collaboratorUserId: 0,
+  collaboratorUserName: '',
+  regionProvinceCode: '',
+  regionCityCode: '',
+  regionDistrictCode: '',
 })
 
 const showLevelPopup = ref(false)
+const showUserPopup = ref(false)
+const showRegionPopup = ref(false)
 const showCategoryPopup = ref(false)
 const showProjectTypePopup = ref(false)
 const showTypePopup = ref(false)
+const showIndustryPopup = ref(false)
 const showCollaboratorPopup = ref(false)
 const showDuplicatePopup = ref(false)
 
 const selectedLevel = ref('')
+const selectedIndustry = ref('')
 const selectedCategory = ref('')
 const selectedProjectType = ref('')
 const selectedType = ref('')
 
 const levelOptions = ['A级客户', 'B级客户', 'C级客户', 'D级客户']
+const industryOptions = ['电气行业', '管道行业', '卷涂行业', '家居行业', '家具行业', '交通行业', '行业类别', '铝材行业', '体育用品', '五金行业', '消防器材', '新能源行业', '重工行业', '其他行业']
 const categoryOptions = ['客户', '设备商', '粉末商', '行业朋友']
 const projectTypeOptions = ['新线', '旧线']
 const typeOptions = ['自动喷粉枪', '手动喷粉枪']
 
-const orgData = {
-  companies: [
-    { name: '德贝尔总公司' },
-    { name: '江苏扬州办事处' },
-    { name: '江苏苏州办事处' },
-    { name: '江苏徐州办事处' },
-  ],
-  depts: [
-    { name: '销售总部' },
-    { name: '开发总部' },
-    { name: '财务总部' },
-    { name: '外贸总部' },
-  ],
-  subDepts: [
-    { name: '销售一部' },
-    { name: '销售二部' },
-  ],
-  employees: [
-    { name: '张传送' },
-    { name: '李治廷' },
-    { name: '仇茂茂' },
-    { name: '李聪' },
-    { name: '屈伊' },
-    { name: '陈子奕' },
-  ],
-}
-
-const orgSelected = ref(['德贝尔总公司', '销售总部', '销售一部', '张传送'])
-
 const toggleSelect = (field, value) => {
-  const refMap = { level: selectedLevel, category: selectedCategory, projectType: selectedProjectType, type: selectedType }
+  const refMap = { industry: selectedIndustry, level: selectedLevel, category: selectedCategory, projectType: selectedProjectType, type: selectedType }
   const sel = refMap[field]
   sel.value = sel.value === value ? '' : value
+}
+
+const confirmIndustry = () => {
+  form.industry = selectedIndustry.value
+  showIndustryPopup.value = false
 }
 
 const confirmLevel = () => {
@@ -444,30 +405,27 @@ const confirmType = () => {
   showTypePopup.value = false
 }
 
-const toggleOrg = (name) => {
-  const idx = orgSelected.value.indexOf(name)
-  if (idx >= 0) {
-    orgSelected.value.splice(idx, 1)
-  } else {
-    orgSelected.value.push(name)
-  }
-}
-
-const clearOrgSelected = () => {
-  orgSelected.value = []
-}
-
-const confirmOrg = () => {
-  form.collaborator = orgSelected.value.join('、')
-  showCollaboratorPopup.value = false
-}
-
-const confirmCollaborator = () => {
-  form.collaborator = orgSelected.value.join('、')
-  showCollaboratorPopup.value = false
-}
-
 const openPicker = (field) => {
+  // 其余字段暂未实现
+}
+
+const onUserConfirm = (payload) => {
+  form.ownerUserId = payload.userId
+  form.ownerUserName = payload.userName
+  form.owner = payload.userName
+}
+
+const onCollaboratorConfirm = (payload) => {
+  form.collaboratorUserId = payload.userId
+  form.collaboratorUserName = payload.userName
+  form.collaborator = payload.userName
+}
+
+const onRegionConfirm = (payload) => {
+  form.region = payload.regionPath
+  form.regionProvinceCode = payload.provinceCode
+  form.regionCityCode = payload.cityCode
+  form.regionDistrictCode = payload.districtCode
 }
 
 const goBack = () => {
