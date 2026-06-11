@@ -21,15 +21,23 @@
 
         <!-- video 视频 -->
         <template v-if="detail.materialType === 'video'">
-          <video
+          <view>
+            <video
             v-if="videoUrl"
             class="ms-video"
             :src="videoUrl"
             :poster="videoUrl"
             controls
             show-play-btn
-            object-fit="contain"
           />
+          </view>
+        </template>
+
+        <!-- H5 链接 -->
+        <template v-if="detail.materialType === 'h5' && detail.h5Url">
+          <view class="ms-h5-row" @tap="openUrl(detail.h5Url)">
+            <text class="ms-h5-text">{{ detail.h5Url }}</text>
+          </view>
         </template>
 
         <!-- 图片类 -->
@@ -109,8 +117,6 @@ function openFile(url: string) {
   }
   const docMatch = url.match(/\.(pdf|doc|docx|xls|xlsx|ppt|pptx|txt|rtf|keynote|numbers|pages)(\?|$)/i)
   if (docMatch) {
-    // H5 环境直接 window.open 交给浏览器打开，避免 CORS 跨域问题
-    // Taro.downloadFile 在 H5 中使用 XMLHttpRequest，会被浏览器 CORS 策略拦截
     if (typeof window !== 'undefined') {
       window.open(url, '_blank')
     }
@@ -118,6 +124,12 @@ function openFile(url: string) {
   }
   Taro.setClipboardData({ data: url })
   Taro.showToast({ title: '链接已复制', icon: 'none' })
+}
+
+function openUrl(url: string) {
+  if (typeof window !== 'undefined') {
+    window.open(url, '_blank')
+  }
 }
 
 onMounted(async () => {
@@ -217,12 +229,28 @@ onMounted(async () => {
 }
 
 .ms-video {
-  width: 100%;
+  display: block;
+  width: 60%;
+  max-height: 480rpx;
   border-radius: 8rpx;
 }
 
 .ms-cover-img {
   border-radius: 8rpx;
+  width: 100%;
+}
+
+/* H5 链接 */
+.ms-h5-row {
+  padding: 24rpx;
+  background: #F6F7FB;
+  border-radius: 8rpx;
+}
+
+.ms-h5-text {
+  font-size: 28rpx;
+  color: #37AE7E;
+  word-break: break-all;
 }
 
 .ms-file-row {
