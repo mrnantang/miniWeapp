@@ -28,7 +28,7 @@
         <!-- 关联素材列表 -->
         <view v-if="materials.length > 0" class="ap-materials">
           <text class="ap-section-title">关联素材</text>
-          <view v-for="m in materials" :key="m.materialId" class="ap-material-card">
+          <view v-for="m in materials" :key="m.materialId" class="ap-material-card" @tap="onMaterialClick(m)">
             <view class="ap-material-info">
               <text class="ap-material-name">{{ m.name }}</text>
               <text class="ap-material-type">{{ materialTypeLabel(m.materialType) }}</text>
@@ -43,7 +43,7 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
 import Taro from '@tarojs/taro'
-import { getTaskSharePreview, type TaskShareMaterial } from '@/api/automation'
+import { getTaskSharePreview, clickMaterial, type TaskShareMaterial } from '@/api/automation'
 
 const loading = ref(true)
 const errorMsg = ref('')
@@ -61,6 +61,14 @@ const TYPE_LABELS: Record<string, string> = {
 
 function materialTypeLabel(type: string): string {
   return TYPE_LABELS[type] || type
+}
+
+/** 点击素材：记录点击 → 跳转素材详情 */
+async function onMaterialClick(m: TaskShareMaterial) {
+  // fire-and-forget 记录点击
+  clickMaterial(m.traceCode).catch(() => {})
+  // 跳转素材详情页
+  Taro.navigateTo({ url: `/pages/marketing-material-share/index?traceCode=${m.traceCode}` })
 }
 
 onMounted(async () => {

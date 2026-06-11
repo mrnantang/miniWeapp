@@ -5,6 +5,7 @@ export default {
     ? [
         'pages/pdf-viewer/index',
         'pages/automation-preview/index',
+        'pages/marketing-material-share/index',
       ]
     : [
         'pages/login/index',

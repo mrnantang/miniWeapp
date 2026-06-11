@@ -124,3 +124,19 @@ export async function publicGet<T>(url: string, params?: Record<string, unknown>
   }
   throw new Error(res.data.msg || '请求失败')
 }
+
+/** 公开 POST 请求（不携带 Authorization 头，不处理 401 跳转），用于 H5 公开页面 */
+export async function publicPost<T>(url: string, data?: Record<string, unknown>): Promise<T> {
+  const res = await Taro.request<ApiResponse<T>>({
+    url: `${getBaseUrl()}${url}`,
+    method: 'POST',
+    data,
+    header: {
+      'Content-Type': 'application/json',
+    },
+  })
+  if (res.data.code === 200) {
+    return res.data.data
+  }
+  throw new Error(res.data.msg || '请求失败')
+}

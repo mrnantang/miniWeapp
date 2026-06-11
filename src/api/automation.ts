@@ -1,4 +1,4 @@
-import { get, post, del, publicGet } from '@/utils/request'
+import { get, post, del, publicGet, publicPost } from '@/utils/request'
 
 // ========== 类型定义 ==========
 
@@ -176,4 +176,45 @@ export interface TaskSharePreviewResponse {
 /** 获取任务分享预览（公开接口，无需登录） */
 export function getTaskSharePreview(shareToken: string): Promise<TaskSharePreviewResponse> {
   return publicGet<TaskSharePreviewResponse>(`/automation/share/tasks/${shareToken}/preview`)
+}
+
+/** 记录一次素材点击（公开接口，无需登录） */
+export function clickMaterial(traceCode: string): Promise<void> {
+  return publicPost<void>(`/automation/share/materials/${traceCode}/click`)
+}
+
+/** 素材分享预览中的素材信息 */
+export interface MaterialShareDetail {
+  id: number
+  companyId: number
+  departmentId: number
+  folderId: number
+  folderName: string
+  materialType: string
+  name: string
+  summary: string
+  coverUrl: string
+  contentHtml: string
+  files: Array<{
+    id: number
+    fileRole: string
+    fileUrl: string
+    fileName: string
+    mimeType: string
+    fileSize: number
+    sortOrder: number
+  }>
+  clickCount: number
+  createdAt: string
+  updatedAt: string
+}
+
+/** 素材分享预览响应 */
+export interface MaterialSharePreviewResponse {
+  material: MaterialShareDetail
+}
+
+/** 获取素材分享预览（公开接口，无需登录） */
+export function getMaterialSharePreview(traceCode: string): Promise<MaterialSharePreviewResponse> {
+  return publicGet<MaterialSharePreviewResponse>(`/automation/share/materials/${traceCode}/preview`)
 }
