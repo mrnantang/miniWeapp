@@ -21,15 +21,17 @@
 
         <!-- video 视频 -->
         <template v-if="detail.materialType === 'video'">
-          <view>
+          <view class="ms-video-wrap">
             <video
-            v-if="videoUrl"
-            class="ms-video"
-            :src="videoUrl"
-            :poster="videoUrl"
-            controls
-            show-play-btn
-          />
+              v-if="videoUrl"
+              class="ms-video"
+              style="width: 80%; top:210px;left: 50%;
+    transform: translateX(-50%);"
+              :src="videoUrl"
+              :poster="videoUrl"
+              controls
+              show-play-btn
+            />
           </view>
         </template>
 
@@ -218,25 +220,31 @@ onMounted(async () => {
 }
 
 .ms-title {
-  font-size: 34rpx;
+  font-size: 34px;
   font-weight: 600;
   color: #333;
 }
 
 .ms-divider {
-  height: 2rpx;
+  height: 2px;
   background: #E9E9E9;
 }
 
+.ms-video-wrap {
+  width: 100%;
+  height: 860px;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
 .ms-video {
-  display: block;
-  width: 60%;
-  max-height: 480rpx;
-  border-radius: 8rpx;
+  width: 100%;
+  max-height: 680px;
+  border-radius: 8px;
 }
 
 .ms-cover-img {
-  border-radius: 8rpx;
+  border-radius: 8px;
   width: 100%;
 }
 
