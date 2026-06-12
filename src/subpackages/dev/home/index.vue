@@ -148,25 +148,12 @@
           </view>
 
           <scroll-view class="filter-content" scroll-y :enhanced="true" :show-scrollbar="false">
-            <view v-if="filterIdx === 0" class="org-tags">
-              <text v-if="companyList.length" class="org-cat-title">公司</text>
-              <view class="org-tag-row">
-                <view v-for="c in companyList" :key="c" class="org-tag" :class="{ 'org-tag--active': selectedTags.includes(c) }" @tap="toggleTag(c)">
-                  <text class="org-tag-text" :class="{ 'org-tag-text--active': selectedTags.includes(c) }">{{ c }}</text>
-                </view>
-              </view>
-
-              <text v-if="deptList.length" class="org-cat-title">部门</text>
-              <view class="org-tag-row">
-                <view v-for="d in deptList" :key="d" class="org-tag" :class="{ 'org-tag--active': selectedTags.includes(d) }" @tap="toggleTag(d)">
-                  <text class="org-tag-text" :class="{ 'org-tag-text--active': selectedTags.includes(d) }">{{ d }}</text>
-                </view>
-              </view>
-
-              <text v-if="subDeptList.length" class="org-cat-title">子部门</text>
-              <view class="org-tag-row">
-                <view v-for="s in subDeptList" :key="s" class="org-tag" :class="{ 'org-tag--active': selectedTags.includes(s) }" @tap="toggleTag(s)">
-                  <text class="org-tag-text" :class="{ 'org-tag-text--active': selectedTags.includes(s) }">{{ s }}</text>
+            <view v-if="filterIdx === 0" class="filter-user-section">
+              <view class="form-row" @tap="showUserPopup = true">
+                <text class="form-label">负责人</text>
+                <view class="form-value-row">
+                  <text class="form-value" :class="{ 'form-value--set': filterOwnerUserName }">{{ filterOwnerUserName || '请选择' }}</text>
+                  <image class="form-arrow" :src="rightArrowIcon" mode="aspectFit" />
                 </view>
               </view>
             </view>
@@ -187,7 +174,7 @@
         </view>
 
         <view class="filter-footer">
-          <view class="filter-footer-btn filter-footer-clear" @tap="clearTags">
+          <view class="filter-footer-btn filter-footer-clear" @tap="clearFilter">
             <text class="filter-footer-clear-text">清空选择</text>
           </view>
           <view class="filter-footer-btn filter-footer-submit" @tap="onFilterConfirm">
@@ -269,6 +256,8 @@
         </view>
       </view>
     </nut-popup>
+
+    <UserCascaderPopup v-model="showUserPopup" title="选择负责人" @confirm="onFilterUserConfirm" />
   </view>
 </template>
 
@@ -277,6 +266,7 @@ import { ref, computed, onMounted } from 'vue'
 import Taro from '@tarojs/taro'
 import TabBar from '../tabs/index.vue'
 import DuplicateCheckPopup from '@/subpackages/dev/customer/components/DuplicateCheckPopup.vue'
+import UserCascaderPopup from '@/components/UserCascaderPopup.vue'
 import { getDevelopmentDashboard, getSalesDashboard } from '@/api/reporting'
 import { getLeadList } from '@/api/lead'
 import { getCustomerList } from '@/api/customer'
@@ -295,6 +285,7 @@ import iconPhone from '@/assets/dev/icon-phone.png'
 import iconIndustry from '@/assets/dev/icon-industry.png'
 import iconLocationPopup from '@/assets/dev/icon-location-popup.png'
 import iconExpandArrow from '@/assets/dev/upArror.png'
+import rightArrowIcon from '@/assets/dev/rightArror.png'
 
 const role = detectRole()
 
@@ -441,30 +432,15 @@ const taskCount = computed(() => {
 
 const showFilter = ref(false)
 const filterIdx = ref(0)
-const companyList = ref([])
-const deptList = ref([])
-const subDeptList = ref([])
 
-function parseTreeToLists(nodes) {
-  const companies = []
-  const depts = []
-  const subDepts = []
-  for (const node of nodes) {
-    if (node.level === 0) {
-      companies.push(node.name)
-      if (node.children) {
-        for (const child of node.children) {
-          depts.push(child.name)
-          if (child.children) {
-            for (const grandchild of child.children) {
-              subDepts.push(grandchild.name)
-            }
-          }
-        }
-      }
-    }
-  }
-  return { companies, depts, subDepts }
+// 负责人筛选
+const showUserPopup = ref(false)
+const filterOwnerUserId = ref(undefined)
+const filterOwnerUserName = ref('')
+
+const onFilterUserConfirm = (payload) => {
+  filterOwnerUserId.value = payload.userId
+  filterOwnerUserName.value = payload.userName
 }
 
 const showDatePopup = ref(false)
@@ -472,19 +448,10 @@ const datePickerTarget = ref('start')
 const startTime = ref('')
 const endTime = ref('')
 const datePopupTitle = computed(() => datePickerTarget.value === 'start' ? '选择开始时间' : '选择结束时间')
-const selectedTags = ref([])
 
-const toggleTag = (tag) => {
-  const idx = selectedTags.value.indexOf(tag)
-  if (idx >= 0) {
-    selectedTags.value.splice(idx, 1)
-  } else {
-    selectedTags.value.push(tag)
-  }
-}
-
-const clearTags = () => {
-  selectedTags.value = []
+const clearFilter = () => {
+  filterOwnerUserId.value = undefined
+  filterOwnerUserName.value = ''
   startTime.value = ''
   endTime.value = ''
 }
@@ -1050,6 +1017,44 @@ onMounted(async () => {
   background: #FFFFFF;
   padding: 24rpx;
 }
+.filter-user-section {
+  padding: 0;
+}
+
+.form-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 24rpx 0;
+}
+
+.form-label {
+  font-size: 30rpx;
+  color: #505361;
+  flex-shrink: 0;
+}
+
+.form-value-row {
+  display: flex;
+  align-items: center;
+  gap: 8rpx;
+}
+
+.form-value {
+  font-size: 30rpx;
+  color: #BBBEC2;
+}
+
+.form-value--set {
+  color: #1A1D24;
+}
+
+.form-arrow {
+  width: 28rpx;
+  height: 28rpx;
+  flex-shrink: 0;
+}
+
 .org-cat-title {
   font-size: 28rpx;
   font-weight: 500;
@@ -1059,30 +1064,6 @@ onMounted(async () => {
 }
 .org-cat-title:first-child {
   margin-top: 0;
-}
-.org-tag-row {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 24rpx;
-  margin-bottom: 24rpx;
-}
-.org-tag {
-  width: 208rpx;
-  padding: 12rpx 10rpx;
-  background: #F6F7FB;
-  border-radius: 6rpx;
-  box-sizing: border-box;
-  text-align: center;
-}
-.org-tag--active {
-  background: #EDFAF5;
-}
-.org-tag-text {
-  font-size: 26rpx;
-  color: #62687D;
-}
-.org-tag-text--active {
-  color: #37AE7E;
 }
 
 .time-section {

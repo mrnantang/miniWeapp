@@ -93,11 +93,13 @@
         <text class="ct-label ct-label--title">付款方式</text>
         <view class="ct-divider" />
 
-        <!-- 付款方式（文本输入） -->
-        <view class="ct-field">
+        <!-- 付款方式（选项选择） -->
+        <view class="ct-field" @tap="showPayMethodPopup = true">
           <text class="ct-label">付款方式</text>
-          <input class="ct-input" v-model="formData['payment.method']" placeholder="请输入"
-            placeholder-style="color:#BBBEC2;font-size:30rpx" />
+          <view class="ct-field-right">
+            <text :class="formData['payment.method'] ? 'ct-value' : 'ct-placeholder'">{{ payMethodLabel || '请选择' }}</text>
+            <image class="ct-arrow" :src="rightArrow" mode="aspectFit" />
+          </view>
         </view>
         <view class="ct-divider" />
 
@@ -153,13 +155,12 @@
             <view class="ct-tmpl-card" :class="{ 'ct-tmpl-card--active': selectedTemplateId === item.id }" @tap="selectedTemplateId = item.id">
               <view class="ct-tmpl-info">
                 <text class="ct-tmpl-name">{{ item.name }}</text>
-                <text class="ct-tmpl-no">模板编号：{{ item.templateNo }}</text>
+                <text class="ct-tmpl-no" :class="{ 'ct-tmpl-no--active': selectedTemplateId === item.id }">模板编号：{{ item.templateNo }}</text>
               </view>
               <view class="ct-tmpl-checkbox" :class="{ 'ct-tmpl-checkbox--checked': selectedTemplateId === item.id }">
                 <view v-if="selectedTemplateId === item.id" class="ct-tmpl-checkbox-dot" />
               </view>
             </view>
-            <view class="ct-divider" />
           </template>
         </scroll-view>
       </view>
@@ -237,6 +238,26 @@
             <text class="ct-pay-row-text">{{ opt.label }}</text>
             <view class="ct-pay-checkbox" :class="{ 'ct-pay-checkbox--checked': paymentType === opt.value }">
               <view v-if="paymentType === opt.value" class="ct-pay-checkbox-dot" />
+            </view>
+          </view>
+        </view>
+      </view>
+    </nut-popup>
+
+    <!-- 付款方式选择弹窗 -->
+    <nut-popup v-model:visible="showPayMethodPopup" position="bottom"
+      :style="{ borderRadius: '24rpx 24rpx 0 0' }" :z-index="2100" portal-disable safe-area-inset-bottom>
+      <view class="q-popup">
+        <view class="q-popup-header">
+          <text class="ct-pay-cancel" @tap="showPayMethodPopup = false">取消</text>
+          <text class="q-popup-title">付款方式</text>
+          <text class="q-popup-confirm" @tap="onConfirmPayMethod">确认</text>
+        </view>
+        <view class="ct-pay-body">
+          <view v-for="opt in payMethodOptions" :key="opt.value" class="ct-pay-row" @tap="onSelectPayMethod(opt.value)">
+            <text class="ct-pay-row-text">{{ opt.label }}</text>
+            <view class="ct-pay-checkbox" :class="{ 'ct-pay-checkbox--checked': selectedPayMethod === opt.value }">
+              <view v-if="selectedPayMethod === opt.value" class="ct-pay-checkbox-dot" />
             </view>
           </view>
         </view>
@@ -324,20 +345,35 @@ onMounted(async () => {
         remark: it.remark || '',
       }))
     }
+    // 顶层字段回显
+    if (res.name) all['contractName'] = res.name
+    if (res.contractNo) all['contractNo'] = res.contractNo
+    // 将 summarySnapshot 中非 payment 字段放入 all（payment 结构化处理）
+    for (const k of Object.keys(summaryRaw)) {
+      if (k === 'paymentMethod' || k === 'paymentType' || k === 'installmentPeriods' || k === 'installmentStages') continue
+      all[k] = String(summaryRaw[k] ?? '')
+    }
     for (const f of tokenSchema.value) {
       if (f.category === 'item') continue
       if (f.category === 'payment') continue
       formData[f.key] = all[f.key] ?? ''
     }
-    // 编辑模式：回显 payment 字段
-    for (const f of tokenSchema.value) {
-      if (f.category !== 'payment') continue
-      formData[f.key] = all[f.key] ?? f.defaultValue ?? ''
-    }
-    // 如果已有分期字段数据，则恢复分期支付状态
-    const hasInstallmentData = Object.keys(formData).some(k => k.startsWith('payment.after') && formData[k])
-    if (hasInstallmentData) {
+    // 编辑模式：回显 payment 结构化数据
+    if (summaryRaw.paymentMethod) formData['payment.method'] = summaryRaw.paymentMethod
+    selectedPayMethod.value = summaryRaw.paymentMethod || formData['payment.method'] || ''
+    if (summaryRaw.paymentType === 'installment') {
       paymentType.value = 'installment'
+      installmentCount.value = summaryRaw.installmentPeriods || 4
+    }
+    if (summaryRaw.installmentStages && Array.isArray(summaryRaw.installmentStages)) {
+      const phaseOrder = ['afterSigning', 'afterPacking', 'afterInstallation', 'afterAcceptance']
+      summaryRaw.installmentStages.forEach((stage: any, i: number) => {
+        if (i < phaseOrder.length) {
+          formData[`payment.${phaseOrder[i]}.ratio`] = String(stage.ratio ?? '')
+          formData[`payment.${phaseOrder[i]}.amountLower`] = String((stage.amount || 0) / 100)   // 分→元
+          formData[`payment.${phaseOrder[i]}.receivableNode`] = stage.receivableNode?.[1] || ''
+        }
+      })
     }
   } catch { /*  */ }
 })
@@ -412,6 +448,31 @@ function onSelectPayType(val: 'full' | 'installment') {
       if (k.startsWith('payment.after')) delete formData[k]
     }
   }
+}
+
+// 付款方式选项弹窗
+const showPayMethodPopup = ref(false)
+const selectedPayMethod = ref('')
+
+const payMethodOptions = [
+  { label: '先付款后发货', value: 'pay_before_delivery' },
+  { label: '先发货后付款', value: 'delivery_before_pay' },
+]
+
+const payMethodLabel = computed(() => {
+  const opt = payMethodOptions.find(o => o.value === formData['payment.method'])
+  return opt ? opt.label : ''
+})
+
+function onSelectPayMethod(val: string) {
+  selectedPayMethod.value = val
+}
+
+function onConfirmPayMethod() {
+  if (selectedPayMethod.value) {
+    formData['payment.method'] = selectedPayMethod.value
+  }
+  showPayMethodPopup.value = false
 }
 
 const paymentPhases = computed(() => {
@@ -555,11 +616,11 @@ async function onSubmit() {
   }
   try {
     // 按 category 分组到对应 snapshot
-    // 注意：token key 带前缀（如 buyer.party、seller.fullName、item.productName），
-    // 接口要求 snapshot 对象的 key 不带前缀，item 类由 form.products 提供
-    const buyerSnapshot: Record<string, string> = {}
-    const sellerSnapshot: Record<string, string> = {}
-    const summarySnapshot: Record<string, string> = {}
+    // 注意：token key 带前缀，snapshot 对象 key 不带前缀
+    // payment 分类单独结构化，item 分类由 form.products 提供
+    const buyerSnapshot: Record<string, any> = {}
+    const sellerSnapshot: Record<string, any> = {}
+    const summarySnapshot: Record<string, any> = {}
 
     for (const f of tokenSchema.value) {
       const val = formData[f.key] || ''
@@ -568,11 +629,42 @@ async function onSubmit() {
       } else if (f.key.startsWith('seller.')) {
         sellerSnapshot[f.key.replace('seller.', '')] = val
       } else if (f.key.startsWith('item.')) {
-        // item 字段由 form.products 提供，不在 formData 中
+        // item 字段由 form.products 提供
+        continue
+      } else if (f.key.startsWith('payment.')) {
+        // payment 字段结构化到 summarySnapshot
         continue
       } else {
         summarySnapshot[f.key] = val
       }
+    }
+
+    // 提取顶层 name 和 contractNo
+    const contractName = (summarySnapshot['contractName'] || summarySnapshot['name'] || '') as string
+    const contractNo = (summarySnapshot['contractNo'] || '') as string
+    delete summarySnapshot['contractName']
+    delete summarySnapshot['name']
+    delete summarySnapshot['contractNo']
+
+    // 构建 payment 结构化数据
+    summarySnapshot['paymentMethod'] = formData['payment.method'] || ''
+    summarySnapshot['paymentType'] = paymentType.value
+    if (paymentType.value === 'installment') {
+      summarySnapshot['installmentPeriods'] = installmentCount.value
+      const stages: Array<{ ratio: number; amount: number; receivableNode: string[] }> = []
+      const phaseOrder = ['afterSigning', 'afterPacking', 'afterInstallation', 'afterAcceptance']
+      for (let i = 0; i < Math.min(installmentCount.value, phaseOrder.length); i++) {
+        const phaseKey = phaseOrder[i]
+        const ratio = Number(formData[`payment.${phaseKey}.ratio`]) || 0
+        const amountLower = Number(formData[`payment.${phaseKey}.amountLower`]) || 0
+        const receivableNode = formData[`payment.${phaseKey}.receivableNode`] || ''
+        stages.push({
+          ratio,
+          amount: Math.round(amountLower * 100),   // 元→分
+          receivableNode: receivableNode ? [phaseKey, receivableNode] : [],
+        })
+      }
+      summarySnapshot['installmentStages'] = stages
     }
 
     // 从 form.products 构建 items 数组（前端展示元，后端存储分：乘以100）
@@ -589,12 +681,14 @@ async function onSubmit() {
     }))
 
     const data: Record<string, any> = {
-      customerId: customerId.value || undefined,
       templateId: form.templateId,
+      customerId: customerId.value || undefined,
       buyerSnapshot,
       sellerSnapshot,
-      summarySnapshot
+      summarySnapshot,
     }
+    if (contractName) data.name = contractName
+    if (contractNo) data.contractNo = contractNo
     if (items.length > 0) data.items = items
     if (editId.value) {
       await updateContract(editId.value, data)
@@ -852,6 +946,9 @@ function onPickerChange(e: any) {
   flex: 1;
   padding: 0 40rpx;
   box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  gap: 32rpx;
 }
 
 .ct-tmpl-info {
@@ -867,8 +964,12 @@ function onPickerChange(e: any) {
 }
 
 .ct-tmpl-no {
-  font-size: 24rpx;
+  font-size: 28rpx;
   color: #9292A5;
+}
+
+.ct-tmpl-no--active {
+  color: #62687D;
 }
 
 .q-popup-header {
@@ -946,6 +1047,7 @@ function onPickerChange(e: any) {
   background: #FBFBFB;
   border: 1rpx solid #ECEBEB;
   border-radius: 8rpx;
+  position: relative;
   margin-bottom: 32rpx;
 }
 
@@ -965,13 +1067,16 @@ function onPickerChange(e: any) {
 .ct-tmpl-checkbox {
   width: 28rpx;
   height: 28rpx;
-  border-radius: 50%;
+  border-radius: 6rpx;
   border: 2rpx solid #E5E6EB;
   display: flex;
   align-items: center;
   justify-content: center;
   box-sizing: border-box;
   flex-shrink: 0;
+  position: absolute;
+  top: 0;
+  right: 0;
 }
 
 .ct-tmpl-checkbox--checked {
@@ -1357,5 +1462,32 @@ function onPickerChange(e: any) {
   display: flex;
   flex-direction: column;
   gap: 28rpx;
+}
+
+/* ========== 应收款节点选择弹窗 ========== */
+.ct-recv-body {
+  padding: 0 40rpx;
+}
+
+.ct-recv-row {
+  display: flex;
+  padding: 20rpx 0;
+  border-bottom: 1rpx solid #E5ECF2;
+}
+
+.ct-recv-row:last-child {
+  border-bottom: none;
+}
+
+.ct-recv-col {
+  flex: 1;
+  text-align: center;
+  font-size: 32rpx;
+  color: #A3A6B5;
+}
+
+.ct-recv-row--active .ct-recv-col {
+  font-weight: 500;
+  color: #1A1D24;
 }
 </style>
