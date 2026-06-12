@@ -179,13 +179,40 @@
       <view class="cdt-btn cdt-btn--primary" @tap="onPreview">预览</view>
       <view class="cdt-btn cdt-btn--primary" @tap="onEdit">编辑</view>
     </view>
+
+    <!-- 上传回签弹窗 -->
+    <nut-popup v-model:visible="showUploadPopup" position="center"
+      :style="{ borderRadius: '24rpx', width: '582rpx', padding: '40rpx' }"
+      :z-index="2100" portal-disable>
+      <view class="cdt-upload-popup">
+        <text class="cdt-upload-title">上传回签</text>
+        <view class="cdt-upload-area" @tap="onChooseFile">
+          <view v-if="uploading" class="cdt-upload-tip">上传中...</view>
+          <template v-else-if="submittedFile">
+            <text class="cdt-upload-done">上传完成</text>
+            <text class="cdt-upload-name">{{ submittedFile.fileName }}</text>
+          </template>
+          <template v-else>
+            <text class="cdt-upload-plus">+</text>
+            <text class="cdt-upload-text">点击上传</text>
+          </template>
+        </view>
+        <view class="cdt-upload-btns">
+          <view class="cdt-upload-btn cdt-upload-btn--cancel" @tap="showUploadPopup = false">取消</view>
+          <view class="cdt-upload-btn cdt-upload-btn--confirm"
+            :class="{ 'cdt-upload-btn--active': submittedFile }"
+            @tap="onConfirmSignBack">确认</view>
+        </view>
+      </view>
+    </nut-popup>
   </view>
 </template>
 
 <script setup lang="ts">
-import { reactive, computed, onMounted } from 'vue'
+import { ref, reactive, computed, onMounted } from 'vue'
 import Taro from '@tarojs/taro'
-import { getContractDetail, cancelContract, shareContract, CONTRACT_STATUS_MAP, CONTRACT_STATUS_BADGE_MAP } from '@/api/contract'
+import { getContractDetail, cancelContract, shareContract, signBackContract, CONTRACT_STATUS_MAP, CONTRACT_STATUS_BADGE_MAP } from '@/api/contract'
+import { uploadFile } from '@/api/material'
 import { getToken } from '@/utils/storage'
 
 declare const TARO_APP_API_BASE: string
@@ -287,7 +314,9 @@ const onCancel = async () => {
     if (!res.confirm) return
     await cancelContract(detail.id)
     Taro.showToast({ title: '已取消', icon: 'success' })
-    fetchDetail()
+    // 本地更新状态避免接口尚未同步
+    detail.approvalStatus = 'cancelled'
+    detail.displayStatus = 'cancelled'
   } catch { /*  */ }
 }
 
@@ -329,7 +358,47 @@ const onShare = async () => {
     fetchDetail()
   } catch { /*  */ }
 }
-const onUpload = () => Taro.showToast({ title: '上传回签', icon: 'none' })
+// 上传回签
+const showUploadPopup = ref(false)
+const uploading = ref(false)
+const submittedFile = ref<{ url: string; fileName: string } | null>(null)
+
+async function onChooseFile() {
+  try {
+    const res = await Taro.chooseImage({
+      count: 1,
+      sizeType: ['compressed'],
+      sourceType: ['album', 'camera'],
+    })
+    const filePath = res.tempFilePaths[0]
+    uploading.value = true
+    const uploadRes = await uploadFile(filePath, 'contract-sign')
+    submittedFile.value = { url: uploadRes.url, fileName: uploadRes.fileName }
+  } catch (e) {
+    if ((e as any)?.errMsg?.includes('cancel')) return
+    Taro.showToast({ title: '上传失败', icon: 'none' })
+  } finally {
+    uploading.value = false
+  }
+}
+
+async function onConfirmSignBack() {
+  if (!submittedFile.value) {
+    Taro.showToast({ title: '请先上传文件', icon: 'none' })
+    return
+  }
+  try {
+    await signBackContract(detail.id, submittedFile.value)
+    Taro.showToast({ title: '回签成功', icon: 'success' })
+    showUploadPopup.value = false
+    fetchDetail()
+  } catch { /* */ }
+}
+
+function onUpload() {
+  submittedFile.value = null
+  showUploadPopup.value = true
+}
 
 onMounted(() => fetchDetail())
 </script>
@@ -643,5 +712,94 @@ onMounted(() => fetchDetail())
   background: linear-gradient(270deg, rgba(102,220,166,1) 0%, rgba(88,188,150,1) 100%);
   color: #FFFFFF;
   border: none;
+}
+
+/* 上传回签弹窗 */
+.cdt-upload-popup {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 32rpx;
+  background: #FFFFFF;
+}
+
+.cdt-upload-title {
+  font-size: 34rpx;
+  font-weight: 500;
+  color: #333333;
+  text-align: center;
+}
+
+.cdt-upload-area {
+  width: 238rpx;
+  height: 238rpx;
+  background: #FAFAFA;
+  border: 2rpx dashed #ECEBEB;
+  border-radius: 8rpx;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8rpx;
+}
+
+.cdt-upload-plus {
+  font-size: 36rpx;
+  color: #62687D;
+  line-height: 1;
+}
+
+.cdt-upload-text {
+  font-size: 30rpx;
+  color: #62687D;
+}
+
+.cdt-upload-tip {
+  font-size: 28rpx;
+  color: #9292A5;
+}
+
+.cdt-upload-done {
+  font-size: 28rpx;
+  color: #37AE7E;
+}
+
+.cdt-upload-name {
+  font-size: 24rpx;
+  color: #9292A5;
+  text-align: center;
+  word-break: break-all;
+  padding: 0 8rpx;
+}
+
+.cdt-upload-btns {
+  display: flex;
+  gap: 32rpx;
+  width: 100%;
+}
+
+.cdt-upload-btn {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 68rpx;
+  border-radius: 8rpx;
+  font-size: 32rpx;
+}
+
+.cdt-upload-btn--cancel {
+  background: #EDFAF5;
+  border: 2rpx solid #37AE7E;
+  color: #37AE7E;
+}
+
+.cdt-upload-btn--confirm {
+  background: #BBBEC2;
+  color: #FFFFFF;
+}
+
+.cdt-upload-btn--active {
+  background: linear-gradient(270deg, rgba(102,220,166,1) 0%, rgba(88,188,150,1) 100%);
 }
 </style>

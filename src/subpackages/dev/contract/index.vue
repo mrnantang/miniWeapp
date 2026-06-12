@@ -38,6 +38,105 @@
           <view v-if="fi < group.fields.length - 1" class="ct-divider" />
         </template>
       </view>
+
+      <!-- 产品明细卡片 -->
+      <view v-if="hasItemFields" class="ct-card">
+        <view class="q-section-head">
+          <text class="q-section-title">产品明细</text>
+          <view class="q-add-row" @tap="onAddProduct">
+            <image class="q-add-icon" :src="iconPlus" mode="aspectFit" />
+            <text class="q-add-text">添加产品</text>
+          </view>
+        </view>
+        <view class="ct-divider" />
+        <scroll-view class="q-table-scroll" scroll-x="true" :enhanced="true" :show-scrollbar="false">
+          <view class="q-table">
+            <view class="q-tr q-tr--head">
+              <view class="q-th" style="width:72rpx">序号</view>
+              <view class="q-th" style="width:280rpx">产品名称</view>
+              <view class="q-th" style="width:200rpx">品牌</view>
+              <view class="q-th" style="width:200rpx">型号</view>
+              <view class="q-th" style="width:160rpx">单位</view>
+              <view class="q-th" style="width:120rpx">数量</view>
+              <view class="q-th" style="width:140rpx">单价</view>
+              <view class="q-th" style="width:140rpx">小计</view>
+              <view class="q-th" style="width:82rpx">操作</view>
+            </view>
+            <view v-for="(item, idx) in form.products" :key="idx" class="q-tr">
+              <view class="q-td" style="width:72rpx">{{ padIdx(idx + 1) }}</view>
+              <view class="q-td" style="width:280rpx">{{ item.productName }}</view>
+              <view class="q-td" style="width:200rpx">{{ item.brandName || '-' }}</view>
+              <view class="q-td" style="width:200rpx">{{ item.model || '-' }}</view>
+              <view class="q-td" style="width:160rpx">{{ item.unit || '-' }}</view>
+              <view class="q-td" style="width:120rpx">{{ item.quantity }}</view>
+              <view class="q-td" style="width:140rpx">￥{{ item.unitPrice.toLocaleString() }}</view>
+              <view class="q-td q-td--bold" style="width:140rpx">￥{{ item.amount.toLocaleString() }}</view>
+              <view class="q-td" style="width:82rpx">
+                <image class="q-delete-icon" :src="iconDelete" mode="aspectFit" @tap="removeProduct(idx)" />
+              </view>
+            </view>
+            <view v-if="form.products.length === 0" class="q-tr">
+              <view class="q-td" style="width:100%;border:0;justify-content:center;color:#BBBEC2">暂无产品，请点击上方"添加产品"</view>
+            </view>
+          </view>
+        </scroll-view>
+        <view class="ct-divider" />
+        <view class="q-total-row">
+          <text class="q-total-label">产品总价</text>
+          <text class="q-total-value">￥{{ totalProductAmount.toLocaleString() }}</text>
+          <text class="q-total-unit">元</text>
+        </view>
+      </view>
+
+      <!-- 付款方式卡片 -->
+      <view v-if="hasPaymentFields" class="ct-card">
+        <text class="ct-label ct-label--title">付款方式</text>
+        <view class="ct-divider" />
+
+        <!-- 付款方式（文本输入） -->
+        <view class="ct-field">
+          <text class="ct-label">付款方式</text>
+          <input class="ct-input" v-model="formData['payment.method']" placeholder="请输入"
+            placeholder-style="color:#BBBEC2;font-size:30rpx" />
+        </view>
+        <view class="ct-divider" />
+
+        <!-- 支付方式（下拉选择：全款支付 / 分期支付） -->
+        <view class="ct-field" @tap="showPayTypePopup = true">
+          <text class="ct-label">支付方式</text>
+          <view class="ct-field-right">
+            <text :class="paymentType === 'installment' ? 'ct-value' : 'ct-placeholder'">
+              {{ paymentType === 'installment' ? '分期支付' : '全款支付' }}
+            </text>
+            <image class="ct-arrow" :src="rightArrow" mode="aspectFit" />
+          </view>
+        </view>
+        <view class="ct-divider" />
+
+        <!-- 分付周期（仅分期支付时显示） -->
+        <view v-if="paymentType === 'installment'" class="ct-field">
+          <text class="ct-label">分付周期</text>
+          <input class="ct-input" type="number" v-model.number="installmentCount" placeholder="请输入"
+            placeholder-style="color:#BBBEC2;font-size:30rpx" />
+        </view>
+
+        <!-- 分期阶段卡片（仅分期支付时显示） -->
+        <template v-if="paymentType === 'installment'">
+          <view v-for="phase in paymentPhases" :key="phase.key" class="ct-pay-phase">
+            <text class="ct-pay-phase-label">{{ phase.label }}</text>
+            <view class="ct-pay-phase-body">
+              <view v-for="f in phase.fields" :key="f.key" class="ct-field">
+                <text class="ct-label">{{ phaseFieldShortLabel(f) }}</text>
+                <view class="ct-field-right">
+                  <input class="ct-input" v-model="formData[f.key]" :placeholder="phaseFieldPlaceholder(f)"
+                    placeholder-style="color:#BBBEC2;font-size:30rpx" />
+                  <text v-if="phaseFieldUnit(f)" class="ct-suffix">{{ phaseFieldUnit(f) }}</text>
+                </view>
+              </view>
+            </view>
+          </view>
+        </template>
+      </view>
     </scroll-view>
 
     <nut-popup v-model:visible="showTemplatePopup" position="bottom" :style="{ borderRadius: '24rpx 24rpx 0 0', height: '1022rpx' }" :z-index="2000" portal-disable safe-area-inset-bottom>
@@ -88,6 +187,62 @@
       </view>
     </nut-popup>
 
+    <!-- 产品选择弹窗 -->
+    <nut-popup v-model:visible="showProductPopup" position="bottom"
+      :style="{ borderRadius: '24rpx 24rpx 0 0', height: '1022rpx' }" :z-index="2100" portal-disable
+      safe-area-inset-bottom>
+      <view class="q-popup">
+        <view class="q-popup-header">
+          <text class="ct-pay-cancel" @tap="showProductPopup = false">取消</text>
+          <text class="q-popup-title">添加产品</text>
+          <text class="q-popup-confirm" @tap="showProductPopup = false">确认</text>
+        </view>
+        <view class="q-prod-search">
+          <input class="q-prod-search-input" v-model="prodKeyword" placeholder="输入产品名称"
+            placeholder-style="color:#BBBEC2;font-size:28rpx" />
+        </view>
+        <scroll-view class="q-popup-body" scroll-y="true" :enhanced="true" :show-scrollbar="false"
+          style="box-sizing: border-box;">
+          <view v-if="prodLoading" class="q-popup-tip">加载中...</view>
+          <view v-else-if="filteredProducts.length === 0" class="q-popup-tip">暂无产品</view>
+          <template v-else v-for="item in filteredProducts" :key="item.id">
+            <view class="q-prod-item">
+              <view class="q-prod-info">
+                <text class="q-prod-name">{{ item.name }}</text>
+                <text class="q-prod-price">￥{{ (item.priceAmount || item.price || 0).toLocaleString() }}</text>
+              </view>
+              <view class="q-prod-stepper">
+                <view class="q-prod-step-btn" @tap="onProdQtyChange(item, -1)"><text class="q-prod-step-icon">−</text></view>
+                <text class="q-prod-step-value">{{ item._qty || 0 }}</text>
+                <view class="q-prod-step-btn q-prod-step-btn--plus" @tap="onProdQtyChange(item, 1)"><text class="q-prod-step-icon">+</text></view>
+              </view>
+            </view>
+            <view class="ct-divider" />
+          </template>
+        </scroll-view>
+      </view>
+    </nut-popup>
+
+    <!-- 支付方式选择弹窗 -->
+    <nut-popup v-model:visible="showPayTypePopup" position="bottom"
+      :style="{ borderRadius: '24rpx 24rpx 0 0' }" :z-index="2100" portal-disable safe-area-inset-bottom>
+      <view class="q-popup">
+        <view class="q-popup-header">
+          <text class="ct-pay-cancel" @tap="showPayTypePopup = false">取消</text>
+          <text class="q-popup-title">选择支付方式</text>
+          <text class="q-popup-confirm" @tap="showPayTypePopup = false">确定</text>
+        </view>
+        <view class="ct-pay-body">
+          <view v-for="opt in payTypeOptions" :key="opt.value" class="ct-pay-row" @tap="onSelectPayType(opt.value)">
+            <text class="ct-pay-row-text">{{ opt.label }}</text>
+            <view class="ct-pay-checkbox" :class="{ 'ct-pay-checkbox--checked': paymentType === opt.value }">
+              <view v-if="paymentType === opt.value" class="ct-pay-checkbox-dot" />
+            </view>
+          </view>
+        </view>
+      </view>
+    </nut-popup>
+
     <view class="ct-actions">
       <view class="ct-btn ct-btn--preview" @tap="onPreview">预览合同</view>
       <view class="ct-btn ct-btn--submit" @tap="onSubmit">{{ editId ? '保存合同' : '生成合同' }}</view>
@@ -104,12 +259,26 @@ import { getToken } from '@/utils/storage'
 declare const TARO_APP_API_BASE: string
 import { getContractTemplates, getContractTemplateDetail, createContract, updateContract, getContractDetail, type ContractTemplateItem, type ContractTokenField } from '@/api/contract'
 import rightArrow from '@/assets/dev/rightArror.png'
+import iconPlus from '@/assets/dev/icon-add.png'
+import iconDelete from '@/assets/dev/delete.png'
+import { get } from '@/utils/request'
 
 // 固定字段
 const form = reactive({
   templateId: 0,
   templateName: '',
   templateNo: '',
+  products: [] as Array<{
+    productId?: number
+    productName: string
+    brandName?: string
+    model?: string
+    unit?: string
+    quantity: number
+    unitPrice: number   // 前端展示用「元」
+    amount: number      // 前端展示用「元」
+    remark?: string
+  }>,
 })
 
 const customerId = ref(0)
@@ -140,22 +309,35 @@ onMounted(async () => {
     for (const k of Object.keys(buyerRaw)) { all['buyer.' + k] = buyerRaw[k] }
     for (const k of Object.keys(sellerRaw)) { all['seller.' + k] = sellerRaw[k] }
     for (const k of Object.keys(summaryRaw)) { all[k] = summaryRaw[k] }
-    // 从 items 反填 item.* 字段
+    // 从 items 反填 form.products（后端返回分，前端展示元：除以100）
     const itemArr = res.items || []
     if (itemArr.length > 0) {
-      const it = itemArr[0]
-      all['item.productName'] = it.productName || ''
-      all['item.brandName'] = it.brandName || ''
-      all['item.model'] = it.model || ''
-      all['item.quantity'] = String(it.quantity || '')
-      // 后端返回分，表单输入期望元：除以100
-      all['item.unitPrice'] = it.unitPrice ? String(it.unitPrice / 100) : ''
-      all['item.amount'] = it.amount ? String(it.amount / 100) : ''
-      all['item.unit'] = it.unit || ''
-      all['item.remark'] = it.remark || ''
+      form.products = itemArr.map((it: any) => ({
+        productId: it.productId,
+        productName: it.productName || '',
+        brandName: it.brandName || '',
+        model: it.model || '',
+        unit: it.unit || '',
+        quantity: it.quantity || 0,
+        unitPrice: it.unitPrice ? it.unitPrice / 100 : 0,   // 分→元
+        amount: it.amount ? it.amount / 100 : 0,            // 分→元
+        remark: it.remark || '',
+      }))
     }
     for (const f of tokenSchema.value) {
+      if (f.category === 'item') continue
+      if (f.category === 'payment') continue
       formData[f.key] = all[f.key] ?? ''
+    }
+    // 编辑模式：回显 payment 字段
+    for (const f of tokenSchema.value) {
+      if (f.category !== 'payment') continue
+      formData[f.key] = all[f.key] ?? f.defaultValue ?? ''
+    }
+    // 如果已有分期字段数据，则恢复分期支付状态
+    const hasInstallmentData = Object.keys(formData).some(k => k.startsWith('payment.after') && formData[k])
+    if (hasInstallmentData) {
+      paymentType.value = 'installment'
     }
   } catch { /*  */ }
 })
@@ -173,11 +355,27 @@ const selectedTemplateId = ref(0)
 const tokenSchema = ref<ContractTokenField[]>([])
 const templateContentHtml = ref('')
 
-// 按 category 分组
+// 产品弹窗
+const showProductPopup = ref(false)
+const prodLoading = ref(false)
+const prodKeyword = ref('')
+const allProducts = ref<any[]>([])
+
+const filteredProducts = computed(() => {
+  let list = allProducts.value
+  if (prodKeyword.value) {
+    list = list.filter(p => (p.name || '').includes(prodKeyword.value))
+  }
+  return list
+})
+
+// 按 category 分组（排除 item 类——产品用表格卡片展示）
 const fieldGroups = computed(() => {
   const groups: Array<{ category: string; fields: ContractTokenField[] }> = []
   const seen = new Set<string>()
   for (const f of tokenSchema.value) {
+    if (f.category === 'item') continue
+    if (f.category === 'payment') continue
     const cat = f.category || '其他'
     if (!seen.has(cat)) {
       seen.add(cat)
@@ -188,6 +386,128 @@ const fieldGroups = computed(() => {
   }
   return groups
 })
+
+// 是否有 item 产品字段
+const hasItemFields = computed(() => tokenSchema.value.some(f => f.category === 'item'))
+
+// ========== 付款方式 ==========
+const hasPaymentFields = computed(() => tokenSchema.value.some(f => f.category === 'payment'))
+
+// 支付方式：全款支付 full / 分期支付 installment
+const paymentType = ref<'full' | 'installment'>('full')
+// 分付周期（仅分期支付时有效）
+const installmentCount = ref(4)
+
+const showPayTypePopup = ref(false)
+const payTypeOptions = [
+  { label: '全款支付', value: 'full' as const },
+  { label: '分期支付', value: 'installment' as const },
+]
+
+function onSelectPayType(val: 'full' | 'installment') {
+  paymentType.value = val
+  if (val === 'full') {
+    // 切换到全款支付时，清空分期字段数据
+    for (const k of Object.keys(formData)) {
+      if (k.startsWith('payment.after')) delete formData[k]
+    }
+  }
+}
+
+const paymentPhases = computed(() => {
+  // 全款支付不显示分期
+  if (paymentType.value !== 'installment') return []
+
+  const phaseOrder = ['afterSigning', 'afterPacking', 'afterInstallation', 'afterAcceptance']
+  const phaseLabels = ['一期', '二期', '三期', '四期']
+  const paymentFields = tokenSchema.value.filter(f => f.category === 'payment' && f.key !== 'payment.method')
+
+  const phases: Array<{ key: string; label: string; fields: ContractTokenField[] }> = []
+  for (let i = 0; i < Math.min(installmentCount.value, phaseOrder.length); i++) {
+    const phaseKey = phaseOrder[i]
+    const phaseFields = paymentFields.filter(f => f.key.startsWith(`payment.${phaseKey}.`))
+    if (phaseFields.length > 0) {
+      phases.push({ key: phaseKey, label: phaseLabels[i], fields: phaseFields })
+    }
+  }
+  return phases
+})
+
+function phaseFieldShortLabel(f: ContractTokenField): string {
+  if (f.key.includes('.ratio')) return '支付比例'
+  if (f.key.includes('.amountLower')) return '支付金额'
+  if (f.key.includes('.amountUpper')) return '支付金额(大写)'
+  if (f.key.includes('.receivableNode')) return '应收款节点'
+  return f.label
+}
+
+function phaseFieldUnit(f: ContractTokenField): string {
+  if (f.key.includes('.ratio')) return '%'
+  if (f.key.includes('.amountLower')) return '元'
+  return ''
+}
+
+function phaseFieldPlaceholder(f: ContractTokenField): string {
+  if (f.key.includes('.receivableNode')) return '请选择'
+  return '请输入'
+}
+
+// 产品表的总价
+const totalProductAmount = computed(() => {
+  return form.products.reduce((s, p) => s + (p.amount || 0), 0)
+})
+
+// ========== 产品明细 ==========
+function padIdx(n: number): string {
+  return n < 10 ? '0' + n : String(n)
+}
+
+async function onAddProduct() {
+  showProductPopup.value = true
+  if (allProducts.value.length > 0) return
+  prodLoading.value = true
+  try {
+    const allRes = await get<{ items: any[] }>('/product/products', { page: 1, pageSize: 200, status: 'published' })
+    allProducts.value = (allRes.items || []).map((p: any) => ({ ...p, _qty: 0 }))
+  } catch {
+    allProducts.value = []
+  }
+  finally { prodLoading.value = false }
+}
+
+function onProdQtyChange(item: any, delta: number) {
+  const qty = (item._qty || 0) + delta
+  if (qty < 0) return
+  item._qty = qty
+  if (qty === 0) {
+    const idx = form.products.findIndex(p => p.productId === item.id)
+    if (idx >= 0) form.products.splice(idx, 1)
+  } else {
+    const price = item.priceAmount || item.price || 0
+    const existing = form.products.find(p => p.productId === item.id)
+    if (existing) {
+      existing.quantity = qty
+      existing.unitPrice = price
+      existing.amount = qty * price
+    } else {
+      form.products.push({
+        productId: item.id,
+        productName: item.name,
+        brandName: item.brand || item.brandName || '',
+        model: item.model || item.modelName || '',
+        unit: item.unit || '',
+        quantity: qty,
+        unitPrice: price,
+        amount: qty * price,
+        remark: '',
+      })
+    }
+  }
+}
+
+function removeProduct(idx: number) {
+  form.products.splice(idx, 1)
+}
 
 async function onSelectTemplate() {
   showTemplatePopup.value = true
@@ -208,6 +528,9 @@ async function onTemplateConfirm() {
   showTemplatePopup.value = false
   // 先清空旧数据再加载新模板
   tokenSchema.value = []
+  form.products = []
+  paymentType.value = 'full'
+  installmentCount.value = 4
   Object.keys(formData).forEach(k => delete formData[k])
   try {
     const detail = await getContractTemplateDetail(selectedTemplateId.value)
@@ -216,8 +539,10 @@ async function onTemplateConfirm() {
     form.templateNo = detail.templateNo
     tokenSchema.value = detail.tokenSchema || []
     templateContentHtml.value = detail.contentHtml || ''
-    // 初始化 formData 默认值
+    // 初始化 formData 默认值（跳过 item/payment 类字段——由专属卡片管理）
     for (const f of detail.tokenSchema || []) {
+      if (f.category === 'item') continue
+      if (f.category === 'payment') continue
       formData[f.key] = f.defaultValue || ''
     }
   } catch { /*  */ }
@@ -229,13 +554,12 @@ async function onSubmit() {
     return
   }
   try {
-    // 按 category 分组到对应 snapshot，同时提取 items
+    // 按 category 分组到对应 snapshot
     // 注意：token key 带前缀（如 buyer.party、seller.fullName、item.productName），
-    // 接口要求 snapshot 对象的 key 不带前缀
+    // 接口要求 snapshot 对象的 key 不带前缀，item 类由 form.products 提供
     const buyerSnapshot: Record<string, string> = {}
     const sellerSnapshot: Record<string, string> = {}
     const summarySnapshot: Record<string, string> = {}
-    const itemProps: Record<string, string> = {}
 
     for (const f of tokenSchema.value) {
       const val = formData[f.key] || ''
@@ -244,26 +568,25 @@ async function onSubmit() {
       } else if (f.key.startsWith('seller.')) {
         sellerSnapshot[f.key.replace('seller.', '')] = val
       } else if (f.key.startsWith('item.')) {
-        itemProps[f.key.replace('item.', '')] = val
+        // item 字段由 form.products 提供，不在 formData 中
+        continue
       } else {
         summarySnapshot[f.key] = val
       }
     }
 
-    // 构建 items 数组（amount=0 由后端自动计算）
-    const items: Record<string, any>[] = []
-    if (Object.keys(itemProps).length > 0) {
-      items.push({
-        productName: itemProps.productName || '',
-        brandName: itemProps.brandName || '',
-        model: itemProps.model || '',
-        quantity: Number(itemProps.quantity) || 0,
-        unitPrice: Math.round(Number(itemProps.unitPrice) * 100) || 0,
-        amount: 0,
-        unit: itemProps.unit || '',
-        remark: itemProps.remark || '',
-      })
-    }
+    // 从 form.products 构建 items 数组（前端展示元，后端存储分：乘以100）
+    const items: Record<string, any>[] = form.products.map(p => ({
+      productId: p.productId,
+      productName: p.productName,
+      brandName: p.brandName || '',
+      model: p.model || '',
+      quantity: p.quantity,
+      unitPrice: Math.round((p.unitPrice || 0) * 100),   // 元→分
+      amount: Math.round((p.amount || 0) * 100),          // 元→分
+      unit: p.unit || '',
+      remark: p.remark || '',
+    }))
 
     const data: Record<string, any> = {
       customerId: customerId.value || undefined,
@@ -802,5 +1125,237 @@ function onPickerChange(e: any) {
   justify-content: center;
   font-size: 32rpx;
   color: #1A1D24;
+}
+
+/* ========== 产品明细表格 ========== */
+.q-section-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.q-section-title {
+  font-size: 32rpx;
+  font-weight: 500;
+  color: #23252C;
+}
+
+.q-add-row {
+  display: flex;
+  align-items: center;
+  gap: 8rpx;
+}
+
+.q-add-icon {
+  width: 32rpx;
+  height: 32rpx;
+  flex-shrink: 0;
+}
+
+.q-add-text {
+  font-size: 28rpx;
+  color: #37AE7E;
+}
+
+.q-table-scroll {
+  width: 100%;
+  overflow: hidden;
+}
+
+.q-table {
+  display: flex;
+  flex-direction: column;
+  border: 1rpx solid #EDEDED;
+  border-radius: 4rpx;
+  min-width: 1394rpx;
+}
+
+.q-tr {
+  display: flex;
+  flex-direction: row;
+}
+
+.q-tr--head {
+  background: #F9F9F9;
+}
+
+.q-th {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 12rpx;
+  font-size: 24rpx;
+  color: #62687D;
+  border-right: 1rpx solid #EDEDED;
+  border-bottom: 1rpx solid #EDEDED;
+  box-sizing: border-box;
+  flex-shrink: 0;
+}
+
+.q-td {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 12rpx;
+  font-size: 24rpx;
+  color: #1A1D24;
+  border-right: 1rpx solid #EDEDED;
+  border-bottom: 1rpx solid #EDEDED;
+  box-sizing: border-box;
+  flex-shrink: 0;
+}
+
+.q-td:last-child,
+.q-th:last-child {
+  border-right: none;
+}
+
+.q-tr:last-child .q-th,
+.q-tr:last-child .q-td {
+  border-bottom: none;
+}
+
+.q-td--bold {
+  font-weight: 600;
+}
+
+.q-delete-icon {
+  width: 32rpx;
+  height: 32rpx;
+}
+
+.q-total-row {
+  display: flex;
+  align-items: center;
+  gap: 8rpx;
+  justify-content: flex-end;
+}
+
+.q-total-label {
+  font-size: 28rpx;
+  color: #505361;
+}
+
+.q-total-value {
+  font-size: 28rpx;
+  color: #9292A5;
+}
+
+.q-total-unit {
+  font-size: 28rpx;
+  color: #62687D;
+}
+
+/* ========== 产品选择弹窗 ========== */
+.q-popup {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  background: #FFFFFF;
+}
+
+.q-popup-body {
+  flex: 1;
+  padding: 0 40rpx;
+  box-sizing: border-box;
+}
+
+.q-prod-search {
+  padding: 0 40rpx 20rpx;
+}
+
+.q-prod-search-input {
+  width: 100%;
+  height: 72rpx;
+  background: #F6F7FB;
+  border-radius: 8rpx;
+  padding: 0 24rpx;
+  font-size: 28rpx;
+  color: #1A1D24;
+  box-sizing: border-box;
+}
+
+.q-prod-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 24rpx 0;
+}
+
+.q-prod-info {
+  display: flex;
+  flex-direction: column;
+  gap: 8rpx;
+}
+
+.q-prod-name {
+  font-size: 30rpx;
+  color: #1A1D24;
+}
+
+.q-prod-price {
+  font-size: 26rpx;
+  color: #EB3F29;
+}
+
+.q-prod-stepper {
+  display: flex;
+  align-items: center;
+}
+
+.q-prod-step-btn {
+  width: 48rpx;
+  height: 48rpx;
+  border: 1rpx solid #D9D9D9;
+  border-radius: 8rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #FFFFFF;
+}
+
+.q-prod-step-btn--plus {
+  background: #37AE7E;
+  border-color: #37AE7E;
+}
+
+.q-prod-step-icon {
+  font-size: 28rpx;
+  color: #1A1D24;
+}
+
+.q-prod-step-btn--plus .q-prod-step-icon {
+  color: #FFFFFF;
+}
+
+.q-prod-step-value {
+  width: 64rpx;
+  text-align: center;
+  font-size: 28rpx;
+  color: #1A1D24;
+}
+
+/* ========== 付款阶段卡片 ========== */
+.ct-pay-phase {
+  display: flex;
+  gap: 14px;
+  background: #FBFBFB;
+  border-radius: 8rpx;
+  padding: 14px;
+}
+
+.ct-pay-phase-label {
+  font-size: 30rpx;
+  font-weight: 500;
+  color: #23252C;
+  width: 128rpx;
+  flex-shrink: 0;
+}
+
+.ct-pay-phase-body {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 28rpx;
 }
 </style>

@@ -16,19 +16,12 @@
     "compileHotReLoad": true,
     "checkInvalidKey": true,
     "ignoreDevUnusedFiles": true,
-    "bigPackageSizeSupport": true,
+    "bigPackageSizeSupport": false,
     "useApiHostProcess": true
   },
   "condition": {
     "miniprogram": {
       "list": [
-        {
-          "name": "bug",
-          "pathName": "subpackages/dev/quote/detail/index",
-          "query": "id=1949",
-          "scene": null,
-          "launchMode": "default"
-        },
         {
           "name": "客户详情",
           "pathName": "subpackages/dev/customer/detail/index",

@@ -122,3 +122,8 @@ export function shareContract(id: number): Promise<Record<string, unknown>> {
 export function cancelContract(id: number): Promise<Record<string, unknown>> {
   return post(`/sales/contracts/${id}/cancel`)
 }
+
+/** 上传回签 */
+export function signBackContract(id: number, data: { fileUrl: string; fileName: string }): Promise<Record<string, unknown>> {
+  return post(`/sales/contracts/${id}/sign-back`, data as Record<string, unknown>)
+}
